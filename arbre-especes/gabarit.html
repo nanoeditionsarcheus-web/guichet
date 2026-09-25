@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arbre des espèces</title>
+<style>
+:root{--ink:#10212E;--paper:#F2F5F7;--card:#FFFFFF;--rule:#D3DCE2;--muted:#5C6F7C;--A:#1F5FC4;--grid:#E4EAEF;--axis:#8A99A5;--warn:#B4283C;
+--serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:Consolas,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--warn:#FF6B7F;}}
+:root[data-theme="dark"]{--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--warn:#FF6B7F;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;padding:30px 16px 70px}
+.wrap{max-width:1000px;margin:0 auto}
+header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+h1{font-family:var(--serif);font-size:25px;font-weight:400;margin:0 0 5px}.sub{color:var(--muted);font-size:13.5px;margin:0}
+#stamp{font-family:var(--mono);font-size:12px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center}.controls label{font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.note{color:var(--muted);font-size:13px}
+.reading{border-left:3px solid var(--A);background:color-mix(in srgb,var(--A) 8%,transparent);padding:10px 14px;border-radius:0 3px 3px 0;font-size:13.5px;margin-top:10px}
+svg{width:100%;height:auto;display:block;overflow:visible}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;font-size:12px;font-family:var(--mono)}th,td{padding:3px 8px;text-align:right;border-bottom:1px solid var(--grid);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}thead th{font-size:10px;color:var(--muted);border-bottom:1px solid var(--axis);font-weight:400}
+footer{color:var(--muted);font-size:12px;margin-top:26px;border-top:1px solid var(--rule);padding-top:12px}
+button{font-family:var(--sans);font-size:13.5px;font-weight:600;background:var(--ink);color:var(--paper);border:0;border-radius:3px;padding:7px 14px;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);font-weight:500}
+input[type=file]{font-size:12.5px;color:var(--muted);max-width:100%}
+.err{color:var(--warn)!important}
+.refs{font-size:13px;margin:6px 0 0;padding-left:18px}.refs li{margin-bottom:4px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Arbre des espèces</h1>
+  <p class="sub">Distance génétique standard de Nei (1972) entre lignées de référence, regroupement UPGMA</p>
+  <p class="sub" id="stamp"></p>
+</header>
+
+<div class="card">
+  <p class="tag">Données</p>
+  <p class="note" style="margin:-2px 0 10px">Téléversez les <b>matrices d'espèces de référence</b>, une par espèce ou lignée (au moins deux). Disposition FLOCK : identifiant, puis 2 colonnes par locus, une par allèle. Formats : .xls, .xlsx, .csv. Le nom du fichier (sans extension) sert de nom d'espèce ; tous les fichiers doivent partager le même panel de locus. Un allèle vide ou égal à 0 rend le génotype manquant à ce locus. À l'ouverture, la page montre un <b>exemple publié</b> (voir le pied de page).</p>
+  <div class="controls">
+    <label>Références (≥ 2) : <input type="file" id="upRefs" multiple accept=".xls,.xlsx,.csv,.txt"></label>
+    <button id="upLoad">Calculer l'arbre</button>
+    <button id="upReset" class="ghost">Revenir à l'exemple</button>
+  </div>
+  <p class="note" id="upStatus" style="margin:8px 0 0"></p>
+</div>
+
+<div class="card">
+  <p class="tag">Arbre UPGMA</p>
+  <div id="tree"></div>
+  <div class="reading">Chaque nœud réunit les deux groupes les plus proches ; sa position sur l'axe est la <b>moitié de la distance de Nei</b> moyenne entre ces groupes (arbre ultramétrique). Entre parenthèses : le nombre de génotypes de chaque lignée. L'ordre vertical des lignées n'a pas de sens : seuls les regroupements et les hauteurs des nœuds en ont.</div>
+  <p class="note" id="lociInfo" style="margin:10px 0 0"></p>
+  <div class="controls" style="margin-top:10px">
+    <button class="ghost" id="dlNwk">Télécharger l'arbre (Newick)</button>
+    <button class="ghost" id="dlCsv">Télécharger la matrice (CSV)</button>
+  </div>
+</div>
+
+<div class="card">
+  <p class="tag">Matrice des distances de Nei (D)</p>
+  <div class="scroll" id="matrix"></div>
+</div>
+
+<div class="card">
+  <p class="tag">Méthode</p>
+  <p class="note" style="margin:0">Fréquences alléliques calculées, locus par locus, sur les génotypes présents. Distance standard de Nei : I = J<sub>xy</sub> / √(J<sub>x</sub>·J<sub>y</sub>), D = −ln I, où J<sub>x</sub>, J<sub>y</sub> et J<sub>xy</sub> sont les moyennes sur les locus de Σp<sub>x</sub>², Σp<sub>y</sub>² et Σp<sub>x</sub>p<sub>y</sub> (sans correction pour la taille d'échantillon). Un locus sans aucun génotype dans une lignée est exclu pour toutes les lignées. Arbre : UPGMA, moyenne pondérée par le nombre de lignées réunies ; en cas d'égalité, la première paire dans l'ordre des fichiers est réunie.</p>
+  <p class="note" style="margin:10px 0 0">Validation : sur quatre jeux microsatellites publiés (microbov, nancycats, jaguar, crocrussula), les distances et les arbres de cette page concordent avec PHYLIP 3.697 (<code>gendist</code>, puis <code>neighbor</code> en mode UPGMA) et avec adegenet 2.1.10 (<code>dist.genpop</code>, méthode 1) suivi de <code>hclust</code> (R, méthode « average ») : topologies identiques, écarts limités à l'arrondi de PHYLIP (10⁻⁶ ou moins).</p>
+  <ul class="refs">
+    <li>Nei M. (1972) Genetic distance between populations. <i>American Naturalist</i> 106 : 283-292.</li>
+    <li>Sokal R. R. et Michener C. D. (1958) A statistical method for evaluating systematic relationships. <i>University of Kansas Science Bulletin</i> 38 : 1409-1438.</li>
+    <li>Felsenstein J. (2005) PHYLIP (Phylogeny Inference Package), version 3.6. Department of Genome Sciences, University of Washington, Seattle.</li>
+    <li>Jombart T. (2008) adegenet: a R package for the multivariate analysis of genetic markers. <i>Bioinformatics</i> 24 : 1403-1405.</li>
+  </ul>
+</div>
+
+<footer id="foot"></footer>
+</div>
+<script>
+/*__NEI_UPGMA__*/
+</script>
+<script>
+"use strict";
+var EXAMPLE=/*__EXAMPLE__*/;
+var CUR=null;
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+function compute(pops,loci){
+  var r=NeiUPGMA.analyse(pops,loci.length);
+  r.loci=loci;r.sizes=r.names.map(function(n){return pops[n].length;});
+  return r;
+}
+function drawTree(r){
+  var leaves=[];(function col(nd){if(nd.children){col(nd.children[0]);col(nd.children[1]);}else leaves.push(nd);})(r.tree);
+  var rowH=26,mT=14,mB=46,mL=16,labW=190,W=720,H=mT+mB+rowH*(leaves.length-1);
+  var maxH=r.tree.h||1,x0=W-labW,plotW=x0-mL;
+  leaves.forEach(function(l,i){l.y=mT+i*rowH;});
+  (function sy(nd){if(!nd.children)return nd.y;nd.y=(sy(nd.children[0])+sy(nd.children[1]))/2;return nd.y;})(r.tree);
+  function X(h){return x0-(h/maxH)*plotW;}
+  var s='',nt=5,step=niceStep(maxH/nt);
+  for(var v=0;v<=maxH+1e-12;v+=step){var x=X(v);s+='<line x1="'+x.toFixed(1)+'" y1="'+mT+'" x2="'+x.toFixed(1)+'" y2="'+(H-mB+6)+'" stroke="var(--grid)"/><text x="'+x.toFixed(1)+'" y="'+(H-mB+20)+'" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="var(--mono)">'+fmt(v,step)+'</text>';}
+  s+='<text x="'+(mL+plotW/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="var(--muted)">hauteur des nœuds (D / 2)</text>';
+  (function dr(nd){if(!nd.children)return;var xn=X(nd.h),a=nd.children[0],b=nd.children[1];
+    s+='<line x1="'+xn.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+xn.toFixed(1)+'" y2="'+b.y.toFixed(1)+'" stroke="var(--ink)" stroke-width="1.6"/>';
+    [a,b].forEach(function(c){s+='<line x1="'+xn.toFixed(1)+'" y1="'+c.y.toFixed(1)+'" x2="'+X(c.h).toFixed(1)+'" y2="'+c.y.toFixed(1)+'" stroke="var(--ink)" stroke-width="1.6"/>';dr(c);});})(r.tree);
+  leaves.forEach(function(l){var i=r.names.indexOf(l.name);
+    s+='<circle cx="'+x0+'" cy="'+l.y+'" r="3" fill="var(--A)"/><text x="'+(x0+8)+'" y="'+(l.y+4)+'" font-size="12.5" font-family="var(--serif)" fill="var(--ink)">'+esc(l.name)+' <tspan font-size="10.5" font-family="var(--mono)" fill="var(--muted)">('+r.sizes[i]+')</tspan></text>';});
+  $("tree").innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Arbre UPGMA des lignées">'+s+'</svg>';
+}
+function niceStep(x){var p=Math.pow(10,Math.floor(Math.log10(x))),m=x/p;return (m<1.5?1:m<3?2:m<7?5:10)*p;}
+function fmt(v,step){var d=Math.max(0,-Math.floor(Math.log10(step)));return v.toFixed(d);}
+function drawMatrix(r){
+  var h='<table><thead><tr><th></th>'+r.names.map(function(n){return '<th>'+esc(n)+'</th>';}).join('')+'</tr></thead><tbody>';
+  r.D.forEach(function(row,i){h+='<tr><td>'+esc(r.names[i])+'</td>'+row.map(function(v,j){return '<td'+(i===j?' style="color:var(--muted)"':'')+'>'+(i===j?'—':v.toFixed(4))+'</td>';}).join('')+'</tr>';});
+  $("matrix").innerHTML=h+'</tbody></table>';
+}
+function render(r,label){
+  CUR=r;
+  var d=new Date();$("stamp").textContent='Exécuté le '+d.toLocaleDateString('fr-CA')+' à '+d.toLocaleTimeString('fr-CA');
+  drawTree(r);drawMatrix(r);
+  $("lociInfo").innerHTML=r.keep.length+' locus utilisés sur '+r.loci.length+'.'+(r.excluded.length?' <b>Exclus</b> (aucun génotype dans au moins une lignée) : '+r.excluded.map(function(i){return esc(r.loci[i]);}).join(', ')+'.':'');
+  $("foot").innerHTML='Données : '+label+' — '+r.names.length+' lignées, '+r.sizes.reduce(function(a,b){return a+b;},0)+' génotypes, '+r.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';
+}
+function download(name,text,type){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}
+function nwkName(n){return /^[^\s(),:;'\[\]]+$/.test(n)?n:"'"+String(n).replace(/'/g,"''")+"'";}
+function newick(r){var t=JSON.parse(JSON.stringify(r.tree));(function q(nd){if(nd.children)nd.children.forEach(q);else nd.name=nwkName(nd.name);})(t);return NeiUPGMA.toNewick(t,6);}
+function csv(r){var q=function(s){return '"'+String(s).replace(/"/g,'""')+'"';};return [''].concat(r.names.map(q)).join(',')+'\n'+r.D.map(function(row,i){return [q(r.names[i])].concat(row.map(function(v){return v.toPrecision(10);})).join(',');}).join('\n')+'\n';}
+
+// ---------- lecture des fichiers (même disposition que flock-guichet) ----------
+function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}
+function readFile(file){
+  return new Promise(function(res,rej){
+    var ext=(file.name.split('.').pop()||'').toLowerCase(),fr=new FileReader();
+    if(ext==='csv'||ext==='txt'){
+      fr.onload=function(){var txt=String(fr.result).replace(/^﻿/,'');var first=txt.split(/\r?\n/)[0]||'';var d=first.indexOf(';')>=0?';':(first.indexOf('\t')>=0?'\t':',');
+        res(txt.split(/\r?\n/).filter(function(l){return l.trim().length;}).map(function(l){return l.split(d);}));};
+      fr.onerror=rej;fr.readAsText(file);
+    }else{
+      if(typeof XLSX==='undefined'){rej(new Error("lecture .xls indisponible (hors ligne). Enregistrez le fichier en .csv, ou utilisez la page en ligne."));return;}
+      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];res(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}));}catch(e){rej(e);}};
+      fr.onerror=rej;fr.readAsArrayBuffer(file);
+    }
+  });
+}
+function nLoci(rows){var h=rows[0]||[],cnt=0;for(var i=1;i<h.length;i+=2)if(h[i]!=null&&String(h[i]).trim()!=='')cnt++;if(cnt>0)return cnt;var m=0;for(var r=0;r<rows.length;r++)if(rows[r].length>m)m=rows[r].length;return Math.floor((m-1)/2);}
+function lociNames(header,nloc){var out=[];for(var k=0;k<nloc;k++){var nm=(header&&header[1+2*k]!=null)?String(header[1+2*k]).trim():'';out.push(nm||('Locus'+(k+1)));}return out;}
+function parseRef(rows){var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),genos=[];
+  for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;
+    var g=[];for(var k=0;k<nloc;k++){var a=normA(row[1+2*k]),b=normA(row[2+2*k]);g.push((a==null||b==null)?null:[a,b]);}genos.push(g);}
+  return {loci:loci,genos:genos};}
+function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='note'+(err?' err':'');}
+
+(function init(){
+  $("upReset").addEventListener('click',function(){render(compute(EXAMPLE.pops,EXAMPLE.loci),EXAMPLE.label);status("Exemple rétabli.");});
+  $("upLoad").addEventListener('click',function(){
+    var files=$("upRefs").files;
+    if(files.length<2){status("Choisissez au moins deux fichiers de référence.",true);return;}
+    status("Lecture en cours…");
+    var jobs=[];for(var i=0;i<files.length;i++)jobs.push(readFile(files[i]));
+    Promise.all(jobs).then(function(all){
+      var pops={},canon=null,notes=[];
+      all.forEach(function(rows,i){
+        var pr=parseRef(rows),name=files[i].name.replace(/\.[^.]+$/,'');
+        if(pops[name])throw new Error("deux fichiers portent le nom « "+name+" ».");
+        if(!pr.genos.length)throw new Error("aucun génotype lu dans « "+files[i].name+" ».");
+        if(!canon){canon=pr.loci;pops[name]=pr.genos;return;}
+        if(pr.loci.length!==canon.length)throw new Error("« "+name+" » compte "+pr.loci.length+" locus au lieu de "+canon.length+".");
+        var idx=canon.map(function(c){return pr.loci.indexOf(c);});
+        if(idx.indexOf(-1)>=0){idx=canon.map(function(_,k){return k;});notes.push(name);}   // noms différents : alignement par position
+        pops[name]=pr.genos.map(function(g){return idx.map(function(p){return g[p];});});
+      });
+      var r=compute(pops,canon);
+      render(r,'fichiers téléversés');
+      status(r.names.length+" lignées chargées — "+canon.length+" locus."+(notes.length?" Noms de locus différents du premier fichier dans : "+notes.join(', ')+" (alignement par position).":""));
+    }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
+  });
+  $("dlNwk").addEventListener('click',function(){if(CUR)download('arbre-upgma-nei.nwk',newick(CUR)+'\n','text/plain');});
+  $("dlCsv").addEventListener('click',function(){if(CUR)download('distances-nei.csv',csv(CUR),'text/csv');});
+  render(compute(EXAMPLE.pops,EXAMPLE.loci),EXAMPLE.label);
+})();
+</script>
+</body>
+</html>

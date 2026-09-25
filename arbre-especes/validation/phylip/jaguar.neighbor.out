@@ -1,0 +1,30 @@
+
+   4 Populations
+
+Neighbor-Joining/UPGMA method version 3.697
+
+
+ UPGMA method
+
+ Negative branch lengths allowed
+
+
+  +------------P001      
+--3 
+  !   +--------P002      
+  +---2 
+      ! +------P003      
+      +-1 
+        +------P004      
+
+
+From     To            Length          Height
+----     --            ------          ------
+   3     P001          0.21005         0.21005
+   3        2          0.06381         0.06381
+   2     P002          0.14624         0.21005
+   2        1          0.03766         0.10147
+   1     P003          0.10858         0.21005
+   1     P004          0.10858         0.21005
+
+

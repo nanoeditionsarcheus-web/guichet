@@ -1,10 +1,10 @@
 # Arbre des espèces
 
 Regroupe des lignées de référence d'après leurs génotypes microsatellites. La page calcule la
-
-**→ [Ouvrir la page](https://nanoeditionsarcheus-web.github.io/guichet/arbre-especes/)** — hébergée dans le dépôt du portail `guichet`.
 **distance génétique standard de Nei (1972)** entre les lignées, puis construit l'arbre par
 **UPGMA**. Une page HTML autonome : tout le calcul se fait dans le navigateur.
+
+**→ [Ouvrir la page](https://nanoeditionsarcheus-web.github.io/guichet/arbre-especes/)** — hébergée dans le dépôt du portail `guichet`.
 
 ## Utilisation
 

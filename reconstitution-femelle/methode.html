@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Méthode de reconstitution</title>
+<style>
+:root{--ink:#10212E;--paper:#F2F5F7;--card:#FFFFFF;--rule:#D3DCE2;--muted:#5C6F7C;--A:#1F5FC4;--hit:#12894F;--grid:#E4EAEF;--axis:#8A99A5;--warn:#B4283C;
+--serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:Consolas,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--hit:#37C08A;--warn:#FF6B7F;}}
+:root[data-theme="dark"]{--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--hit:#37C08A;--warn:#FF6B7F;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;padding:30px 16px 70px}
+.wrap{max-width:1000px;margin:0 auto}
+header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+h1{font-family:var(--serif);font-size:25px;font-weight:400;margin:0 0 5px}.sub{color:var(--muted);font-size:13.5px;margin:0}
+#stamp{font-family:var(--mono);font-size:12px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center}.controls label{font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.note{color:var(--muted);font-size:13px}
+.reading{border-left:3px solid var(--A);background:color-mix(in srgb,var(--A) 8%,transparent);padding:10px 14px;border-radius:0 3px 3px 0;font-size:13.5px;margin-top:12px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;width:100%}th,td{padding:5px 10px 5px 0;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--axis);font-weight:400;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+.g{font-family:var(--mono);font-weight:700;white-space:nowrap}.g.best{color:var(--hit)}
+.chips .g{display:inline-block;margin:0 10px 2px 0}
+.tie{font-size:11.5px;color:var(--muted);display:block}
+.meter{display:inline-block;width:70px;height:7px;background:var(--grid);border-radius:4px;vertical-align:middle;margin-left:6px;overflow:hidden}.meter i{display:block;height:100%;background:var(--hit)}
+details.loc{border-top:1px solid var(--grid);padding:8px 0}details.loc summary{cursor:pointer;font-size:14px}
+details.loc summary b{font-family:var(--serif);font-weight:400;font-size:16px;margin-right:8px}
+.bars{display:grid;grid-template-columns:max-content 1fr max-content;gap:3px 10px;align-items:center;margin:10px 0 6px;font-size:12.5px}
+.bar{height:12px;background:var(--grid);border-radius:2px;overflow:hidden}.bar i{display:block;height:100%;background:var(--A)}.bar.best i{background:var(--hit)}
+.incompat{font-size:12.5px;margin:6px 0 0}.incompat code{font-family:var(--mono);font-size:12px}
+footer{color:var(--muted);font-size:12px;margin-top:26px;border-top:1px solid var(--rule);padding-top:12px}
+button{font-family:var(--sans);font-size:13.5px;font-weight:600;background:var(--ink);color:var(--paper);border:0;border-radius:3px;padding:7px 14px;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);font-weight:500}
+input[type=file]{font-size:12.5px;color:var(--muted);max-width:100%}
+.err{color:var(--warn)!important}
+a{color:var(--A)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Reconstitution du génotype d'une femelle : la méthode</h1>
+  <p class="sub">Texte explicatif de la méthode de Pierre Duchesne · <a href="index.html">retour à l'outil</a></p>
+</header>
+
+<div class="card">
+  <p class="tag">Objectif</p>
+  <p style="margin:0">Reconstituer le génotype de la femelle génitrice, locus par locus, à partir des génotypes de tous ses juvéniles. Les juvéniles de plusieurs nids de la même femelle sont mis ensemble, sans distinction de nid.</p>
+</div>
+
+<div class="card">
+  <p class="tag">Idée de la méthode</p>
+  <p style="margin:0">Chaque juvénile reçoit un allèle de sa mère. Le génotype de la femelle doit donc nécessairement <b>partager au moins un allèle</b> avec le génotype de chacun de ses juvéniles.</p>
+</div>
+
+<div class="card">
+  <p class="tag">Le nombre de compatibilités (NC)</p>
+  <p style="margin:0 0 8px">Pour un locus, les <b>génotypes candidats</b> sont toutes les paires possibles des allèles observés chez les juvéniles, y compris les homozygotes. Avec les allèles 1, 2 et 3, par exemple, les candidats sont (1,1), (1,2), (1,3), (2,2), (2,3) et (3,3).</p>
+  <p style="margin:0 0 8px">Un candidat est <b>compatible</b> avec un juvénile s'il partage au moins un allèle avec lui :</p>
+  <ul style="margin:0 0 8px">
+    <li>(1,2) et (1,3) sont compatibles : ils partagent l'allèle 1 ;</li>
+    <li>(1,3) et (2,4) ne sont pas compatibles : ils ne partagent aucun allèle.</li>
+  </ul>
+  <p style="margin:0">Le <b>nombre de compatibilités (NC)</b> d'un candidat est le nombre de juvéniles avec lesquels il est compatible. Les juvéniles dont le génotype manque à ce locus ne sont pas comptés ; le NC d'un candidat ne peut donc pas dépasser le nombre de juvéniles typés à ce locus.</p>
+</div>
+
+<div class="card">
+  <p class="tag">Comment reconnaître le génotype de la femelle</p>
+  <p style="margin:0 0 8px">Pour chaque locus, on retient le candidat qui a le plus grand nombre de compatibilités.</p>
+  <p style="margin:0 0 8px">Si les génotypes de la femelle et des juvéniles sont exacts, le véritable génotype de la femelle est compatible avec chacun des juvéniles : son NC est égal au nombre de juvéniles typés. Des erreurs, en particulier de génotypage, peuvent toutefois se produire et diminuer ce nombre.</p>
+  <p style="margin:0">Généralement, le NC le plus élevé est proche du nombre de juvéniles. S'il ne l'atteint pas mais qu'il est nettement supérieur à la valeur suivante, on peut retenir le candidat correspondant avec un degré de confiance élevé. Par exemple, avec 80 juvéniles, un NC maximal de 75 suivi d'une valeur de 62 laisse pratiquement certain qu'on tient le génotype de la femelle pour ce locus. L'outil affiche cet <b>écart</b> (ici 13) sans en tirer de verdict automatique.</p>
+</div>
+
+<div class="card">
+  <p class="tag">Précisions sur l'outil</p>
+  <ul style="margin:0">
+    <li><b>Égalités.</b> Plusieurs candidats peuvent avoir le même NC maximal, par exemple un homozygote et un hétérozygote qui partagent un même allèle présent chez tous les juvéniles. Le critère ne permet pas de les départager : l'outil les présente tous, sans en choisir un.</li>
+    <li><b>Juvéniles non compatibles.</b> Pour chaque meilleur candidat, l'outil nomme les juvéniles avec lesquels il n'est pas compatible, pour faciliter la recherche d'erreurs de génotypage.</li>
+    <li><b>Nombre d'allèles.</b> Il s'agit des allèles réellement observés chez les juvéniles typés ; le code des données manquantes n'est pas compté.</li>
+    <li><b>Génotypes à 3 ou 4 allèles.</b> Ils ne sont pas pris en compte pour le moment.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <p class="tag">Validation</p>
+  <p style="margin:0">Il n'existe pas de publication décrivant cette méthode. Le calcul de l'outil a été vérifié contre le programme Maple de l'auteur (feuille <code>RECONSTITUTION_FEMELLE_TOUS_LOC</code>) : sur le jeu d'exemple (41 juvéniles, 11 locus), les nombres de compatibilités des 123 candidats et le nombre de juvéniles typés par locus sont identiques. D'autres jeux de données fournis par l'auteur serviront à compléter cette vérification.</p>
+</div>
+
+<footer>Méthode de Pierre Duchesne. Outil écrit par Claude (Anthropic), dans le cadre d'un échange avec Éleine Leblanc.</footer>
+</div>
+</body>
+</html>

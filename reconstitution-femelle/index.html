@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reconstitution de la femelle</title>
+<style>
+:root{--ink:#10212E;--paper:#F2F5F7;--card:#FFFFFF;--rule:#D3DCE2;--muted:#5C6F7C;--A:#1F5FC4;--hit:#12894F;--grid:#E4EAEF;--axis:#8A99A5;--warn:#B4283C;
+--serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:Consolas,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--hit:#37C08A;--warn:#FF6B7F;}}
+:root[data-theme="dark"]{--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--hit:#37C08A;--warn:#FF6B7F;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;padding:30px 16px 70px}
+.wrap{max-width:1000px;margin:0 auto}
+header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+h1{font-family:var(--serif);font-size:25px;font-weight:400;margin:0 0 5px}.sub{color:var(--muted);font-size:13.5px;margin:0}
+#stamp{font-family:var(--mono);font-size:12px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center}.controls label{font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.note{color:var(--muted);font-size:13px}
+.reading{border-left:3px solid var(--A);background:color-mix(in srgb,var(--A) 8%,transparent);padding:10px 14px;border-radius:0 3px 3px 0;font-size:13.5px;margin-top:12px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;width:100%}th,td{padding:5px 10px 5px 0;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--axis);font-weight:400;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+.g{font-family:var(--mono);font-weight:700;white-space:nowrap}.g.best{color:var(--hit)}
+.chips .g{display:inline-block;margin:0 10px 2px 0}
+.tie{font-size:11.5px;color:var(--muted);display:block}
+.meter{display:inline-block;width:70px;height:7px;background:var(--grid);border-radius:4px;vertical-align:middle;margin-left:6px;overflow:hidden}.meter i{display:block;height:100%;background:var(--hit)}
+details.loc{border-top:1px solid var(--grid);padding:8px 0}details.loc summary{cursor:pointer;font-size:14px}
+details.loc summary b{font-family:var(--serif);font-weight:400;font-size:16px;margin-right:8px}
+.bars{display:grid;grid-template-columns:max-content 1fr max-content;gap:3px 10px;align-items:center;margin:10px 0 6px;font-size:12.5px}
+.bar{height:12px;background:var(--grid);border-radius:2px;overflow:hidden}.bar i{display:block;height:100%;background:var(--A)}.bar.best i{background:var(--hit)}
+.incompat{font-size:12.5px;margin:6px 0 0}.incompat code{font-family:var(--mono);font-size:12px}
+footer{color:var(--muted);font-size:12px;margin-top:26px;border-top:1px solid var(--rule);padding-top:12px}
+button{font-family:var(--sans);font-size:13.5px;font-weight:600;background:var(--ink);color:var(--paper);border:0;border-radius:3px;padding:7px 14px;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);font-weight:500}
+input[type=file]{font-size:12.5px;color:var(--muted);max-width:100%}
+.err{color:var(--warn)!important}
+a{color:var(--A)}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Reconstitution du génotype d'une femelle</h1>
+  <p class="sub">À partir des génotypes de ses juvéniles, locus par locus, par le nombre de compatibilités</p>
+  <p class="sub" id="stamp"></p>
+</header>
+
+<div class="card">
+  <p class="tag">Données</p>
+  <p class="note" style="margin:-2px 0 10px">Téléversez le fichier des <b>génotypes des juvéniles</b> (tous les nids ensemble). Disposition FLOCK : identifiant, puis 2 colonnes par locus, une par allèle, avec le nom du locus au-dessus de la première colonne. Formats : .xls, .xlsx, .csv. Un allèle vide ou égal à 0 rend le génotype manquant à ce locus. Pour convertir des génotypes à allèles collés (6 chiffres), utilisez l'outil <a href="https://nanoeditionsarcheus-web.github.io/flock-convert/">Mise en forme pour FLOCK</a>. À l'ouverture, la page montre un <b>jeu d'exemple</b> (voir le pied de page).</p>
+  <div class="controls">
+    <label>Juvéniles : <input type="file" id="upJuv" accept=".xls,.xlsx,.csv,.txt"></label>
+    <button id="upLoad">Reconstituer</button>
+    <button id="upReset" class="ghost">Revenir à l'exemple</button>
+  </div>
+  <p class="note" id="upStatus" style="margin:8px 0 0"></p>
+</div>
+
+<div class="card">
+  <p class="tag">Génotype reconstitué</p>
+  <div class="scroll"><table id="summary"></table></div>
+  <div class="reading">Pour chaque locus, la page retient le ou les génotypes candidats compatibles avec le plus grand nombre de juvéniles (<b>NC maximal</b>). Si les génotypes sont exacts, le génotype de la femelle est compatible avec tous les juvéniles typés : son NC atteint le nombre de juvéniles typés. Quand plusieurs candidats sont à égalité, ils sont tous affichés : les juvéniles ne permettent pas de les départager par ce critère. L'<b>écart</b> est la différence entre le NC maximal et la valeur suivante ; un grand écart indique que le meilleur candidat se détache nettement des autres. La page n'émet aucun verdict : l'interprétation revient à l'usager.</div>
+  <div class="controls" style="margin-top:12px">
+    <button class="ghost" id="dlSum">Télécharger le résumé (CSV)</button>
+    <button class="ghost" id="dlAll">Télécharger tous les candidats (CSV)</button>
+  </div>
+</div>
+
+<div class="card">
+  <p class="tag">Détail par locus</p>
+  <p class="note" style="margin:-2px 0 6px">Tous les génotypes candidats et leur nombre de compatibilités, du plus grand au plus petit. En vert : NC maximal. Sous chaque graphe, les juvéniles <b>non compatibles</b> avec le ou les meilleurs candidats, utiles pour repérer une erreur de génotypage.</p>
+  <div id="detail"></div>
+</div>
+
+<div class="card">
+  <p class="tag">Juvéniles non compatibles</p>
+  <p class="note" style="margin:-2px 0 10px">Pour chaque juvénile, les locus où il ne partage aucun allèle avec le ou les génotypes de NC maximal. Seuls les juvéniles concernés sont listés.</p>
+  <div class="scroll"><table id="juvTable"></table></div>
+</div>
+
+<div class="card">
+  <p class="tag">Méthode</p>
+  <p class="note" style="margin:0">Méthode de <b>Pierre Duchesne</b> ; voir le <a href="methode.html">texte explicatif</a>. Pour chaque locus, les génotypes candidats sont toutes les paires possibles des allèles observés chez les juvéniles typés. Un candidat est <b>compatible</b> avec un juvénile s'il partage au moins un allèle avec lui. Le <b>nombre de compatibilités (NC)</b> d'un candidat est le nombre de juvéniles typés avec lesquels il est compatible. Les juvéniles sans génotype à un locus ne comptent pas pour ce locus.</p>
+  <p class="note" style="margin:10px 0 0">Validation : sur le jeu d'exemple, les nombres de compatibilités de tous les candidats (123, sur 11 locus) et le nombre de juvéniles typés par locus sont identiques à ceux du programme Maple de l'auteur. Une seule différence, voulue : le nombre d'allèles observés ne compte pas le code des données manquantes.</p>
+</div>
+
+<footer id="foot"></footer>
+</div>
+<script>
+/* Reconstitution du génotype d'une femelle à partir des génotypes de ses juvéniles
+ * (méthode de P. Duchesne : nombre de compatibilités, NC) — sans dépendance.
+ *
+ * Pour chaque locus :
+ *  - juvéniles typés : génotypes présents (un génotype manquant ne compte pas) ;
+ *  - candidates : toutes les paires, avec répétition, des allèles observés chez les juvéniles typés ;
+ *  - NC(candidate) : nombre de juvéniles typés qui partagent au moins un allèle avec la candidate ;
+ *  - on retient la ou les candidates de NC maximal (toutes les égalités sont présentées).
+ * Validé contre le programme Maple de P. Duchesne (RECONSTITUTION_FEMELLE_TOUS_LOC.mw).
+ *
+ * Entrée : liste de juvéniles ; chaque juvénile est une liste (un élément par locus)
+ * de [allèle1, allèle2], ou null si le génotype manque.
+ */
+(function (root) {
+  "use strict";
+
+  function compatible(g, cand) {
+    return g[0] === cand[0] || g[0] === cand[1] || g[1] === cand[0] || g[1] === cand[1];
+  }
+
+  function analyseLocus(genos) {
+    var typed = genos.filter(function (g) { return g; });
+    var set = {};
+    typed.forEach(function (g) { set[g[0]] = 1; set[g[1]] = 1; });
+    var alleles = Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+    var cands = [];
+    for (var i = 0; i < alleles.length; i++)
+      for (var j = i; j < alleles.length; j++) {
+        var c = [alleles[i], alleles[j]], nc = 0, incompat = [];
+        for (var k = 0; k < genos.length; k++) {
+          if (!genos[k]) continue;
+          if (compatible(genos[k], c)) nc++; else incompat.push(k);
+        }
+        cands.push({ geno: c, nc: nc, incompatibles: incompat });
+      }
+    // NC décroissant ; à égalité, ordre croissant des allèles
+    cands.sort(function (a, b) { return b.nc - a.nc || a.geno[0] - b.geno[0] || a.geno[1] - b.geno[1]; });
+    var max = cands.length ? cands[0].nc : 0;
+    var best = cands.filter(function (c) { return c.nc === max; });
+    var below = cands.filter(function (c) { return c.nc < max; });
+    return {
+      nTyped: typed.length,          // maximum possible de compatibilités
+      nAlleles: alleles.length,      // allèles réellement observés (le code des manquants n'est pas compté)
+      alleles: alleles,
+      candidates: cands,
+      best: best,                    // toutes les candidates de NC maximal
+      maxNC: max,
+      secondNC: below.length ? below[0].nc : null   // plus haute valeur de NC inférieure au maximum
+    };
+  }
+
+  function analyse(juveniles, nLoci) {
+    var out = [];
+    for (var l = 0; l < nLoci; l++)
+      out.push(analyseLocus(juveniles.map(function (j) { return j[l]; })));
+    return out;
+  }
+
+  var api = { compatible: compatible, analyseLocus: analyseLocus, analyse: analyse };
+  if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Reconstitution = api;
+})(this);
+
+</script>
+<script>
+"use strict";
+var EXAMPLE={"label":"jeu d'exemple fourni par Pierre Duchesne (feuille Maple RECONSTITUTION_FEMELLE_TOUS_LOC)","loci":["L1","L2","L3","L4","L5","L6","L7","L8","L9","L10","L11"],"juveniles":[{"id":"20180801","genos":[[268,272],[196,196],[264,264],[244,248],[155,183],[178,190],[200,220],[196,204],[103,155],[235,235],[270,270]]},{"id":"20180802","genos":[[268,272],[196,196],[264,268],[244,248],[155,167],[178,190],[200,224],[204,212],[155,155],[231,235],[270,326]]},{"id":"20180803","genos":[[268,268],[196,200],[264,264],[244,248],[155,167],[158,178],[192,224],[196,204],[155,155],[235,235],[270,330]]},{"id":"20180804","genos":[[268,268],[200,200],[264,268],[244,248],[155,183],[158,178],[192,220],[204,212],[103,155],[231,235],[270,326]]},{"id":"20180805","genos":[[268,268],[196,196],[264,264],[244,248],[155,167],[158,178],[192,224],[204,212],[103,103],[235,235],[326,326]]},{"id":"20180806","genos":[[268,268],[196,196],[264,268],[244,248],[155,183],[158,178],[192,224],[196,204],[103,151],[235,235],[270,326]]},{"id":"20180807","genos":[[268,272],[200,200],[264,264],[244,248],[155,167],[178,190],[200,224],[196,204],[103,103],[231,235],[326,326]]},{"id":"20180808","genos":[[268,268],[196,200],[264,268],[244,248],[155,167],[158,178],[192,220],[196,204],[103,155],[235,235],[270,326]]},{"id":"20180809","genos":[[268,268],[196,200],[264,268],[244,248],[155,167],[158,178],[192,220],[196,204],[155,155],[231,235],[270,326]]},{"id":"20180810","genos":[[268,272],[200,200],[264,264],[244,248],[155,183],[178,190],[200,220],[196,204],[103,103],[231,235],[270,326]]},{"id":"20180811","genos":[[268,272],[196,196],[264,268],[244,248],[155,183],[178,190],[200,224],[196,204],[155,155],[235,235],[326,330]]},{"id":"20180812","genos":[[268,272],[196,200],[264,264],[244,248],[155,167],[178,190],[200,220],[204,212],[155,155],[231,235],[270,326]]},{"id":"20180813","genos":[[268,268],[196,200],[264,268],[244,248],[155,183],[178,190],[200,224],[196,204],[103,155],[235,235],[270,326]]},{"id":"20180814","genos":[[268,268],[196,200],[264,268],[244,248],[155,167],[158,178],[192,224],[204,212],[103,155],[231,235],[270,326]]},{"id":"20180815","genos":[[268,268],[200,200],[264,268],[244,248],[155,183],[158,178],[192,224],[196,204],[103,155],[231,235],[270,270]]},{"id":"20210501","genos":[[268,268],[196,200],[264,268],[244,244],[159,183],[158,182],[200,220],[196,212],[155,155],[235,235],[270,326]]},{"id":"20210502","genos":[[268,268],[196,200],[264,268],[244,248],[155,183],[158,178],[192,224],[192,196],[155,155],[235,235],[270,326]]},{"id":"20210503","genos":[[268,268],[200,200],[256,264],[244,248],[155,167],[158,178],[192,220],[196,212],[103,155],[235,235],[326,326]]},{"id":"20210504","genos":[[268,268],[196,200],[264,264],null,[151,183],[158,178],[192,220],[208,212],[147,155],[235,235],[326,326]]},{"id":"20210505","genos":[[268,272],[200,200],[256,264],[244,248],[151,183],[166,190],[200,212],[208,212],[155,155],[235,235],[270,274]]},{"id":"20210506","genos":[[268,272],[196,200],[264,268],[244,244],[159,183],[182,190],[200,220],[212,212],[103,155],[235,235],[326,326]]},{"id":"20210507","genos":[[268,268],[200,200],[264,268],[244,244],[155,183],[158,178],[192,224],[196,212],[103,155],[235,235],[282,326]]},{"id":"20210508","genos":[[268,268],[196,200],[264,264],[244,250],[155,183],[158,166],[192,212],[196,208],[155,155],[235,235],[274,326]]},{"id":"20210509","genos":[[268,268],[200,200],[256,264],[244,250],[151,167],[158,166],[192,212],[196,208],[103,155],[235,235],[270,274]]},{"id":"20210510","genos":[[268,272],[196,196],[264,268],[244,248],[155,183],[178,190],[200,224],[192,212],[155,155],[235,235],[270,326]]},{"id":"20210511","genos":[[268,272],[196,200],[264,264],[244,248],[151,183],[178,190],[200,220],[208,212],[147,155],[235,235],[274,326]]},{"id":"20210512","genos":[[268,268],[196,196],[264,268],[244,248],[159,167],[182,190],[200,220],[196,212],[155,155],[235,235],[270,326]]},{"id":"20210513","genos":[[268,268],[196,200],[264,268],[244,244],[155,167],[158,178],[200,224],[192,196],[103,155],[235,235],[270,326]]},{"id":"20210514","genos":[[268,272],[196,200],[256,264],[244,248],[151,167],[178,190],[200,220],[196,212],[155,155],[235,235],[274,326]]},{"id":"20210515","genos":[[268,272],[200,200],[264,264],[244,248],[151,183],[178,190],[200,220],[212,212],[147,155],[235,235],[270,270]]},{"id":"20210516","genos":[[268,272],[196,196],[264,268],[244,248],[159,183],[182,190],[200,220],[192,212],[103,155],[235,235],[270,270]]},{"id":"20210517","genos":[[268,268],[196,200],[264,268],[244,248],[159,183],[178,190],[200,224],[196,212],[155,155],[235,235],[326,326]]},{"id":"20210518","genos":[[268,268],[196,200],[264,268],[244,244],[159,183],[158,182],[192,220],[212,212],[103,155],[235,235],[270,270]]},{"id":"20210519","genos":[[268,272],[196,200],[264,268],[244,244],[159,183],[178,190],[200,224],[192,212],[155,155],[235,235],[326,326]]},{"id":"20210520","genos":[[268,268],[200,200],[264,268],[244,244],[155,183],[158,178],[192,220],[196,196],[103,103],[235,235],[270,282]]},{"id":"20210521","genos":[[268,268],[196,200],[264,268],[244,244],[159,167],[158,178],[192,224],[192,196],[103,155],[235,235],[270,326]]},{"id":"20170701","genos":[[268,268],[196,200],[264,268],[244,248],[155,167],[158,178],[192,224],[196,212],[103,103],[235,235],[270,282]]},{"id":"20170702","genos":[null,[196,200],[264,268],null,[155,167],[178,190],[200,224],[212,212],[103,127],[235,235],[270,270]]},{"id":"20170703","genos":[[268,272],[196,200],[264,268],[244,244],[155,167],[178,190],[192,220],null,[103,103],[235,235],[270,282]]},{"id":"20170704","genos":[[268,272],[200,200],[264,268],null,[183,183],[190,194],[200,212],null,[103,155],[235,235],[236,326]]},{"id":"20170706","genos":[[268,272],[196,200],[264,268],[244,248],null,[178,190],[192,220],null,[103,103],[235,235],[270,270]]}]};
+var CUR=null;
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function gs(g){return g[0]+'/'+g[1];}
+
+function render(data,label){
+  var res=Reconstitution.analyse(data.juveniles.map(function(j){return j.genos;}),data.loci.length);
+  CUR={data:data,res:res,label:label};
+  var d=new Date();$("stamp").textContent='Exécuté le '+d.toLocaleDateString('fr-CA')+' à '+d.toLocaleTimeString('fr-CA');
+  // résumé
+  var h='<thead><tr><th>Locus</th><th>Génotype(s) de NC maximal</th><th class="num">NC max / typés</th><th class="num">NC suivant</th><th class="num">Écart</th><th class="num">Allèles</th></tr></thead><tbody>';
+  res.forEach(function(r,k){
+    var gap=r.secondNC==null?'—':(r.maxNC-r.secondNC);
+    h+='<tr><td>'+esc(data.loci[k])+'</td><td class="chips">'+r.best.map(function(c){return '<span class="g best">'+gs(c.geno)+'</span>';}).join('')+
+      (r.best.length>1?'<span class="tie">'+r.best.length+' candidats à égalité</span>':'')+'</td>'+
+      '<td class="num">'+r.maxNC+' / '+r.nTyped+'<span class="meter"><i style="width:'+(r.nTyped?100*r.maxNC/r.nTyped:0).toFixed(1)+'%"></i></span></td>'+
+      '<td class="num">'+(r.secondNC==null?'—':r.secondNC)+'</td><td class="num">'+gap+'</td><td class="num">'+r.nAlleles+'</td></tr>';
+  });
+  $("summary").innerHTML=h+'</tbody>';
+  // détail
+  var ids=data.juveniles.map(function(j){return j.id;});
+  $("detail").innerHTML=res.map(function(r,k){
+    var b='<details class="loc"'+(k===0?' open':'')+'><summary><b>'+esc(data.loci[k])+'</b>'+r.candidates.length+' candidats · '+r.nTyped+' juvéniles typés · '+r.nAlleles+' allèles</summary><div class="bars">';
+    r.candidates.forEach(function(c){var best=c.nc===r.maxNC;
+      b+='<span class="g'+(best?' best':'')+'">'+gs(c.geno)+'</span><span class="bar'+(best?' best':'')+'"><i style="width:'+(r.nTyped?100*c.nc/r.nTyped:0).toFixed(1)+'%"></i></span><span class="num" style="font-family:var(--mono)">'+c.nc+'</span>';});
+    b+='</div>';
+    r.best.forEach(function(c){
+      b+='<p class="incompat"><span class="g best">'+gs(c.geno)+'</span> — '+(c.incompatibles.length?(c.incompatibles.length+' juvénile'+(c.incompatibles.length>1?'s':'')+' non compatible'+(c.incompatibles.length>1?'s':'')+' : '+c.incompatibles.map(function(i){var g=data.juveniles[i].genos[k];return '<code>'+esc(ids[i])+'</code> ('+gs(g)+')';}).join(', ')):'compatible avec tous les juvéniles typés')+'</p>';});
+    return b+'</details>';}).join('');
+  // juvéniles non compatibles (avec tous les candidats de NC maximal)
+  var per={};
+  res.forEach(function(r,k){
+    var sets=r.best.map(function(c){var s={};c.incompatibles.forEach(function(i){s[i]=1;});return s;});
+    data.juveniles.forEach(function(j,i){if(sets.length&&sets.every(function(s){return s[i];})){(per[i]=per[i]||[]).push(k);}});
+  });
+  var keys=Object.keys(per).map(Number).sort(function(a,b){return per[b].length-per[a].length||a-b;});
+  $("juvTable").innerHTML=keys.length?'<thead><tr><th>Juvénile</th><th class="num">Nombre de locus</th><th>Locus (génotype du juvénile)</th></tr></thead><tbody>'+keys.map(function(i){
+    return '<tr><td class="g">'+esc(ids[i])+'</td><td class="num">'+per[i].length+'</td><td>'+per[i].map(function(k){return esc(data.loci[k])+' ('+gs(data.juveniles[i].genos[k])+')';}).join(', ')+'</td></tr>';}).join('')+'</tbody>'
+    :'<tbody><tr><td class="note">Aucun : chaque juvénile est compatible avec au moins un génotype de NC maximal, à chaque locus.</td></tr></tbody>';
+  $("foot").innerHTML='Données : '+esc(label)+' — '+data.juveniles.length+' juvéniles, '+data.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';
+}
+
+function download(name,rows){
+  var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  var text='﻿'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);
+}
+function csvSummary(){var rows=[['Locus','Génotype(s) de NC maximal','NC maximal','Juvéniles typés','NC suivant','Écart','Allèles observés']];
+  CUR.res.forEach(function(r,k){rows.push([CUR.data.loci[k],r.best.map(function(c){return gs(c.geno);}).join(' ; '),r.maxNC,r.nTyped,r.secondNC==null?'':r.secondNC,r.secondNC==null?'':r.maxNC-r.secondNC,r.nAlleles]);});return rows;}
+function csvAll(){var rows=[['Locus','Candidat','NC','Juvéniles typés','NC maximal']];
+  CUR.res.forEach(function(r,k){r.candidates.forEach(function(c){rows.push([CUR.data.loci[k],gs(c.geno),c.nc,r.nTyped,c.nc===r.maxNC?'oui':'']);});});return rows;}
+
+// ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
+function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}
+function readFile(file){
+  return new Promise(function(res,rej){
+    var ext=(file.name.split('.').pop()||'').toLowerCase(),fr=new FileReader();
+    if(ext==='csv'||ext==='txt'){
+      fr.onload=function(){var txt=String(fr.result).replace(/^﻿/,'');var first=txt.split(/\r?\n/)[0]||'';var d=first.indexOf(';')>=0?';':(first.indexOf('\t')>=0?'\t':',');
+        res(txt.split(/\r?\n/).filter(function(l){return l.trim().length;}).map(function(l){return l.split(d);}));};
+      fr.onerror=rej;fr.readAsText(file);
+    }else{
+      if(typeof XLSX==='undefined'){rej(new Error("lecture .xls indisponible (hors ligne). Enregistrez le fichier en .csv, ou utilisez la page en ligne."));return;}
+      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];res(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}));}catch(e){rej(e);}};
+      fr.onerror=rej;fr.readAsArrayBuffer(file);
+    }
+  });
+}
+function nLoci(rows){var h=rows[0]||[],cnt=0;for(var i=1;i<h.length;i+=2)if(h[i]!=null&&String(h[i]).trim()!=='')cnt++;if(cnt>0)return cnt;var m=0;for(var r=0;r<rows.length;r++)if(rows[r].length>m)m=rows[r].length;return Math.floor((m-1)/2);}
+function lociNames(header,nloc){var out=[];for(var k=0;k<nloc;k++){var nm=(header&&header[1+2*k]!=null)?String(header[1+2*k]).trim():'';out.push(nm||('Locus'+(k+1)));}return out;}
+function parseJuv(rows){var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),juv=[];
+  for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;
+    var g=[];for(var k=0;k<nloc;k++){var a=normA(row[1+2*k]),b=normA(row[2+2*k]);g.push((a==null||b==null)?null:[a,b]);}juv.push({id:String(row[0]).trim(),genos:g});}
+  return {loci:loci,juveniles:juv};}
+function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='note'+(err?' err':'');}
+
+(function init(){
+  $("upReset").addEventListener('click',function(){render(EXAMPLE,EXAMPLE.label);status("Exemple rétabli.");});
+  $("upLoad").addEventListener('click',function(){
+    var f=$("upJuv").files[0];
+    if(!f){status("Choisissez le fichier des juvéniles.",true);return;}
+    status("Lecture en cours…");
+    readFile(f).then(function(rows){
+      var d=parseJuv(rows);
+      if(!d.juveniles.length)throw new Error("aucun juvénile lu dans « "+f.name+" ».");
+      if(!d.loci.length)throw new Error("aucun locus reconnu dans « "+f.name+" ».");
+      render(d,'fichier « '+f.name+' »');
+      status(d.juveniles.length+" juvéniles chargés — "+d.loci.length+" locus ("+d.loci.join(', ')+").");
+    }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
+  });
+  $("dlSum").addEventListener('click',function(){if(CUR)download('reconstitution-resume.csv',csvSummary());});
+  $("dlAll").addEventListener('click',function(){if(CUR)download('reconstitution-candidats.csv',csvAll());});
+  render(EXAMPLE,EXAMPLE.label);
+})();
+</script>
+</body>
+</html>

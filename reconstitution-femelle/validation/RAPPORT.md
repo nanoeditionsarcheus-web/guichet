@@ -4,9 +4,10 @@
 de Pierre Duchesne (`maple/RECONSTITUTION_FEMELLE_TOUS_LOC.mw`). Aucune publication ne décrit la
 méthode : la référence est le programme de l'auteur.
 
-**Conclusion.** Sur le jeu d'exemple de la feuille Maple, **les 123 génotypes candidats des 11 locus
-ont exactement le même nombre de compatibilités (NC)** que dans Maple, et le nombre de juvéniles
-typés par locus (le « max » de Maple) est identique partout. Écarts : 0.
+**Conclusion.** Sur **cinq jeux** fournis par l'auteur (196 juvéniles, 11 locus chacun), **les 549
+génotypes candidats ont exactement le même nombre de compatibilités (NC)** que dans Maple, et le
+nombre de juvéniles typés par locus (le « max » de Maple) est identique partout. Écarts : 0.
+Détail des jeux supplémentaires à la section 6.
 
 ## 1. Référence et données
 
@@ -66,6 +67,7 @@ allèle.
 
 - l'exemple embarqué donne 123 candidats et 0 écart ;
 - le fichier FLOCK téléversé donne 123 candidats et 0 écart ;
+- les fichiers FLOCK de Inc_1, Inc_2, Rose et Turquoise, téléversés, donnent 0 écart ;
 - aucune erreur JavaScript.
 
 L'affichage des juvéniles non compatibles a aussi été vérifié en introduisant volontairement des
@@ -79,7 +81,39 @@ cd .. && node js/comparer.js                                                    
 PW=<chemin de playwright> node page/test-page.js                                      # page complète
 ```
 
-## 6. À venir
+## 6. Jeux supplémentaires
 
-P. Duchesne enverra d'autres jeux complets avec leurs résultats Maple. Chacun sera ajouté ici
-comme vérification supplémentaire.
+Six feuilles Maple envoyées par P. Duchesne (`jeux/<nom>/RECONS_FEM_<nom>.mw`). Le code Maple de
+chacune est identique à celui de la feuille d'origine ; seules les données changent. Chaque jeu a
+été traité comme le premier : décodage des sorties Maple, conversion en format FLOCK par l'outil
+`flock-convert` (contrôle génotype par génotype : 0 écart), comparaison du JS, test de la page par
+téléversement du fichier FLOCK.
+
+| Jeu | Juvéniles | Candidats comparés | Écarts NC | Écarts « max » | Particularités |
+|---|---|---|---|---|---|
+| Inc_1 | 18 | 72 | 0 | 0 | L5 : 4 candidats à égalité, NC max 10 sur 11 typés ; L10 : un seul candidat |
+| Inc_2 | 23 | 80 | 0 | 0 | jeu du modèle de rapport ; NC max inférieur au nombre de typés en L6, L7, L8 |
+| Rose | 78 | 141 | 0 | 0 | L6 : 6 candidats à égalité ; NC max inférieur au nombre de typés en L5, L7, L8, L11 |
+| Turquoise | 36 | 133 | 0 | 0 | NC max inférieur au nombre de typés en L6, L7, L8 |
+
+Avec le jeu d'exemple, le total est de 549 candidats, tous identiques.
+
+**Inc_2 est le jeu du modèle de rapport** (`Modèle_rapport_reconst_Fem.docx`) : les listes de
+candidats et le nombre d'allèles `[3, 3, 4, 3, 3, 5, 4, 6, 2, 1, 4]` sont identiques. Dans la
+section « génotypes les plus plausibles » du modèle, deux lignes ne suivent pas la règle du NC
+maximal ; ce sont donc des choix faits à la main :
+- L2 : le modèle ne donne que 196/196, alors que 192/196, 196/196 et 196/200 ont tous 23 sur 23 ;
+- L11 : le modèle donne 274/274 (21/22), alors que 274/326 a 22 sur 22.
+
+La page, elle, présente toutes les égalités de NC maximal.
+
+**Feuilles non utilisées :**
+- `Grise` est une copie identique, au bit près, de la feuille d'origine
+  (`maple/RECONSTITUTION_FEMELLE_TOUS_LOC.mw`) ; elle n'a pas été dupliquée ici.
+- `Blanche` : les résultats enregistrés dans la feuille ne correspondent pas à ses données. Maple
+  y annonce 41 juvéniles alors que la matrice en compte 27, et ses résultats sont exactement ceux
+  du jeu d'origine : la feuille a été enregistrée après un changement de données, sans relancer le
+  calcul. Ses données (27 juvéniles) et leur conversion FLOCK sont conservées dans `jeux/Blanche/`,
+  en attendant une feuille recalculée.
+
+Rejouer un jeu : `node js/comparer.js jeux/<nom>/<nom>-FLOCK.csv jeux/<nom>/resultats_maple.json`.

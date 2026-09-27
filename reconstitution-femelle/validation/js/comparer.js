@@ -1,12 +1,13 @@
-// Compare reconstitution.js aux résultats de Maple décodés (maple/resultats_maple.json).
-// Entrée du JS : le fichier en format FLOCK (donnees/exemple-maple-FLOCK.csv), produit par flock-convert.
+// Compare reconstitution.js aux résultats de Maple décodés.
+// Usage : node comparer.js [fichier FLOCK] [resultats_maple.json] [sortie.json]
+// Par défaut : le jeu d'exemple (donnees/exemple-maple-FLOCK.csv, maple/resultats_maple.json).
 const fs = require("fs"), path = require("path"), R = require("./reconstitution.js");
 const V = path.join(__dirname, "..");
-const lines = fs.readFileSync(path.join(V, "donnees/exemple-maple-FLOCK.csv"), "utf8").replace(/^﻿/, "").trim().split(/\r?\n/).map(l => l.split(";"));
+const lines = fs.readFileSync(process.argv[2] || path.join(V, "donnees/exemple-maple-FLOCK.csv"), "utf8").replace(/^﻿/, "").trim().split(/\r?\n/).map(l => l.split(";"));
 const nLoci = Math.floor((lines[0].length - 1) / 2);
 const al = s => { const n = parseInt(s, 10); return isNaN(n) || n === 0 ? null : n; };
 const juv = lines.slice(1).map(r => Array.from({ length: nLoci }, (_, k) => { const a = al(r[1 + 2 * k]), b = al(r[2 + 2 * k]); return a == null || b == null ? null : [a, b]; }));
-const M = JSON.parse(fs.readFileSync(path.join(V, "maple/resultats_maple.json"), "utf8"));
+const M = JSON.parse(fs.readFileSync(process.argv[3] || path.join(V, "maple/resultats_maple.json"), "utf8"));
 const res = R.analyse(juv, nLoci);
 let nCand = 0, diffs = 0;
 const rep = [];
@@ -23,5 +24,5 @@ res.forEach((r, k) => {
 });
 console.table(rep);
 console.log(`juvéniles ${juv.length} (Maple ${M.nb_juveniles}) ; locus ${nLoci} (Maple ${M.nb_locus}) ; candidates comparées ${nCand} ; écarts ${diffs}`);
-fs.writeFileSync(path.join(V, "resultats.json"), JSON.stringify(rep, null, 1));
+fs.writeFileSync(process.argv[4] || path.join(V, "resultats.json"), JSON.stringify(rep, null, 1));
 process.exit(diffs ? 1 : 0);

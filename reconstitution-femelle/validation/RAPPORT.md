@@ -32,6 +32,14 @@ FLOCK** (`flock-convert`), avec les noms de locus L1 à L11. Le fichier produit
 (`donnees/exemple-maple-FLOCK.csv`) a été comparé génotype par génotype à la matrice Maple :
 41 juvéniles, 0 écart. C'est ce fichier que lit la page.
 
+**Noms des locus.** Les feuilles Maple ne nomment pas les locus ; P. Duchesne a fourni ensuite leurs
+noms, dans l'ordre des colonnes. Les fichiers FLOCK ont été refaits avec ces noms (même outil,
+contrôle génotype par génotype : 0 écart). Dans ce rapport, L1 à L11 correspondent à :
+
+| L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10 | L11 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| AS12 | As13 | As18 | AsB14 | Tm6 | Tm72 | Tm2 | Tm4 | tm3 | tm5 | tm64 |
+
 ## 3. Résultats
 
 | Locus | Juvéniles typés (JS = Maple) | Candidats | Écarts NC | NC max | Génotype(s) de NC max | NC suivant | Allèles (JS / Maple) |

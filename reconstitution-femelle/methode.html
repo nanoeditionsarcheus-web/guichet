@@ -68,13 +68,13 @@ a{color:var(--A)}
     <li>(1,2) et (1,3) sont compatibles : ils partagent l'allèle 1 ;</li>
     <li>(1,3) et (2,4) ne sont pas compatibles : ils ne partagent aucun allèle.</li>
   </ul>
-  <p style="margin:0">Le <b>nombre de compatibilités (NC)</b> d'un candidat est le nombre de juvéniles avec lesquels il est compatible. Les juvéniles dont le génotype manque à ce locus ne sont pas comptés ; le NC d'un candidat ne peut donc pas dépasser le nombre de juvéniles typés à ce locus.</p>
+  <p style="margin:0">Le <b>nombre de compatibilités (NC)</b> d'un candidat est le nombre de juvéniles avec lesquels il est compatible. Les juvéniles dont le génotype manque à ce locus ne sont pas comptés ; le NC d'un candidat ne peut donc pas dépasser le nombre de juvéniles génotypés à ce locus.</p>
 </div>
 
 <div class="card">
   <p class="tag">Comment reconnaître le génotype de la femelle</p>
   <p style="margin:0 0 8px">Pour chaque locus, on retient le candidat qui a le plus grand nombre de compatibilités.</p>
-  <p style="margin:0 0 8px">Si les génotypes de la femelle et des juvéniles sont exacts, le véritable génotype de la femelle est compatible avec chacun des juvéniles : son NC est égal au nombre de juvéniles typés. Des erreurs, en particulier de génotypage, peuvent toutefois se produire et diminuer ce nombre.</p>
+  <p style="margin:0 0 8px">Si les génotypes de la femelle et des juvéniles sont exacts, le véritable génotype de la femelle est compatible avec chacun des juvéniles : son NC est égal au nombre de juvéniles génotypés. Des erreurs, en particulier de génotypage, peuvent toutefois se produire et diminuer ce nombre.</p>
   <p style="margin:0">Généralement, le NC le plus élevé est proche du nombre de juvéniles. S'il ne l'atteint pas mais qu'il est nettement supérieur à la valeur suivante, on peut retenir le candidat correspondant avec un degré de confiance élevé. Par exemple, avec 80 juvéniles, un NC maximal de 75 suivi d'une valeur de 62 laisse pratiquement certain qu'on tient le génotype de la femelle pour ce locus. L'outil affiche cet <b>écart</b> (ici 13) sans en tirer de verdict automatique.</p>
 </div>
 
@@ -83,14 +83,15 @@ a{color:var(--A)}
   <ul style="margin:0">
     <li><b>Égalités.</b> Plusieurs candidats peuvent avoir le même NC maximal, par exemple un homozygote et un hétérozygote qui partagent un même allèle présent chez tous les juvéniles. Le critère ne permet pas de les départager : l'outil les présente tous, sans en choisir un.</li>
     <li><b>Juvéniles non compatibles.</b> Pour chaque meilleur candidat, l'outil nomme les juvéniles avec lesquels il n'est pas compatible, pour faciliter la recherche d'erreurs de génotypage.</li>
-    <li><b>Nombre d'allèles.</b> Il s'agit des allèles réellement observés chez les juvéniles typés ; le code des données manquantes n'est pas compté.</li>
+    <li><b>Nombre de génotypes possibles.</b> Avec <i>k</i> allèles à un locus, il y a <i>k</i>(<i>k</i>−1)/2 hétérozygotes et <i>k</i> homozygotes possibles, soit <i>k</i>(<i>k</i>−1)/2 + <i>k</i> génotypes : ce sont les candidats examinés à ce locus. Pour le génotype au complet, le nombre de possibilités est le produit de ces nombres sur tous les locus.</li>
+    <li><b>Nombre d'allèles.</b> Il s'agit des allèles réellement observés chez les juvéniles génotypés ; le code des données manquantes n'est pas compté.</li>
     <li><b>Génotypes à 3 ou 4 allèles.</b> Ils ne sont pas pris en compte pour le moment.</li>
   </ul>
 </div>
 
 <div class="card">
   <p class="tag">Validation</p>
-  <p style="margin:0">Il n'existe pas de publication décrivant cette méthode. Le calcul de l'outil a été vérifié contre le programme Maple de l'auteur, sur six jeux de données qu'il a fournis (18 à 78 juvéniles, 11 locus chacun, 223 juvéniles au total) : les nombres de compatibilités des 636 candidats et le nombre de juvéniles typés à chaque locus sont identiques.</p>
+  <p style="margin:0">Il n'existe pas de publication décrivant cette méthode. Le calcul de l'outil a été vérifié contre le programme Maple de l'auteur, sur six jeux de données qu'il a fournis (18 à 78 juvéniles, 11 locus chacun, 223 juvéniles au total) : les nombres de compatibilités des 636 candidats et le nombre de juvéniles génotypés à chaque locus sont identiques.</p>
 </div>
 
 <footer>Méthode de Pierre Duchesne. Outil écrit par Claude (Anthropic), dans le cadre d'un échange avec Éleine Leblanc.</footer>

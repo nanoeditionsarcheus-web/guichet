@@ -125,3 +125,20 @@ La page, elle, présente toutes les égalités de NC maximal.
   27 juvéniles annoncés, et c'est elle qui figure dans `jeux/Blanche/` et dans le tableau ci-dessus.
 
 Rejouer un jeu : `node js/comparer.js jeux/<nom>/<nom>-FLOCK.csv jeux/<nom>/resultats_maple.json`.
+
+## 7. Fichiers de génotypes de P. Duchesne (tortues, formats FLOCK et PAPA)
+
+P. Duchesne a fourni les six nids en format FLOCK (`fichiers-pierre/FLOCK/*.xlsx`, nom du locus
+au-dessus des deux colonnes) et en format PAPA/PASOS (`fichiers-pierre/PAPA/*.txt`). Les fichiers
+.xlsx ont été téléversés dans la page (`page/test-xlsx.js`, avec la même version de la bibliothèque
+de lecture Excel que la page), puis les résultats ont été comparés à Maple :
+
+| Fichier | Juvéniles | Écarts avec Maple | Cause |
+|---|---|---|---|
+| Blanche, Inconnue 2, Rose, Turquoise | 27, 23, 78, 36 | 0 | — |
+| Grise | 41 | 7 | données : juvénile 20170704, locus tm64, 326/326 dans les fichiers .xlsx et PAPA, 236/326 dans la feuille Maple |
+| Inconnue 1 | 17 | 37 | données : le juvénile 20150217 manque au fichier .xlsx ; il est présent dans le fichier PAPA et dans la feuille Maple |
+
+Les écarts viennent de différences entre les fichiers de données, pas du calcul. Sur des données
+identiques, la page et Maple concordent (sections 3 et 6). Les fichiers PAPA ne diffèrent de Maple
+que pour Grise (même génotype 20170704, tm64).

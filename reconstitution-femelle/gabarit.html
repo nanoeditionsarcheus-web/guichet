@@ -66,7 +66,7 @@ a{color:var(--A)}
 <div class="card">
   <p class="tag">Génotype reconstitué</p>
   <div class="scroll"><table id="summary"></table></div>
-  <div class="reading">Pour chaque locus, la page retient le ou les génotypes candidats compatibles avec le plus grand nombre de juvéniles (<b>NC maximal</b>). Si les génotypes sont exacts, le génotype de la femelle est compatible avec tous les juvéniles typés : son NC atteint le nombre de juvéniles typés. Quand plusieurs candidats sont à égalité, ils sont tous affichés : les juvéniles ne permettent pas de les départager par ce critère. L'<b>écart</b> est la différence entre le NC maximal et la valeur suivante ; un grand écart indique que le meilleur candidat se détache nettement des autres. La page n'émet aucun verdict : l'interprétation revient à l'usager.</div>
+  <div class="reading">Pour chaque locus, la page retient le ou les génotypes candidats compatibles avec le plus grand nombre de juvéniles (<b>NC maximal</b>). Si les génotypes sont exacts, le génotype de la femelle est compatible avec tous les juvéniles génotypés : son NC atteint le nombre de juvéniles génotypés. Quand plusieurs candidats sont à égalité, ils sont tous affichés : les juvéniles ne permettent pas de les départager par ce critère. L'<b>écart</b> est la différence entre le NC maximal et la valeur suivante ; un grand écart indique que le meilleur candidat se détache nettement des autres. La page n'émet aucun verdict : l'interprétation revient à l'usager.</div>
   <div class="controls" style="margin-top:12px">
     <button class="ghost" id="dlSum">Télécharger le résumé (CSV)</button>
     <button class="ghost" id="dlAll">Télécharger tous les candidats (CSV)</button>
@@ -75,7 +75,8 @@ a{color:var(--A)}
 
 <div class="card">
   <p class="tag">Détail par locus</p>
-  <p class="note" style="margin:-2px 0 6px">Tous les génotypes candidats et leur nombre de compatibilités, du plus grand au plus petit. En vert : NC maximal. Sous chaque graphe, les juvéniles <b>non compatibles</b> avec le ou les meilleurs candidats, utiles pour repérer une erreur de génotypage.</p>
+  <p class="note" style="margin:-2px 0 6px"><b>Cliquez sur la ligne d'un locus</b> (celle qui commence par ▸) pour faire apparaître son détail, et cliquez de nouveau pour le masquer. Tous les génotypes candidats et leur nombre de compatibilités, du plus grand au plus petit. En vert : NC maximal. Sous chaque graphe, les juvéniles <b>non compatibles</b> avec le ou les meilleurs candidats, utiles pour repérer une erreur de génotypage.</p>
+  <div class="controls" style="margin:4px 0 6px"><button class="ghost" type="button" id="openAll">Tout afficher</button><button class="ghost" type="button" id="closeAll">Tout masquer</button></div>
   <div id="detail"></div>
 </div>
 
@@ -87,8 +88,8 @@ a{color:var(--A)}
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Méthode de <b>Pierre Duchesne</b> ; voir le <a href="methode.html">texte explicatif</a>. Pour chaque locus, les génotypes candidats sont toutes les paires possibles des allèles observés chez les juvéniles typés. Un candidat est <b>compatible</b> avec un juvénile s'il partage au moins un allèle avec lui. Le <b>nombre de compatibilités (NC)</b> d'un candidat est le nombre de juvéniles typés avec lesquels il est compatible. Les juvéniles sans génotype à un locus ne comptent pas pour ce locus.</p>
-  <p class="note" style="margin:10px 0 0">Validation : sur six jeux de données fournis par l'auteur (223 juvéniles au total, 11 locus chacun), les nombres de compatibilités de tous les candidats (636) et le nombre de juvéniles typés par locus sont identiques à ceux de son programme Maple. Une seule différence, voulue : le nombre d'allèles observés ne compte pas le code des données manquantes.</p>
+  <p class="note" style="margin:0">Méthode de <b>Pierre Duchesne</b> ; voir le <a href="methode.html">texte explicatif</a>. Pour chaque locus, les génotypes candidats sont toutes les paires possibles des allèles observés chez les juvéniles génotypés. Un candidat est <b>compatible</b> avec un juvénile s'il partage au moins un allèle avec lui. Le <b>nombre de compatibilités (NC)</b> d'un candidat est le nombre de juvéniles génotypés avec lesquels il est compatible. Les juvéniles sans génotype à un locus ne comptent pas pour ce locus.</p>
+  <p class="note" style="margin:10px 0 0">Validation : sur six jeux de données fournis par l'auteur (223 juvéniles au total, 11 locus chacun), les nombres de compatibilités de tous les candidats (636) et le nombre de juvéniles génotypés par locus sont identiques à ceux de son programme Maple. Une seule différence, voulue : le nombre d'allèles observés ne compte pas le code des données manquantes.</p>
 </div>
 
 <footer id="foot"></footer>
@@ -103,30 +104,36 @@ var CUR=null;
 var $=function(id){return document.getElementById(id);};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function gs(g){return g[0]+'/'+g[1];}
+// nombre de génotypes possibles pour k allèles : k(k−1)/2 hétérozygotes + k homozygotes
+function nPossible(k){return k*(k-1)/2+k;}
+function fmtBig(b){var s=b.toString(),t=s.replace(/\B(?=(\d{3})+(?!\d))/g,'\u202f');
+  if(s.length<=12)return t;return t+'<br><span class="note">≈ '+s[0]+','+s.slice(1,3)+' × 10<sup>'+(s.length-1)+'</sup></span>';}
 
 function render(data,label){
   var res=Reconstitution.analyse(data.juveniles.map(function(j){return j.genos;}),data.loci.length);
   CUR={data:data,res:res,label:label};
   var d=new Date();$("stamp").textContent='Exécuté le '+d.toLocaleDateString('fr-CA')+' à '+d.toLocaleTimeString('fr-CA');
   // résumé
-  var h='<thead><tr><th>Locus</th><th>Génotype(s) de NC maximal</th><th class="num">NC max / typés</th><th class="num">NC suivant</th><th class="num">Écart</th><th class="num">Allèles</th></tr></thead><tbody>';
+  var h='<thead><tr><th>Locus</th><th>Génotype(s) de NC maximal</th><th class="num">NC max / N génotypés</th><th class="num">NC suivant</th><th class="num">Écart</th><th class="num">N allèles</th><th class="num">N génotypes possibles</th></tr></thead><tbody>';
   res.forEach(function(r,k){
     var gap=r.secondNC==null?'—':(r.maxNC-r.secondNC);
     h+='<tr><td>'+esc(data.loci[k])+'</td><td class="chips">'+r.best.map(function(c){return '<span class="g best">'+gs(c.geno)+'</span>';}).join('')+
       (r.best.length>1?'<span class="tie">'+r.best.length+' candidats à égalité</span>':'')+'</td>'+
       '<td class="num">'+r.maxNC+' / '+r.nTyped+'<span class="meter"><i style="width:'+(r.nTyped?100*r.maxNC/r.nTyped:0).toFixed(1)+'%"></i></span></td>'+
-      '<td class="num">'+(r.secondNC==null?'—':r.secondNC)+'</td><td class="num">'+gap+'</td><td class="num">'+r.nAlleles+'</td></tr>';
+      '<td class="num">'+(r.secondNC==null?'—':r.secondNC)+'</td><td class="num">'+gap+'</td><td class="num">'+r.nAlleles+'</td><td class="num">'+nPossible(r.nAlleles)+'</td></tr>';
   });
-  $("summary").innerHTML=h+'</tbody>';
+  var tot=res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1));
+  h+='</tbody><tfoot><tr><td colspan="6" style="border:0;padding-top:8px"><b>Génotypes multilocus possibles</b> (produit sur les '+res.length+' locus)</td><td class="num" style="border:0;padding-top:8px"><b>'+fmtBig(tot)+'</b></td></tr></tfoot>';
+  $("summary").innerHTML=h;
   // détail
   var ids=data.juveniles.map(function(j){return j.id;});
   $("detail").innerHTML=res.map(function(r,k){
-    var b='<details class="loc"'+(k===0?' open':'')+'><summary><b>'+esc(data.loci[k])+'</b>'+r.candidates.length+' candidats · '+r.nTyped+' juvéniles typés · '+r.nAlleles+' allèles</summary><div class="bars">';
+    var b='<details class="loc"'+(k===0?' open':'')+'><summary><b>'+esc(data.loci[k])+'</b>'+r.candidates.length+' candidats · '+r.nTyped+' juvéniles génotypés · '+r.nAlleles+' allèles</summary><div class="bars">';
     r.candidates.forEach(function(c){var best=c.nc===r.maxNC;
       b+='<span class="g'+(best?' best':'')+'">'+gs(c.geno)+'</span><span class="bar'+(best?' best':'')+'"><i style="width:'+(r.nTyped?100*c.nc/r.nTyped:0).toFixed(1)+'%"></i></span><span class="num" style="font-family:var(--mono)">'+c.nc+'</span>';});
     b+='</div>';
     r.best.forEach(function(c){
-      b+='<p class="incompat"><span class="g best">'+gs(c.geno)+'</span> — '+(c.incompatibles.length?(c.incompatibles.length+' juvénile'+(c.incompatibles.length>1?'s':'')+' non compatible'+(c.incompatibles.length>1?'s':'')+' : '+c.incompatibles.map(function(i){var g=data.juveniles[i].genos[k];return '<code>'+esc(ids[i])+'</code> ('+gs(g)+')';}).join(', ')):'compatible avec tous les juvéniles typés')+'</p>';});
+      b+='<p class="incompat"><span class="g best">'+gs(c.geno)+'</span> — '+(c.incompatibles.length?(c.incompatibles.length+' juvénile'+(c.incompatibles.length>1?'s':'')+' non compatible'+(c.incompatibles.length>1?'s':'')+' : '+c.incompatibles.map(function(i){var g=data.juveniles[i].genos[k];return '<code>'+esc(ids[i])+'</code> ('+gs(g)+')';}).join(', ')):'compatible avec tous les juvéniles génotypés')+'</p>';});
     return b+'</details>';}).join('');
   // juvéniles non compatibles (avec tous les candidats de NC maximal)
   var per={};
@@ -146,9 +153,10 @@ function download(name,rows){
   var text='﻿'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);
 }
-function csvSummary(){var rows=[['Locus','Génotype(s) de NC maximal','NC maximal','Juvéniles typés','NC suivant','Écart','Allèles observés']];
-  CUR.res.forEach(function(r,k){rows.push([CUR.data.loci[k],r.best.map(function(c){return gs(c.geno);}).join(' ; '),r.maxNC,r.nTyped,r.secondNC==null?'':r.secondNC,r.secondNC==null?'':r.maxNC-r.secondNC,r.nAlleles]);});return rows;}
-function csvAll(){var rows=[['Locus','Candidat','NC','Juvéniles typés','NC maximal']];
+function csvSummary(){var rows=[['Locus','Génotype(s) de NC maximal','NC maximal','Juvéniles génotypés','NC suivant','Écart','N allèles','N génotypes possibles']];
+  CUR.res.forEach(function(r,k){rows.push([CUR.data.loci[k],r.best.map(function(c){return gs(c.geno);}).join(' ; '),r.maxNC,r.nTyped,r.secondNC==null?'':r.secondNC,r.secondNC==null?'':r.maxNC-r.secondNC,r.nAlleles,nPossible(r.nAlleles)]);});
+  rows.push(['Génotypes multilocus possibles (produit)','','','','','','',CUR.res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1)).toString()]);return rows;}
+function csvAll(){var rows=[['Locus','Candidat','NC','Juvéniles génotypés','NC maximal']];
   CUR.res.forEach(function(r,k){r.candidates.forEach(function(c){rows.push([CUR.data.loci[k],gs(c.geno),c.nc,r.nTyped,c.nc===r.maxNC?'oui':'']);});});return rows;}
 
 // ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
@@ -189,6 +197,8 @@ function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='n
       status(d.juveniles.length+" juvéniles chargés — "+d.loci.length+" locus ("+d.loci.join(', ')+").");
     }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
   });
+  $("openAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=true;});});
+  $("closeAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=false;});});
   $("dlSum").addEventListener('click',function(){if(CUR)download('reconstitution-resume.csv',csvSummary());});
   $("dlAll").addEventListener('click',function(){if(CUR)download('reconstitution-candidats.csv',csvAll());});
   render(EXAMPLE,EXAMPLE.label);

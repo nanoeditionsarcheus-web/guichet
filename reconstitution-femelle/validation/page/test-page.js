@@ -4,7 +4,7 @@ const {chromium}=require(process.env.PW||'playwright');
 const fs=require('fs'),path=require('path');
 const V=path.join(__dirname,'..'),PAGE='file://'+path.join(V,'..','index.html');
 let M=JSON.parse(fs.readFileSync(path.join(V,'maple/resultats_maple.json'),'utf8'));
-const JEUX=['Inc_1','Inc_2','Rose','Turquoise'];   // jeux supplémentaires de P. Duchesne (jeux/<nom>/)
+const JEUX=['Inc_1','Inc_2','Rose','Turquoise','Blanche'];   // jeux supplémentaires de P. Duchesne (jeux/<nom>/)
 function compare(res){let d=0,n=0;res.forEach((r,k)=>{const m=M.loci[k];if(r.nTyped!==m.max)d++;
   const js=new Map(r.candidates.map(c=>[c.geno.join('/'),c.nc]));if(js.size!==m.candidats.length)d++;
   m.candidats.forEach(c=>{n++;if(js.get(c.geno.join('/'))!==c.nc)d++;});});return {n,d};}

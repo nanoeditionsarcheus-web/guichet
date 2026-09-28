@@ -4,7 +4,7 @@
 de Pierre Duchesne (`maple/RECONSTITUTION_FEMELLE_TOUS_LOC.mw`). Aucune publication ne décrit la
 méthode : la référence est le programme de l'auteur.
 
-**Conclusion.** Sur **cinq jeux** fournis par l'auteur (196 juvéniles, 11 locus chacun), **les 549
+**Conclusion.** Sur **six jeux** fournis par l'auteur (223 juvéniles, 11 locus chacun), **les 636
 génotypes candidats ont exactement le même nombre de compatibilités (NC)** que dans Maple, et le
 nombre de juvéniles typés par locus (le « max » de Maple) est identique partout. Écarts : 0.
 Détail des jeux supplémentaires à la section 6.
@@ -67,7 +67,7 @@ allèle.
 
 - l'exemple embarqué donne 123 candidats et 0 écart ;
 - le fichier FLOCK téléversé donne 123 candidats et 0 écart ;
-- les fichiers FLOCK de Inc_1, Inc_2, Rose et Turquoise, téléversés, donnent 0 écart ;
+- les fichiers FLOCK de Inc_1, Inc_2, Rose, Turquoise et Blanche, téléversés, donnent 0 écart ;
 - aucune erreur JavaScript.
 
 L'affichage des juvéniles non compatibles a aussi été vérifié en introduisant volontairement des
@@ -95,8 +95,9 @@ téléversement du fichier FLOCK.
 | Inc_2 | 23 | 80 | 0 | 0 | jeu du modèle de rapport ; NC max inférieur au nombre de typés en L6, L7, L8 |
 | Rose | 78 | 141 | 0 | 0 | L6 : 6 candidats à égalité ; NC max inférieur au nombre de typés en L5, L7, L8, L11 |
 | Turquoise | 36 | 133 | 0 | 0 | NC max inférieur au nombre de typés en L6, L7, L8 |
+| Blanche (feuille recalculée) | 27 | 87 | 0 | 0 | 28 candidats en L6 ; NC max inférieur au nombre de typés en L8, L11 |
 
-Avec le jeu d'exemple, le total est de 549 candidats, tous identiques.
+Avec le jeu d'exemple, le total est de 636 candidats, tous identiques.
 
 **Inc_2 est le jeu du modèle de rapport** (`Modèle_rapport_reconst_Fem.docx`) : les listes de
 candidats et le nombre d'allèles `[3, 3, 4, 3, 3, 5, 4, 6, 2, 1, 4]` sont identiques. Dans la
@@ -110,10 +111,9 @@ La page, elle, présente toutes les égalités de NC maximal.
 **Feuilles non utilisées :**
 - `Grise` est une copie identique, au bit près, de la feuille d'origine
   (`maple/RECONSTITUTION_FEMELLE_TOUS_LOC.mw`) ; elle n'a pas été dupliquée ici.
-- `Blanche` : les résultats enregistrés dans la feuille ne correspondent pas à ses données. Maple
-  y annonce 41 juvéniles alors que la matrice en compte 27, et ses résultats sont exactement ceux
-  du jeu d'origine : la feuille a été enregistrée après un changement de données, sans relancer le
-  calcul. Ses données (27 juvéniles) et leur conversion FLOCK sont conservées dans `jeux/Blanche/`,
-  en attendant une feuille recalculée.
+- `Blanche`, première version : les résultats enregistrés ne correspondaient pas aux données. Maple
+  y annonçait 41 juvéniles pour 27, avec les résultats du jeu d'origine : la feuille avait été
+  enregistrée sans relancer le calcul. P. Duchesne a renvoyé la feuille recalculée : mêmes données,
+  27 juvéniles annoncés, et c'est elle qui figure dans `jeux/Blanche/` et dans le tableau ci-dessus.
 
 Rejouer un jeu : `node js/comparer.js jeux/<nom>/<nom>-FLOCK.csv jeux/<nom>/resultats_maple.json`.

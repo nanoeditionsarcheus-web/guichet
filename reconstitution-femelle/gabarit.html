@@ -27,6 +27,9 @@ thead th{font-family:var(--mono);font-size:10px;letter-spacing:.03em;text-transf
 td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
 .g{font-family:var(--mono);font-weight:700;white-space:nowrap}.g.best{color:var(--hit)}
 .chips .g{display:inline-block;margin:0 10px 2px 0}
+.g.homo{outline:1.5px solid var(--hit);outline-offset:2px;border-radius:2px;padding:0 2px}
+table.complets td,table.complets th{text-align:center;padding:5px 7px}table.complets thead th{text-transform:none;font-size:11px}table.complets td:first-child,table.complets th:first-child{text-align:right;color:var(--muted);font-family:var(--mono)}
+table.complets td.g{font-weight:600}
 .tie{font-size:11.5px;color:var(--muted);display:block}
 .meter{display:inline-block;width:70px;height:7px;background:var(--grid);border-radius:4px;vertical-align:middle;margin-left:6px;overflow:hidden}.meter i{display:block;height:100%;background:var(--hit)}
 details.loc{border-top:1px solid var(--grid);padding:8px 0}details.loc summary{cursor:pointer;font-size:14px}
@@ -64,13 +67,21 @@ a{color:var(--A)}
 </div>
 
 <div class="card">
-  <p class="tag">Génotype reconstitué</p>
+  <p class="tag">Les génotypes par locus les plus vraisemblables</p>
   <div class="scroll"><table id="summary"></table></div>
-  <div class="reading">Pour chaque locus, la page retient le ou les génotypes candidats compatibles avec le plus grand nombre de juvéniles (<b>NC maximal</b>). Si les génotypes sont exacts, le génotype de la femelle est compatible avec tous les juvéniles génotypés : son NC atteint le nombre de juvéniles génotypés. Quand plusieurs candidats sont à égalité, ils sont tous affichés : les juvéniles ne permettent pas de les départager par ce critère. L'<b>écart</b> est la différence entre le NC maximal et la valeur suivante ; un grand écart indique que le meilleur candidat se détache nettement des autres. La page n'émet aucun verdict : l'interprétation revient à l'usager.</div>
+  <div class="reading">Pour chaque locus, la page retient le ou les génotypes candidats compatibles avec le plus grand nombre de juvéniles (<b>NC maximal</b>). Si les génotypes sont exacts, le génotype de la femelle est compatible avec tous les juvéniles génotypés : son NC atteint le nombre de juvéniles génotypés. Quand plusieurs candidats sont à égalité, ils sont tous affichés. Un génotype <span class="g best homo">homozygote</span> est <b>encadré</b> : si un homozygote atteint le NC maximal, tous les génotypes qui contiennent son allèle l'atteignent aussi, et l'homozygote est alors le candidat le plus vraisemblable. L'<b>écart</b> est la différence entre le NC maximal et la valeur suivante ; un grand écart indique que le meilleur candidat se détache nettement des autres. La page n'émet aucun verdict : l'interprétation revient à l'usager.</div>
   <div class="controls" style="margin-top:12px">
     <button class="ghost" id="dlSum">Télécharger le résumé (CSV)</button>
     <button class="ghost" id="dlAll">Télécharger tous les candidats (CSV)</button>
   </div>
+</div>
+
+<div class="card">
+  <p class="tag">Les génotypes complets les plus vraisemblables</p>
+  <p class="note" style="margin:-2px 0 10px">Combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
+  <p id="complCount" style="margin:0 0 8px"></p>
+  <div class="scroll"><table class="complets" id="complets"></table></div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button></div>
 </div>
 
 <div class="card">
@@ -117,7 +128,7 @@ function render(data,label){
   var h='<thead><tr><th>Locus</th><th>Génotype(s) de NC maximal</th><th class="num">NC max / N génotypés</th><th class="num">NC suivant</th><th class="num">Écart</th><th class="num">N allèles</th><th class="num">N génotypes possibles</th></tr></thead><tbody>';
   res.forEach(function(r,k){
     var gap=r.secondNC==null?'—':(r.maxNC-r.secondNC);
-    h+='<tr><td>'+esc(data.loci[k])+'</td><td class="chips">'+r.best.map(function(c){return '<span class="g best">'+gs(c.geno)+'</span>';}).join('')+
+    h+='<tr><td>'+esc(data.loci[k])+'</td><td class="chips">'+r.best.map(function(c){return '<span class="g best'+(c.geno[0]===c.geno[1]?' homo" title="homozygote':'')+'">'+gs(c.geno)+'</span>';}).join('')+
       (r.best.length>1?'<span class="tie">'+r.best.length+' candidats à égalité</span>':'')+'</td>'+
       '<td class="num">'+r.maxNC+' / '+r.nTyped+'<span class="meter"><i style="width:'+(r.nTyped?100*r.maxNC/r.nTyped:0).toFixed(1)+'%"></i></span></td>'+
       '<td class="num">'+(r.secondNC==null?'—':r.secondNC)+'</td><td class="num">'+gap+'</td><td class="num">'+r.nAlleles+'</td><td class="num">'+nPossible(r.nAlleles)+'</td></tr>';
@@ -125,6 +136,14 @@ function render(data,label){
   var tot=res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1));
   h+='</tbody><tfoot><tr><td colspan="6" style="border:0;padding-top:8px"><b>Génotypes multilocus possibles</b> (produit sur les '+res.length+' locus)</td><td class="num" style="border:0;padding-top:8px"><b>'+fmtBig(tot)+'</b></td></tr></tfoot>';
   $("summary").innerHTML=h;
+  // génotypes complets les plus vraisemblables
+  var ret=Reconstitution.retenusParLocus(res),nComp=Reconstitution.nombreComplets(ret),MAXAFF=200;
+  var comp=Reconstitution.genotypesComplets(ret,MAXAFF);
+  $("complCount").innerHTML=nComp?('<b>'+fmtBig(BigInt(nComp))+'</b> génotype'+(nComp>1?'s':'')+' complet'+(nComp>1?'s':'')+' le'+(nComp>1?'s':'')+' plus vraisemblable'+(nComp>1?'s':'')+
+    (nComp>1?' (produit du nombre de génotypes retenus à chaque locus : '+ret.map(function(l){return l.length;}).join(' × ')+')':'')+'.'+(nComp>MAXAFF?' Les '+MAXAFF+' premiers sont affichés ; le fichier CSV les contient tous.':'')):'Aucun génotype complet : un locus n\'a aucun juvénile génotypé.';
+  var varie=ret.map(function(l){return l.length>1;});
+  $("complets").innerHTML=comp.length?'<thead><tr><th>#</th>'+data.loci.map(function(n,k){return '<th'+(varie[k]?' style="color:var(--ink)"':'')+'>'+esc(n)+'</th>';}).join('')+'</tr></thead><tbody>'+
+    comp.map(function(c,i){return '<tr><td>'+(i+1)+'</td>'+c.map(function(x,k){return '<td class="g'+(varie[k]?' best':'')+'">'+gs(x)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>':'';
   // détail
   var ids=data.juveniles.map(function(j){return j.id;});
   $("detail").innerHTML=res.map(function(r,k){
@@ -156,6 +175,8 @@ function download(name,rows){
 function csvSummary(){var rows=[['Locus','Génotype(s) de NC maximal','NC maximal','Juvéniles génotypés','NC suivant','Écart','N allèles','N génotypes possibles']];
   CUR.res.forEach(function(r,k){rows.push([CUR.data.loci[k],r.best.map(function(c){return gs(c.geno);}).join(' ; '),r.maxNC,r.nTyped,r.secondNC==null?'':r.secondNC,r.secondNC==null?'':r.maxNC-r.secondNC,r.nAlleles,nPossible(r.nAlleles)]);});
   rows.push(['Génotypes multilocus possibles (produit)','','','','','','',CUR.res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1)).toString()]);return rows;}
+function csvComplets(){var ret=Reconstitution.retenusParLocus(CUR.res),LIM=100000;
+  var rows=[['#'].concat(CUR.data.loci)];Reconstitution.genotypesComplets(ret,LIM).forEach(function(c,i){rows.push([i+1].concat(c.map(gs)));});return rows;}
 function csvAll(){var rows=[['Locus','Candidat','NC','Juvéniles génotypés','NC maximal']];
   CUR.res.forEach(function(r,k){r.candidates.forEach(function(c){rows.push([CUR.data.loci[k],gs(c.geno),c.nc,r.nTyped,c.nc===r.maxNC?'oui':'']);});});return rows;}
 
@@ -200,6 +221,7 @@ function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='n
   $("openAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=true;});});
   $("closeAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=false;});});
   $("dlSum").addEventListener('click',function(){if(CUR)download('reconstitution-resume.csv',csvSummary());});
+  $("dlCompl").addEventListener('click',function(){if(CUR)download('reconstitution-genotypes-complets.csv',csvComplets());});
   $("dlAll").addEventListener('click',function(){if(CUR)download('reconstitution-candidats.csv',csvAll());});
   render(EXAMPLE,EXAMPLE.label);
 })();

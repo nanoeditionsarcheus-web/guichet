@@ -56,6 +56,38 @@
     return out;
   }
 
-  var api = { compatible: compatible, analyseLocus: analyseLocus, analyse: analyse };
+  /* Génotypes complets les plus vraisemblables (règle de P. Duchesne) — pour chaque locus, parmi les
+   * candidats de NC maximal :
+   *  - un seul candidat : le retenir ;
+   *  - présence d'un homozygote : ne retenir que l'homozygote (s'il y avait plusieurs homozygotes à
+   *    égalité, cas qui ne s'est pas présenté, tous seraient retenus) ;
+   *  - sinon (plusieurs candidats, aucun homozygote) : les retenir tous.
+   * Les génotypes complets sont toutes les combinaisons des candidats retenus, locus par locus. */
+  function retenusParLocus(res) {
+    return res.map(function (r) {
+      var homo = r.best.filter(function (c) { return c.geno[0] === c.geno[1]; });
+      return (r.best.length > 1 && homo.length) ? homo : r.best;
+    });
+  }
+  function nombreComplets(retenus) {
+    return retenus.reduce(function (p, l) { return p * l.length; }, 1);
+  }
+  // Énumère les combinaisons (au plus « limite ») ; chaque combinaison est une liste de génotypes, un par locus.
+  function genotypesComplets(retenus, limite) {
+    var out = [], idx = retenus.map(function () { return 0; }), n = nombreComplets(retenus);
+    if (!retenus.length || !n) return out;
+    limite = limite == null ? Infinity : limite;
+    while (out.length < Math.min(n, limite)) {
+      out.push(idx.map(function (i, l) { return retenus[l][i].geno; }));
+      for (var l = retenus.length - 1; l >= 0; l--) {   // incrément « odomètre » : le dernier locus varie le plus vite
+        if (++idx[l] < retenus[l].length) break;
+        idx[l] = 0;
+      }
+    }
+    return out;
+  }
+
+  var api = { compatible: compatible, analyseLocus: analyseLocus, analyse: analyse,
+              retenusParLocus: retenusParLocus, nombreComplets: nombreComplets, genotypesComplets: genotypesComplets };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Reconstitution = api;
 })(this);

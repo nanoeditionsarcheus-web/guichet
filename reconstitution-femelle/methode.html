@@ -79,6 +79,26 @@ a{color:var(--A)}
 </div>
 
 <div class="card">
+  <p class="tag">Égalités et homozygotes</p>
+  <p style="margin:0 0 8px">Lorsque, pour un locus donné, un génotype homozygote (x, x) atteint le NC maximal, tous les juvéniles compatibles avec lui portent nécessairement l'allèle x. Tous les génotypes qui contiennent cet allèle, (x, y), sont donc compatibles avec les mêmes juvéniles et atteignent le même NC maximal. D'où les égalités. Le candidat le plus vraisemblable est alors précisément l'homozygote (x, x).</p>
+  <p style="margin:0">L'outil conserve tous les candidats (x, y) dans la liste des NC maximaux, mais il <b>encadre</b> l'homozygote pour le souligner.</p>
+</div>
+
+<div class="card">
+  <p class="tag">Les génotypes complets les plus vraisemblables</p>
+  <p style="margin:0 0 8px">À partir des candidats de NC maximal, l'outil retient à chaque locus :</p>
+  <ul style="margin:0 0 8px">
+    <li>le candidat, s'il n'y en a qu'un ;</li>
+    <li>seulement l'homozygote, si un homozygote est parmi eux ;</li>
+    <li>tous les candidats, dans les autres cas (plusieurs candidats et aucun homozygote).</li>
+  </ul>
+  <p style="margin:0 0 8px">Les génotypes complets les plus vraisemblables sont toutes les combinaisons de ces génotypes retenus. Par exemple (fictif), avec quatre locus dont les candidats de NC maximal sont :</p>
+  <p style="margin:0 0 8px;font-family:var(--mono);font-size:13.5px">264/268 · 280/282 264/268 · 258/258 258/260 258/262 · 262/266 272/276</p>
+  <p style="margin:0 0 6px">on retient 264/268 ; 280/282 et 264/268 ; 258/258 seulement ; 262/266 et 272/276, d'où 1 × 2 × 1 × 2 = 4 génotypes complets :</p>
+  <p style="margin:0;font-family:var(--mono);font-size:13.5px;line-height:1.7">264/268 280/282 258/258 262/266<br>264/268 264/268 258/258 262/266<br>264/268 280/282 258/258 272/276<br>264/268 264/268 258/258 272/276</p>
+</div>
+
+<div class="card">
   <p class="tag">Précisions sur l'outil</p>
   <ul style="margin:0">
     <li><b>Égalités.</b> Plusieurs candidats peuvent avoir le même NC maximal, par exemple un homozygote et un hétérozygote qui partagent un même allèle présent chez tous les juvéniles. Le critère ne permet pas de les départager : l'outil les présente tous, sans en choisir un.</li>

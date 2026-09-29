@@ -142,3 +142,22 @@ de lecture Excel que la page), puis les résultats ont été comparés à Maple 
 Les écarts viennent de différences entre les fichiers de données, pas du calcul. Sur des données
 identiques, la page et Maple concordent (sections 3 et 6). Les fichiers PAPA ne diffèrent de Maple
 que pour Grise (même génotype 20170704, tm64).
+
+## 8. Génotypes complets les plus vraisemblables (règle de P. Duchesne, 29 septembre 2026)
+
+Nouvelle règle, sans équivalent dans le programme Maple : à chaque locus, parmi les candidats de NC
+maximal, on retient le candidat unique ; ou seulement l'homozygote s'il y en a un ; ou sinon tous les
+candidats. Les génotypes complets sont toutes les combinaisons des génotypes retenus
+(`retenusParLocus`, `genotypesComplets` dans `js/reconstitution.js`).
+
+Vérification : `js/test-complets.js` applique la règle à l'exemple fictif donné par P. Duchesne dans
+son message. On obtient ses 4 génotypes complets, ni plus ni moins. Sur les six nids :
+
+| Nid | Génotypes retenus par locus | Génotypes complets |
+|---|---|---|
+| Grise, Rose, Turquoise | 1 partout | 1 |
+| Blanche | 2 à Tm6 | 2 |
+| Inconnue 1 | 2 à As18, 4 à Tm6, 2 à Tm4 | 16 |
+| Inconnue 2 | 2 à As18, Tm6, Tm72 et Tm2 | 16 |
+
+Dans la page, les 16 lignes d'Inconnue 2 ont été vérifiées : toutes distinctes.

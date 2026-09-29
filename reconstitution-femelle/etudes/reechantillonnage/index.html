@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combien de juvéniles ?</title>
+<style>
+:root{--surface-1:#fcfcfb;--paper:#F2F5F7;--text-primary:#10212E;--text-secondary:#52514e;--muted:#6b6a66;--rule:#D3DCE2;--grid:#e6e8e9;--axis:#9a9994;
+--series-1:#2a78d6;--series-2:#eb6834;--series-3:#1baf7a;--serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:Consolas,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--surface-1:#1a1a19;--paper:#111110;--text-primary:#ffffff;--text-secondary:#c3c2b7;--muted:#9d9c93;--rule:#3a3936;--grid:#2c2c2a;--axis:#6f6e69;--series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;color-scheme:dark}}
+:root[data-theme="dark"]{--surface-1:#1a1a19;--paper:#111110;--text-primary:#ffffff;--text-secondary:#c3c2b7;--muted:#9d9c93;--rule:#3a3936;--grid:#2c2c2a;--axis:#6f6e69;--series-1:#3987e5;--series-2:#d95926;--series-3:#199e70;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--text-primary);font-family:var(--sans);font-size:15px;line-height:1.55;padding:28px 16px 60px}
+.wrap{max-width:900px;margin:0 auto}h1{font-family:var(--serif);font-weight:400;font-size:25px;margin:0 0 4px}.sub{color:var(--text-secondary);font-size:13.5px;margin:0}
+header{border-bottom:2px solid var(--text-primary);padding-bottom:12px;margin-bottom:18px}
+.card{background:var(--surface-1);border:1px solid var(--rule);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary);margin:0 0 10px}
+h2{font-family:var(--serif);font-weight:400;font-size:18px;margin:0 0 6px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);margin:4px 0 6px}.legend i{display:inline-block;width:18px;height:2px;vertical-align:middle;margin-right:6px}
+.chart{position:relative}svg{width:100%;height:auto;display:block;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--surface-1);border:1px solid var(--rule);border-radius:4px;padding:7px 10px;font-size:12.5px;box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;white-space:nowrap}
+.tip b{font-family:var(--mono)}.tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+table{border-collapse:collapse;font-size:12.5px;width:100%}th,td{padding:4px 8px;text-align:right;border-bottom:1px solid var(--grid);white-space:nowrap}th:first-child,td:first-child{text-align:left}
+thead th{font-family:var(--mono);font-size:10px;color:var(--text-secondary);font-weight:400;border-bottom:1px solid var(--axis)}
+td.w{color:var(--muted)}.scroll{overflow-x:auto}
+.note{color:var(--text-secondary);font-size:13.5px}ul{margin:6px 0;padding-left:20px}li{margin-bottom:4px}
+code{font-family:var(--mono);font-size:12.5px}
+</style>
+</head>
+<body><div class="wrap">
+<header><h1>Combien de juvéniles faut-il pour reconstituer la femelle ?</h1>
+<p class="sub">Étude par rééchantillonnage aléatoire sur trois nids de tortues · méthode du nombre de compatibilités (P. Duchesne)</p></header>
+
+<div class="card">
+<p class="tag">Démarche</p>
+<p style="margin:0 0 8px">On part de trois nids qui, avec <b>tous</b> leurs juvéniles, donnent un seul génotype complet : Rose (78 juvéniles), Grise (41) et Turquoise (36). Pour chaque taille <i>n</i> (5, 10, 15…), on tire au hasard <i>n</i> juvéniles du nid, sans remise, et on reconstitue la femelle avec le calcul de l'outil (validé contre Maple), règle des génotypes complets comprise. On répète le tirage 1000 fois pour chaque taille.</p>
+<p style="margin:0">On mesure la proportion de tirages qui redonnent <b>exactement le génotype obtenu avec tout le nid</b> (un seul génotype complet, identique à celui du nid entier). La proportion de tirages qui donnent un seul génotype, qu'il soit identique ou non, figure dans le tableau.</p>
+</div>
+
+<div class="card">
+<p class="tag">Résultat</p>
+<h2>Tirages qui redonnent le génotype du nid complet</h2>
+<div class="legend" id="legend"></div>
+<div class="chart" id="chart"><svg id="svg" viewBox="0 0 760 380" role="img" aria-label="Pourcentage de tirages redonnant le génotype du nid complet selon le nombre de juvéniles tirés, pour les nids Rose, Grise et Turquoise"></svg><div class="tip" id="tip"></div></div>
+<p class="note" style="margin:8px 0 0">Survolez le graphique pour lire les valeurs. Les points proches de la taille du nid (Grise à 35 et 40, Turquoise à 35) partagent presque tous leurs juvéniles avec le nid complet ; ils surestiment donc la réussite.</p>
+</div>
+
+<div class="card">
+<p class="tag">Ce qu'on observe</p>
+<ul>
+<li><b>Rose et Grise</b> : la reconstitution devient fiable vers 30 juvéniles (96 % et 99 % des tirages redonnent le génotype du nid) et quasi certaine à 35 (99 % et 100 %). Avec 20 juvéniles, environ trois tirages sur quatre y parviennent ; avec 10, moins d'un sur cinq.</li>
+<li><b>Turquoise</b> est nettement plus difficile : 18 % à 25 juvéniles, 52 % à 30. Deux locus en sont la cause, As18 et Tm6 (voir plus bas). Avec tous ses juvéniles, ce nid n'y départage le meilleur candidat du suivant que d'une seule compatibilité (écart de 1 dans l'outil).</li>
+<li><b>Un seul génotype n'est pas toujours le bon.</b> À 30 juvéniles, 66 % des tirages de Turquoise donnent un seul génotype complet, mais 52 % seulement donnent celui du nid entier : dans 14 % des tirages, la page proposerait un génotype unique qui diffère de celui du nid complet. Pour Rose et Grise, cet écart reste inférieur à 2 points dès 20 juvéniles.</li>
+<li>Ces résultats rejoignent l'ordre de grandeur avancé par P. Duchesne : <b>35 à 40 juvéniles</b> pour ce jeu de locus, en gardant à l'esprit qu'un nid comme Turquoise peut en demander davantage. Un petit <b>écart</b> entre le NC maximal et la valeur suivante, dans l'outil, signale les locus fragiles.</li>
+</ul>
+</div>
+
+<div class="card">
+<p class="tag">Tableau des résultats</p>
+<div class="scroll"><table id="tab"></table></div>
+<p class="note" style="margin:8px 0 0">« Génotype du nid » : % de tirages redonnant exactement le génotype obtenu avec tout le nid. « Un seul génotype » : % de tirages donnant un seul génotype complet, identique ou non. « Médiane » et « 90 % » : nombre de génotypes complets obtenus (la moitié et 90 % des tirages en donnent au plus ce nombre).</p>
+</div>
+
+<div class="card">
+<p class="tag">Par locus</p>
+<p class="note" style="margin:-2px 0 10px">Pourcentage des tirages où un seul génotype est retenu à ce locus. En gris : 100 %.</p>
+<div id="loci"></div>
+</div>
+
+<div class="card">
+<p class="tag">Limites</p>
+<ul class="note">
+<li>La référence est le génotype obtenu avec tout le nid : c'est lui-même une estimation, la meilleure dont on dispose.</li>
+<li>Les tirages sont faits dans le nid lui-même : quand <i>n</i> approche la taille du nid, les tirages se ressemblent et la réussite est surestimée. Rose, le plus grand nid, est le plus informatif.</li>
+<li>Trois nids, une espèce, un jeu de 11 locus : le seuil dépend du nombre d'allèles aux locus, du génotype de la femelle (un homozygote se reconnaît plus vite) et des erreurs de génotypage.</li>
+</ul>
+<p class="note" style="margin:8px 0 0">Reproductible : <code>node reechantillonnage.js 1000</code> (générateur aléatoire à graine fixe 20260929), puis <code>python3 construire_rapport.py</code>.</p>
+</div>
+</div>
+<script>
+"use strict";
+var D={"Rose": {"N": 78, "pts": [[5, 0, 2.9, 8, 18], [10, 13.5, 20.4, 2, 8], [15, 47.1, 50.8, 1, 4], [20, 75.6, 77.2, 1, 2], [25, 88.8, 89.4, 1, 2], [30, 95.7, 95.9, 1, 1], [35, 99.1, 99.1, 1, 1], [40, 99.4, 99.5, 1, 1], [45, 100, 100, 1, 1], [50, 99.9, 99.9, 1, 1], [55, 100, 100, 1, 1], [60, 100, 100, 1, 1], [65, 100, 100, 1, 1], [70, 100, 100, 1, 1], [75, 100, 100, 1, 1]], "loc": [[5, 100, 99, 100, 93, 46, 100, 41, 35, 47, 100, 94], [10, 100, 100, 100, 100, 62, 100, 74, 60, 72, 100, 95], [15, 100, 100, 100, 100, 83, 100, 92, 80, 87, 100, 96], [20, 100, 100, 100, 100, 92, 100, 96, 93, 96, 100, 98], [25, 100, 100, 100, 100, 98, 100, 97, 96, 98, 100, 100], [30, 100, 100, 100, 100, 99, 100, 99, 98, 100, 100, 100], [35, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [40, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [45, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [55, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [60, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [65, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [70, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [75, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]]}, "Grise": {"N": 41, "pts": [[5, 0.1, 0.6, 24, 96], [10, 17.4, 22.5, 4, 16], [15, 53.8, 55.7, 1, 6], [20, 78.8, 78.8, 1, 2], [25, 93.3, 93.3, 1, 1], [30, 99.1, 99.1, 1, 1], [35, 100, 100, 1, 1], [40, 100, 100, 1, 1]], "loc": [[5, 98, 97, 88, 82, 32, 38, 24, 37, 86, 100, 69], [10, 100, 100, 99, 98, 59, 48, 66, 77, 95, 100, 90], [15, 100, 100, 100, 100, 85, 70, 85, 93, 98, 100, 99], [20, 100, 100, 100, 100, 93, 86, 93, 98, 100, 100, 100], [25, 100, 100, 100, 100, 98, 96, 98, 100, 100, 100, 100], [30, 100, 100, 100, 100, 100, 99, 100, 100, 100, 100, 100], [35, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], [40, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]]}, "Turquoise": {"N": 36, "pts": [[5, 0, 0.9, 14, 72], [10, 0, 5.4, 6, 24], [15, 0.4, 11.8, 4, 8], [20, 3.9, 21.5, 2, 4], [25, 18.3, 34.3, 2, 4], [30, 51.7, 65.6, 1, 4], [35, 91.8, 94.6, 1, 1]], "loc": [[5, 100, 94, 80, 92, 72, 31, 37, 41, 56, 100, 87], [10, 100, 100, 77, 100, 60, 61, 42, 75, 66, 100, 92], [15, 100, 100, 76, 100, 51, 80, 60, 94, 84, 100, 98], [20, 100, 100, 74, 100, 49, 90, 75, 98, 96, 100, 100], [25, 100, 100, 80, 100, 55, 94, 84, 100, 99, 100, 100], [30, 100, 100, 86, 100, 73, 99, 95, 100, 100, 100, 100], [35, 100, 100, 97, 100, 95, 100, 100, 100, 100, 100, 100]]}}, LOCI=["AS12", "As13", "As18", "AsB14", "Tm6", "Tm72", "Tm2", "Tm4", "tm3", "tm5", "tm64"];
+var SER=[["Rose","--series-1"],["Grise","--series-2"],["Turquoise","--series-3"]];
+var $=function(id){return document.getElementById(id);};
+$("legend").innerHTML=SER.map(function(s){return '<span><i style="background:var('+s[1]+')"></i>'+s[0]+' ('+D[s[0]].N+' juvéniles)</span>';}).join('');
+var W=760,H=380,mL=48,mR=96,mT=14,mB=44,X=function(n){return mL+(n/80)*(W-mL-mR);},Y=function(p){return mT+(1-p/100)*(H-mT-mB);};
+var s='';
+[0,25,50,75,100].forEach(function(p){s+='<line x1="'+mL+'" x2="'+(W-mR)+'" y1="'+Y(p)+'" y2="'+Y(p)+'" stroke="var(--grid)"/><text x="'+(mL-8)+'" y="'+(Y(p)+4)+'" text-anchor="end" font-size="11" fill="var(--text-secondary)">'+p+' %</text>';});
+[0,10,20,30,40,50,60,70,80].forEach(function(n){s+='<text x="'+X(n)+'" y="'+(H-mB+18)+'" text-anchor="middle" font-size="11" fill="var(--text-secondary)">'+n+'</text>';});
+s+='<line x1="'+mL+'" x2="'+(W-mR)+'" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="var(--axis)"/>';
+s+='<text x="'+((mL+W-mR)/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="12" fill="var(--text-secondary)">nombre de juvéniles tirés</text>';
+s+='<line id="xh" y1="'+mT+'" y2="'+Y(0)+'" stroke="var(--axis)" stroke-dasharray="3 3" style="display:none"/>';
+SER.forEach(function(se){var p=D[se[0]].pts,d=p.map(function(q,i){return (i?'L':'M')+X(q[0]).toFixed(1)+','+Y(q[1]).toFixed(1);}).join(' ');
+  s+='<path d="'+d+'" fill="none" stroke="var('+se[1]+')" stroke-width="2" stroke-linejoin="round"/>';
+  p.forEach(function(q){s+='<circle cx="'+X(q[0]).toFixed(1)+'" cy="'+Y(q[1]).toFixed(1)+'" r="4" fill="var('+se[1]+')" stroke="var(--surface-1)" stroke-width="2"/>';});
+});
+// étiquettes directes : sur la partie montante de chaque courbe, là où il y a de la place
+var POS={Rose:[15,10,14,'start'],Grise:[15,-10,-4,'end'],Turquoise:[25,10,4,'start']};
+SER.forEach(function(se){var q=D[se[0]].pts.filter(function(p){return p[0]===POS[se[0]][0];})[0],o=POS[se[0]];
+  s+='<text x="'+(X(q[0])+o[1]).toFixed(1)+'" y="'+(Y(q[1])+o[2]).toFixed(1)+'" text-anchor="'+o[3]+'" font-size="12.5" font-weight="600" fill="var(--text-primary)">'+se[0]+'</text>';});
+s+='<rect id="hit" x="'+mL+'" y="'+mT+'" width="'+(W-mL-mR)+'" height="'+(H-mT-mB)+'" fill="transparent"/>';
+$("svg").innerHTML=s;
+var svg=$("svg"),tip=$("tip");
+function hover(ev){var r=svg.getBoundingClientRect(),x=(ev.clientX-r.left)*W/r.width,n=Math.round(((x-mL)/(W-mL-mR)*80)/5)*5;n=Math.max(5,Math.min(75,n));
+  var rows=SER.map(function(se){var q=D[se[0]].pts.filter(function(p){return p[0]===n;})[0];return q?'<div><span class="sw" style="background:var('+se[1]+')"></span>'+se[0]+' : <b>'+q[1].toFixed(1)+' %</b></div>':'';}).join('');
+  var xh=$("xh");xh.setAttribute('x1',X(n));xh.setAttribute('x2',X(n));xh.style.display='';
+  tip.innerHTML='<div style="margin-bottom:3px"><b>'+n+'</b> juvéniles tirés</div>'+rows;tip.style.display='block';
+  var px=X(n)*r.width/W;tip.style.left=Math.min(px+12,r.width-tip.offsetWidth-4)+'px';tip.style.top='10px';}
+$("hit").addEventListener('mousemove',hover);$("hit").addEventListener('mouseleave',function(){tip.style.display='none';$("xh").style.display='none';});
+// tableau
+var t='<thead><tr><th>Juvéniles tirés</th>'+SER.map(function(se){return '<th colspan="4">'+se[0]+' ('+D[se[0]].N+')</th>';}).join('')+'</tr><tr><th></th>'+SER.map(function(){return '<th>Génotype du nid</th><th>Un seul génotype</th><th>Médiane</th><th>90 %</th>';}).join('')+'</tr></thead><tbody>';
+for(var n=5;n<=75;n+=5){t+='<tr><td>'+n+'</td>'+SER.map(function(se){var q=D[se[0]].pts.filter(function(p){return p[0]===n;})[0];return q?'<td>'+q[1].toFixed(1)+' %</td><td>'+q[2].toFixed(1)+' %</td><td>'+q[3]+'</td><td>'+q[4]+'</td>':'<td class="w">—</td><td class="w">—</td><td class="w">—</td><td class="w">—</td>';}).join('')+'</tr>';}
+$("tab").innerHTML=t+'</tbody>';
+$("loci").innerHTML=SER.map(function(se){var L=D[se[0]].loc.filter(function(r){return r[0]<=35;});
+  return '<p style="margin:10px 0 4px"><b>'+se[0]+'</b></p><div class="scroll"><table><thead><tr><th>Juvéniles</th>'+LOCI.map(function(n){return '<th>'+n+'</th>';}).join('')+'</tr></thead><tbody>'+
+  L.map(function(r){return '<tr><td>'+r[0]+'</td>'+r.slice(1).map(function(v){return '<td'+(v===100?' class="w"':'')+'>'+v+' %</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';}).join('');
+</script>
+</body></html>

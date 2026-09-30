@@ -3,6 +3,9 @@
  * Un juvénile est compatible avec une femelle s'il partage au moins un allèle avec elle à chacun des
  * locus où les deux sont génotypés (un locus manquant chez l'un ou l'autre n'est pas examiné).
  * Cellule (femelle i, groupe j) : nombre de juvéniles du groupe j compatibles avec la femelle i.
+ * Rangée « Aucune » (ajoutée à la demande de P. Duchesne) : nombre de juvéniles du groupe j compatibles
+ * avec aucune des femelles. Un juvénile peut être compatible avec plusieurs femelles : les rangées ne
+ * s'additionnent donc pas forcément à l'effectif du groupe.
  *
  * Génotypes : liste (un élément par locus) de [allèle1, allèle2], ou null si le génotype manque.
  */
@@ -28,13 +31,18 @@
   }
 
   // femelles : [{nom, geno}] ; groupes : [{nom, juveniles: [geno, …]}]
-  // Résultat : { comptes[i][j], effectifs[j] } — effectifs : nombre de juvéniles du groupe.
+  // Résultat : { comptes[i][j], aucune[j], effectifs[j] } — effectifs : nombre de juvéniles du groupe.
   function tableau(femelles, groupes) {
     return {
       comptes: femelles.map(function (f) {
         return groupes.map(function (g) {
           return g.juveniles.filter(function (j) { return compatible(j, f.geno); }).length;
         });
+      }),
+      aucune: groupes.map(function (g) {
+        return g.juveniles.filter(function (j) {
+          return !femelles.some(function (f) { return compatible(j, f.geno); });
+        }).length;
       }),
       effectifs: groupes.map(function (g) { return g.juveniles.length; })
     };

@@ -9,7 +9,8 @@ femelle inconnue proviennent-ils d'une des femelles déjà reconstituées (la «
   quand il n'y a qu'un seul génotype complet.
 - Sortie : pour chaque femelle (rangée) et chaque groupe (colonne), le nombre de juvéniles
   compatibles avec la femelle à tous les locus, avec l'effectif et le pourcentage. Les noms sont
-  modifiables et le tableau peut être téléchargé en CSV.
+  modifiables et le tableau peut être téléchargé en CSV. Une dernière rangée, « Aucune », compte
+  les juvéniles compatibles avec aucune des femelles.
 - Vérification : `validation/verifier.py` recalcule le tableau de l'exemple de façon indépendante,
   en Python (`validation/attendu.json`). `validation/test-page.js` compare la page à ce calcul,
   dans quatre situations : l'exemple, des fichiers téléversés, des femelles connues seules et un

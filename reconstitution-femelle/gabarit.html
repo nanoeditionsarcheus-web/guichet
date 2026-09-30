@@ -30,6 +30,9 @@ td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
 .g.homo{outline:1.5px solid var(--hit);outline-offset:2px;border-radius:2px;padding:0 2px}
 table.complets td,table.complets th{text-align:center;padding:5px 7px}table.complets thead th{text-transform:none;font-size:11px}table.complets td:first-child,table.complets th:first-child{text-align:right;color:var(--muted);font-family:var(--mono)}
 table.complets td.g{font-weight:600}
+.reech input[type=number]{width:90px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
+table.reech-t{width:auto;min-width:60%}table.reech-t td,table.reech-t th{text-align:right;padding:5px 14px 5px 0}table.reech-t td:first-child,table.reech-t th:first-child{text-align:left}
+.reech-h{font-family:var(--mono);font-size:12.5px;margin:12px 0 6px}
 .tie{font-size:11.5px;color:var(--muted);display:block}
 .meter{display:inline-block;width:70px;height:7px;background:var(--grid);border-radius:4px;vertical-align:middle;margin-left:6px;overflow:hidden}.meter i{display:block;height:100%;background:var(--hit)}
 details.loc{border-top:1px solid var(--grid);padding:8px 0}details.loc summary{cursor:pointer;font-size:14px}
@@ -82,6 +85,21 @@ a{color:var(--A)}
   <p id="complCount" style="margin:0 0 8px"></p>
   <div class="scroll"><table class="complets" id="complets"></table></div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button></div>
+</div>
+
+<div class="card reech">
+  <p class="tag">Rééchantillonnage aléatoire</p>
+  <div id="reechOff" class="note" style="margin:0"></div>
+  <div id="reechOn">
+    <p class="note" style="margin:-2px 0 10px">Pour chaque taille d'échantillon, la page tire au hasard, sans remise, ce nombre de juvéniles parmi ceux du fichier, reconstitue la femelle, et répète le tirage autant de fois que demandé. Elle compte les tirages qui donnent <b>un seul génotype complet</b>, et ceux qui donnent <b>le même génotype que l'échantillon complet</b>. Si le même génotype revient sur une suite de tailles, on peut d'autant plus s'y fier ; la taille à partir de laquelle on le retrouve donne une idée du nombre minimal de juvéniles nécessaire. Les pourcentages varient légèrement d'une exécution à l'autre ; à la taille de l'échantillon complet, ils valent 100 % par construction.</p>
+    <div class="controls">
+      <label>Nombre d'itérations : <input type="number" id="reechIt" min="10" max="100000" step="10" value="1000"></label>
+      <label>Intervalle entre les tailles : <input type="number" id="reechPas" min="1" step="1" value="10"></label>
+      <button id="reechGo">Lancer le rééchantillonnage</button>
+    </div>
+    <p class="note" id="reechStatus" style="margin:8px 0 0"></p>
+    <div id="reechRes"></div>
+  </div>
 </div>
 
 <div class="card">
@@ -142,6 +160,9 @@ function render(data,label){
   $("complCount").innerHTML=nComp?('<b>'+fmtBig(BigInt(nComp))+'</b> génotype'+(nComp>1?'s':'')+' complet'+(nComp>1?'s':'')+' le'+(nComp>1?'s':'')+' plus vraisemblable'+(nComp>1?'s':'')+
     (nComp>1?' (produit du nombre de génotypes retenus à chaque locus : '+ret.map(function(l){return l.length;}).join(' × ')+')':'')+'.'+(nComp>MAXAFF?' Les '+MAXAFF+' premiers sont affichés ; le fichier CSV les contient tous.':'')):'Aucun génotype complet : un locus n\'a aucun juvénile génotypé.';
   var varie=ret.map(function(l){return l.length>1;});
+  CUR.nComp=nComp;CUR.reference=nComp===1?Reconstitution.cleComplet(Reconstitution.genotypesComplets(ret)[0]):null;CUR.reech=null;
+  $("reechOn").hidden=nComp!==1;$("reechOff").hidden=nComp===1;$("reechRes").innerHTML='';$("reechStatus").textContent='';
+  $("reechOff").innerHTML='Le rééchantillonnage est offert seulement lorsqu\'un seul génotype complet est reconstitué avec l\'ensemble des juvéniles (ici : '+fmtBig(BigInt(nComp))+').';
   $("complets").innerHTML=comp.length?'<thead><tr><th>#</th>'+data.loci.map(function(n,k){return '<th'+(varie[k]?' style="color:var(--ink)"':'')+'>'+esc(n)+'</th>';}).join('')+'</tr></thead><tbody>'+
     comp.map(function(c,i){return '<tr><td>'+(i+1)+'</td>'+c.map(function(x,k){return '<td class="g'+(varie[k]?' best':'')+'">'+gs(x)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>':'';
   // détail
@@ -177,6 +198,28 @@ function csvSummary(){var rows=[['Locus','Génotype(s) de NC maximal','NC maxima
   rows.push(['Génotypes multilocus possibles (produit)','','','','','','',CUR.res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1)).toString()]);return rows;}
 function csvComplets(){var ret=Reconstitution.retenusParLocus(CUR.res),LIM=100000;
   var rows=[['#'].concat(CUR.data.loci)];Reconstitution.genotypesComplets(ret,LIM).forEach(function(c,i){rows.push([i+1].concat(c.map(gs)));});return rows;}
+function lancerReech(){
+  var it=Math.round(+$("reechIt").value),pas=Math.round(+$("reechPas").value),J=CUR.data.juveniles.map(function(j){return j.genos;}),N=J.length,L=CUR.data.loci.length;
+  if(!(it>=10&&it<=100000)){$("reechStatus").textContent='Le nombre d\'itérations doit être compris entre 10 et 100 000.';return;}
+  if(!(pas>=1&&pas<=N)){$("reechStatus").textContent='L\'intervalle doit être compris entre 1 et '+N+'.';return;}
+  var tailles=[];for(var n=pas;n<=N;n+=pas)tailles.push(n);
+  var res=[],k=0,btn=$("reechGo"),data=CUR.data;btn.disabled=true;$("reechRes").innerHTML='';
+  (function suivant(){
+    if(CUR.data!==data){btn.disabled=false;return;}   // nouvelles données chargées entre-temps
+    if(k>=tailles.length){btn.disabled=false;$("reechStatus").textContent='';CUR.reech={it:it,pas:pas,res:res};afficherReech();return;}
+    $("reechStatus").textContent='Calcul en cours… taille '+tailles[k]+' ('+(k+1)+' sur '+tailles.length+')';
+    setTimeout(function(){res.push(Reconstitution.reechantillonnerTaille(J,L,tailles[k],it,CUR.reference,Math.random));k++;suivant();},0);
+  })();
+}
+function nomFichier(){var m=/^fichier « (.*) »$/.exec(CUR.label);return m?m[1]:CUR.label;}
+function afficherReech(){var R=CUR.reech,pc=function(x){return (100*x).toFixed(1).replace('.',',')+' %';};
+  $("reechRes").innerHTML='<p class="reech-h">Fichier : '+esc(nomFichier())+' · '+CUR.data.juveniles.length+' juvéniles · itérations : '+R.it+'</p>'+
+    '<div class="scroll"><table class="reech-t"><thead><tr><th>Taille du rééchantillon</th><th>Génotype reconstitué unique</th><th>Même génotype que l\'échantillon complet</th></tr></thead><tbody>'+
+    R.res.map(function(r){return '<tr><td>'+r.taille+'</td><td>'+pc(r.unique)+'</td><td>'+pc(r.identique)+'</td></tr>';}).join('')+'</tbody></table></div>'+
+    '<div class="controls" style="margin-top:10px"><button class="ghost" id="dlReech">Télécharger ce tableau (CSV)</button></div>';
+  $("dlReech").addEventListener('click',function(){var rows=[['Fichier',nomFichier()],['Juvéniles',CUR.data.juveniles.length],['Itérations',R.it],[],['Taille du rééchantillon','% génotype reconstitué unique','% même génotype que l\'échantillon complet']];
+    R.res.forEach(function(r){rows.push([r.taille,(100*r.unique).toFixed(1),(100*r.identique).toFixed(1)]);});download('reconstitution-reechantillonnage.csv',rows);});
+}
 function csvAll(){var rows=[['Locus','Candidat','NC','Juvéniles génotypés','NC maximal']];
   CUR.res.forEach(function(r,k){r.candidates.forEach(function(c){rows.push([CUR.data.loci[k],gs(c.geno),c.nc,r.nTyped,c.nc===r.maxNC?'oui':'']);});});return rows;}
 
@@ -218,6 +261,7 @@ function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='n
       status(d.juveniles.length+" juvéniles chargés — "+d.loci.length+" locus ("+d.loci.join(', ')+").");
     }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
   });
+  $("reechGo").addEventListener('click',function(){if(CUR&&CUR.nComp===1)lancerReech();});
   $("openAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=true;});});
   $("closeAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=false;});});
   $("dlSum").addEventListener('click',function(){if(CUR)download('reconstitution-resume.csv',csvSummary());});

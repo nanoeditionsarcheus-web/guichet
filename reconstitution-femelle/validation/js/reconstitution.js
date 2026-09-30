@@ -87,7 +87,26 @@
     return out;
   }
 
+  /* Rééchantillonnage aléatoire (proposé par P. Duchesne, 30 septembre 2026). Pour une taille n,
+   * on tire n juvéniles au hasard, sans remise (mélange de Fisher-Yates partiel), on reconstitue la
+   * femelle et on note si l'on obtient un seul génotype complet, et s'il est identique à « reference »
+   * (chaîne produite par cleComplet sur l'échantillon complet). « rnd » : générateur uniforme [0, 1). */
+  function cleComplet(comb) { return comb.map(function (g) { return g[0] + "/" + g[1]; }).join(" "); }
+  function reechantillonnerTaille(juveniles, nLoci, n, iterations, reference, rnd) {
+    var unique = 0, identique = 0, a = juveniles.slice();
+    for (var it = 0; it < iterations; it++) {
+      for (var i = 0; i < n; i++) { var j = i + Math.floor(rnd() * (a.length - i)), t = a[i]; a[i] = a[j]; a[j] = t; }
+      var ret = retenusParLocus(analyse(a.slice(0, n), nLoci));
+      if (nombreComplets(ret) === 1) {
+        unique++;
+        if (cleComplet(genotypesComplets(ret)[0]) === reference) identique++;
+      }
+    }
+    return { taille: n, unique: unique / iterations, identique: identique / iterations };
+  }
+
   var api = { compatible: compatible, analyseLocus: analyseLocus, analyse: analyse,
-              retenusParLocus: retenusParLocus, nombreComplets: nombreComplets, genotypesComplets: genotypesComplets };
+              retenusParLocus: retenusParLocus, nombreComplets: nombreComplets, genotypesComplets: genotypesComplets,
+              cleComplet: cleComplet, reechantillonnerTaille: reechantillonnerTaille };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Reconstitution = api;
 })(this);

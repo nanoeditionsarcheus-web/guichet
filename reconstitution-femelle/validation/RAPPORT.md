@@ -161,3 +161,20 @@ son message. On obtient ses 4 génotypes complets, ni plus ni moins. Sur les six
 | Inconnue 2 | 2 à As18, Tm6, Tm72 et Tm2 | 16 |
 
 Dans la page, les 16 lignes d'Inconnue 2 ont été vérifiées : toutes distinctes.
+
+## 9. Rééchantillonnage aléatoire dans la page (demande de P. Duchesne, 30 septembre 2026)
+
+Offert seulement si un seul génotype complet est reconstitué avec l'échantillon complet. Paramètres :
+nombre d'itérations (1000 par défaut) et intervalle entre les tailles (10 par défaut) ; tailles
+intervalle, 2 × intervalle, … sans dépasser la taille de l'échantillon complet. Sorties : % de tirages
+donnant un génotype complet unique, % donnant le même génotype que l'échantillon complet, avec le nom
+du fichier et le nombre d'itérations en en-tête (fonction `reechantillonnerTaille`).
+
+Vérifications :
+- `js/test-reechantillonnage.js` : avec le générateur et la graine de l'étude publiée
+  (`etudes/reechantillonnage`), le calcul redonne exactement ses 30 pourcentages pour le nid Rose
+  (0 écart). La fonction de la page, avec d'autres tirages (2000 par taille), s'en écarte d'au plus
+  1,5 point, ce qui est l'ordre de grandeur attendu du hasard.
+- `page/test-reech.js` (Chromium) : pour Rose, la section est offerte, et le tableau est cohérent
+  avec l'étude publiée (écart de quelques points au plus, attendu pour des tirages différents) ;
+  pour Inconnue 2 (16 génotypes complets), la section n'est pas offerte et la page dit pourquoi.

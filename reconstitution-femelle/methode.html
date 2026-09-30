@@ -99,6 +99,12 @@ a{color:var(--A)}
 </div>
 
 <div class="card">
+  <p class="tag">Rééchantillonnage aléatoire</p>
+  <p style="margin:0 0 8px">Lorsqu'un seul génotype complet est reconstitué avec l'ensemble des juvéniles, l'outil peut tirer au hasard, sans remise, des sous-échantillons de juvéniles de tailles croissantes (par exemple 10, 20, 30… jusqu'à la taille de l'échantillon complet), un grand nombre de fois pour chaque taille (1000 par défaut). Pour chaque taille, il donne le pourcentage des tirages qui produisent un seul génotype complet, et celui des tirages qui produisent le même génotype que l'échantillon complet.</p>
+  <p style="margin:0">Deux lectures sont utiles : la <b>stabilité</b> (si le même génotype revient sur une suite de tailles, on peut d'autant plus s'y fier) et la <b>taille à partir de laquelle</b> on retrouve le génotype de l'échantillon complet, qui donne une idée du nombre minimal de juvéniles nécessaire. Les tirages étant aléatoires, les pourcentages varient légèrement d'une exécution à l'autre.</p>
+</div>
+
+<div class="card">
   <p class="tag">Précisions sur l'outil</p>
   <ul style="margin:0">
     <li><b>Égalités.</b> Plusieurs candidats peuvent avoir le même NC maximal, par exemple un homozygote et un hétérozygote qui partagent un même allèle présent chez tous les juvéniles. Le critère ne permet pas de les départager : l'outil les présente tous, sans en choisir un.</li>

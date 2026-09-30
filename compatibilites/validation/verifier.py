@@ -25,7 +25,9 @@ def compat(j, f):
     return len(ex) > 0 and all(set(a) & set(b) for a, b in ex)
 groupes = ["Grise", "Rose", "Turquoise", "Blanche", "Inconnue 1"]
 tab = {fn: [sum(1 for j in J[g] if compat(j, f)) for g in groupes] for fn, f in fem.items()}
-res = {"groupes": groupes, "effectifs": [len(J[g]) for g in groupes], "femelles": {k: [list(x) for x in v] for k, v in fem.items()}, "comptes": tab}
+aucune = [sum(1 for j in J[g] if not any(compat(j, f) for f in fem.values())) for g in groupes]
+res = {"aucune": aucune, "groupes": groupes, "effectifs": [len(J[g]) for g in groupes], "femelles": {k: [list(x) for x in v] for k, v in fem.items()}, "comptes": tab}
 json.dump(res, open(pathlib.Path(__file__).parent / "attendu.json", "w"), indent=1, ensure_ascii=False)
 print("groupes :", groupes, "effectifs :", res["effectifs"])
 for fn, row in tab.items(): print(f"{fn:10}", row)
+print(f"{'Aucune':10}", aucune)

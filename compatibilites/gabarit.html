@@ -52,6 +52,7 @@ table.tc{width:auto;min-width:70%}table.tc thead th{text-transform:none;font-fam
 table.tc th:first-child,table.tc td:first-child{text-align:left}
 table.tc td.cell{font-family:var(--mono);min-width:92px}table.tc td.cell b{font-size:15px}table.tc td.cell small{display:block;color:var(--muted);font-size:11px}
 table.tc th.teste,table.tc td.teste{background:color-mix(in srgb,var(--A) 7%,transparent)}
+table.tc tr.aucune td{border-top:2px solid var(--axis)}
 table.tc td.propre b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
 table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);width:160px}
 .upl{display:grid;grid-template-columns:max-content 1fr;gap:10px 14px;align-items:center;font-size:14px}
@@ -92,13 +93,13 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 <div class="card">
   <p class="tag">Tableau des compatibilités</p>
   <div class="scroll"><table class="tc" id="tc"></table></div>
-  <div class="reading">Chaque cellule donne le <b>nombre de juvéniles</b> du groupe (colonne) dont le génotype est compatible avec celui de la femelle (rangée) <b>à tous les locus</b>, c'est-à-dire qui partagent au moins un allèle avec elle à chaque locus génotypé chez les deux. Sous le nombre : l'effectif du groupe et le pourcentage. Souligné : la femelle reconstituée à partir de ce groupe. Sur fond teinté : le ou les groupes testés. La page n'émet aucun verdict ; la comparaison des colonnes revient à l'usagère.</div>
+  <div class="reading">Chaque cellule donne le <b>nombre de juvéniles</b> du groupe (colonne) dont le génotype est compatible avec celui de la femelle (rangée) <b>à tous les locus</b>, c'est-à-dire qui partagent au moins un allèle avec elle à chaque locus génotypé chez les deux. Sous le nombre : l'effectif du groupe et le pourcentage. La dernière rangée, <b>Aucune</b>, compte les juvéniles compatibles avec <b>aucune</b> des femelles ; comme un juvénile peut être compatible avec plusieurs femelles, les rangées ne s'additionnent pas forcément à l'effectif. Souligné : la femelle reconstituée à partir de ce groupe. Sur fond teinté : le ou les groupes testés. La page n'émet aucun verdict ; la comparaison des colonnes revient à l'usagère.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCsv">Télécharger le tableau (CSV)</button></div>
 </div>
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Un juvénile est <b>compatible</b> avec une femelle s'il partage au moins un allèle avec elle à chacun des locus où les deux sont génotypés ; un vrai rejeton l'est toujours, sauf erreur de génotypage. Les femelles de référence sont reconstituées par la méthode du nombre de compatibilités (règle des génotypes complets comprise), validée contre le programme Maple de l'auteur. Le calcul du tableau a été vérifié par une programmation indépendante sur l'exemple (15 cellules identiques).</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Un juvénile est <b>compatible</b> avec une femelle s'il partage au moins un allèle avec elle à chacun des locus où les deux sont génotypés ; un vrai rejeton l'est toujours, sauf erreur de génotypage. Les femelles de référence sont reconstituées par la méthode du nombre de compatibilités (règle des génotypes complets comprise), validée contre le programme Maple de l'auteur. Le calcul du tableau a été vérifié par une programmation indépendante sur l'exemple (20 cellules identiques, rangée « Aucune » comprise).</p>
 </div>
 
 <footer id="foot"></footer>
@@ -138,6 +139,8 @@ function render(){
   d.femelles.forEach(function(f,i){
     h+='<tr><td><b>'+esc(f.nom)+'</b></td>'+groupes.map(function(g,j){var c=t.comptes[i][j],n=t.effectifs[j],propre=(j<nRef&&f.source===j);
       return '<td class="cell'+(j>=nRef?' teste':'')+(propre?' propre':'')+'"><b>'+c+'</b><small>/ '+n+' · '+(n?Math.round(100*c/n):0)+' %</small></td>';}).join('')+'</tr>';});
+  h+='<tr class="aucune"><td><b>Aucune</b></td>'+groupes.map(function(g,j){var c=t.aucune[j],n=t.effectifs[j];
+    return '<td class="cell'+(j>=nRef?' teste':'')+'"><b>'+c+'</b><small>/ '+n+' · '+(n?Math.round(100*c/n):0)+' %</small></td>';}).join('')+'</tr>';
   $("tc").innerHTML=h+'</tbody>';}
   CUR.t=t;
 }
@@ -163,7 +166,7 @@ function csv(){var g=CUR.references.concat(CUR.testes),n=CUR.references.length;
   var rows=[['Tableau des compatibilités : nombre de juvéniles compatibles à tous les locus']];
   rows.push(['Femelle \\ groupe'].concat(g.map(function(x,j){return x.nom+(j>=n?' (testé)':'');})));
   rows.push(['Effectif'].concat(CUR.t.effectifs));
-  CUR.femelles.forEach(function(f,i){rows.push([f.nom].concat(CUR.t.comptes[i]));});return rows;}
+  CUR.femelles.forEach(function(f,i){rows.push([f.nom].concat(CUR.t.comptes[i]));});rows.push(['Aucune'].concat(CUR.t.aucune));return rows;}
 
 // ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
 function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}

@@ -3,7 +3,7 @@ const {chromium}=require(process.env.PW||'playwright');const fs=require('fs'),pa
 const V=__dirname,R=path.join(V,'../../reconstitution-femelle/validation');const A=JSON.parse(fs.readFileSync(path.join(V,'attendu.json'),'utf8'));
 const lire=()=>({cells:[...document.querySelectorAll('#tc tbody tr')].map(t=>[...t.querySelectorAll('td.cell b')].map(b=>+b.textContent)),
   fem:[...document.querySelectorAll('#tc tbody tr td:first-child')].map(t=>t.textContent),grp:[...document.querySelectorAll('#tc thead th')].slice(1).map(t=>t.firstChild.textContent)});
-const attendu=Object.values(A.comptes);
+const attendu=Object.values(A.comptes).concat([A.aucune]);   // dernière rangée : « Aucune »
 const cmp=(c)=>c.cells.length===attendu.length&&c.cells.every((r,i)=>r.length===attendu[i].length&&r.every((v,j)=>v===attendu[i][j]));
 (async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1100,height:900}}),errs=[];pg.on('pageerror',e=>errs.push(e.message));
  await pg.route('**/*',r=>r.request().url().startsWith('file:')?r.continue():r.abort());

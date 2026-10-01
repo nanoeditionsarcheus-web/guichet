@@ -52,7 +52,7 @@ table.tc{width:auto;min-width:70%}table.tc thead th{text-transform:none;font-fam
 table.tc th:first-child,table.tc td:first-child{text-align:left}
 table.tc td.cell{font-family:var(--mono);min-width:92px}table.tc td.cell b{font-size:15px}table.tc td.cell small{display:block;color:var(--muted);font-size:11px}
 table.tc th.teste,table.tc td.teste{background:color-mix(in srgb,var(--A) 7%,transparent)}
-table.pv td.p{font-family:var(--mono);font-size:12.5px;text-align:center;min-width:110px}
+table.pv td.p{font-family:var(--mono);font-size:12.5px;text-align:center;min-width:76px;padding:6px 6px}
 table.pv td.p small{display:block;font-family:var(--sans);font-size:11px}
 table.pv td.diff{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--ink)}table.pv td.diff small{color:var(--warn);font-weight:600}
 table.pv td.pasdiff{background:color-mix(in srgb,var(--hit) 14%,transparent);color:var(--ink)}table.pv td.pasdiff small{color:var(--hit);font-weight:600}
@@ -108,6 +108,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   <p class="note" style="margin:-2px 0 10px">Pour chaque paire de groupes, la page teste si la répartition de leurs juvéniles entre les catégories de compatibilité diffère. Le test exige que chaque juvénile compte <b>une seule fois</b> : un juvénile compatible avec plusieurs femelles est donc placé dans une catégorie combinée (par exemple « FGrise + FRose »), au lieu d'être compté dans chaque rangée comme dans le tableau ci-dessus.</p>
   <div class="scroll"><table class="tc" id="cat"></table></div>
   <div class="controls" style="margin:14px 0 10px"><label>Seuil de signification : <input type="number" id="seuil" min="0" max="1" step="0.01" value="0.05"></label></div>
+  <p class="note" style="margin:0 0 6px"><span style="background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);font-weight:700;padding:1px 6px;border-radius:2px">S</span> différence significative (p &lt; seuil) &nbsp;·&nbsp; <span style="background:color-mix(in srgb,var(--hit) 14%,transparent);color:var(--hit);font-weight:700;padding:1px 6px;border-radius:2px">NS</span> pas de différence significative (p ≥ seuil)</p>
   <div class="scroll"><table class="tc pv" id="pv"></table></div>
   <div class="reading">Chaque case donne la <b>p-valeur</b> du test exact de Fisher pour la paire (rangée, colonne). <span style="color:var(--warn);font-weight:600">p &lt; seuil</span> : les deux groupes diffèrent probablement. <span style="color:var(--hit);font-weight:600">p ≥ seuil</span> : on ne peut pas conclure qu'ils diffèrent. <b>Prudence</b> : deux groupes presque entièrement dans la catégorie « Aucune » ne diffèrent pas, mais cela ne veut pas dire qu'ils viennent de la même femelle ; il est préférable de ne tester qu'un seul groupe hors référence à la fois. Les p-valeurs ne sont pas corrigées pour le nombre de comparaisons.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlPv">Télécharger les p-valeurs (CSV)</button></div>
@@ -419,7 +420,7 @@ function renderPv(groupes){
   var h='<thead><tr><th></th>'+groupes.map(function(g){return '<th>'+esc(g.nom)+'</th>';}).join('')+'</tr></thead><tbody>';
   groupes.forEach(function(g,i){h+='<tr><td><b>'+esc(g.nom)+'</b></td>'+groupes.map(function(x,j){var p=P[i][j];
     if(i===j)return '<td class="p diag"></td>';if(p==null)return '<td class="p">trop de tables</td>';
-    var diff=p<s;return '<td class="p '+(diff?'diff':'pasdiff')+'">'+fmtP(p)+'<small>'+(diff?'différence significative':'pas de différence significative')+'</small></td>';}).join('')+'</tr>';});
+    var diff=p<s;return '<td class="p '+(diff?'diff':'pasdiff')+'">'+fmtP(p)+'<small>'+(diff?'S':'NS')+'</small></td>';}).join('')+'</tr>';});
   $("pv").innerHTML=h+'</tbody>';
 }
 function csvPv(){var g=CUR.references.concat(CUR.testes),s=+$("seuil").value;

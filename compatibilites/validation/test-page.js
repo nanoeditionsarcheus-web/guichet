@@ -22,5 +22,10 @@ const cmp=(c)=>c.cells.length===attendu.length&&c.cells.every((r,i)=>r.length===
  c=await pg.evaluate(lire);console.log('femelles connues seulement :',c.fem.join(', '),'| identique :',cmp(c));
  await pg.click('#upReset');await pg.fill('#noms input[data-f="0"]','Femelle A');await pg.fill('#noms input[data-g="4"]','Nid mystère');
  c=await pg.evaluate(lire);console.log('renommage :',c.fem[0],'/',c.grp[4]);
+ // p-valeurs de Fisher affichées par la page, comparées à fisher.test de R (exemple, 10 paires)
+ const RP=Object.fromEntries(fs.readFileSync(path.join(V,'pvaleurs_R.csv'),'utf8').trim().split('\n').slice(1).map(l=>{const c=l.split(',');return [c[0].replace(/"/g,'')+'/'+c[1].replace(/"/g,''),+c[2]];}));
+ const P=await pg.evaluate(()=>({P:CUR.P,g:CUR.references.concat(CUR.testes).map(x=>x.nom)}));let mr=0;
+ for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){const r=RP[A.groupes[i]+'/'+A.groupes[j]];mr=Math.max(mr,Math.abs(P.P[i][j]-r)/r);}
+ console.log('p-valeurs de la page vs R : écart relatif max',mr.toExponential(2));
  if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
  console.log('erreurs JS',errs);await br.close();})();

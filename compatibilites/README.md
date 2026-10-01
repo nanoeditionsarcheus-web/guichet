@@ -16,5 +16,11 @@ femelle inconnue proviennent-ils d'une des femelles déjà reconstituées (la «
   dans quatre situations : l'exemple, des fichiers téléversés, des femelles connues seules et un
   renommage.
 
+- Comparaison des groupes deux à deux : test exact de Fisher (extension de Freeman et Halton) sur
+  des catégories exclusives, où chaque juvénile compte une seule fois (« F1 », « F1 + F2 »,
+  « Aucune »…). Le seuil est réglable (0,05 par défaut). Validé contre `fisher.test` de R 4.3.3
+  (`validation/test-fisher.js` : 10 paires de l'exemple et 300 tables aléatoires ;
+  `validation/pvaleurs_R.csv`).
+
 Construction : `python3 construire.py` produit `index.html` à partir de `gabarit.html`, du code de
 reconstitution validé et de `validation/compatibilites.js`.

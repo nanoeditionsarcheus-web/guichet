@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Combinaisons de nids</title>
+<style>
+:root{--ink:#10212E;--paper:#F2F5F7;--card:#FFFFFF;--rule:#D3DCE2;--muted:#5C6F7C;--A:#1F5FC4;--hit:#12894F;--grid:#E4EAEF;--axis:#8A99A5;--warn:#B4283C;
+--serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:Consolas,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--hit:#37C08A;--warn:#FF6B7F;}}
+:root[data-theme="dark"]{--ink:#E7EDF2;--paper:#0E1720;--card:#152230;--rule:#26384A;--muted:#93A6B4;--grid:#20303F;--axis:#5C6F7C;--A:#5B9BFF;--hit:#37C08A;--warn:#FF6B7F;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;padding:30px 16px 70px}
+.wrap{max-width:1000px;margin:0 auto}
+header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px}
+h1{font-family:var(--serif);font-size:25px;font-weight:400;margin:0 0 5px}.sub{color:var(--muted);font-size:13.5px;margin:0}
+#stamp{font-family:var(--mono);font-size:12px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center}.controls label{font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.note{color:var(--muted);font-size:13px}
+.reading{border-left:3px solid var(--A);background:color-mix(in srgb,var(--A) 8%,transparent);padding:10px 14px;border-radius:0 3px 3px 0;font-size:13.5px;margin-top:12px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;width:100%}th,td{padding:5px 10px 5px 0;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--axis);font-weight:400;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+.g{font-family:var(--mono);font-weight:700;white-space:nowrap}.g.best{color:var(--hit)}
+.chips .g{display:inline-block;margin:0 10px 2px 0}
+.g.homo{outline:1.5px solid var(--hit);outline-offset:2px;border-radius:2px;padding:0 2px}
+table.complets td,table.complets th{text-align:center;padding:5px 7px}table.complets thead th{text-transform:none;font-size:11px}table.complets td:first-child,table.complets th:first-child{text-align:right;color:var(--muted);font-family:var(--mono)}
+table.complets td.g{font-weight:600}
+.reech input[type=number]{width:90px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
+table.reech-t{width:auto;min-width:60%}table.reech-t td,table.reech-t th{text-align:right;padding:5px 14px 5px 0}table.reech-t td:first-child,table.reech-t th:first-child{text-align:left}
+.reech-h{font-family:var(--mono);font-size:12.5px;margin:12px 0 6px}
+.tie{font-size:11.5px;color:var(--muted);display:block}
+.meter{display:inline-block;width:70px;height:7px;background:var(--grid);border-radius:4px;vertical-align:middle;margin-left:6px;overflow:hidden}.meter i{display:block;height:100%;background:var(--hit)}
+details.loc{border-top:1px solid var(--grid);padding:8px 0}details.loc summary{cursor:pointer;font-size:14px}
+details.loc summary b{font-family:var(--serif);font-weight:400;font-size:16px;margin-right:8px}
+.bars{display:grid;grid-template-columns:max-content 1fr max-content;gap:3px 10px;align-items:center;margin:10px 0 6px;font-size:12.5px}
+.bar{height:12px;background:var(--grid);border-radius:2px;overflow:hidden}.bar i{display:block;height:100%;background:var(--A)}.bar.best i{background:var(--hit)}
+.incompat{font-size:12.5px;margin:6px 0 0}.incompat code{font-family:var(--mono);font-size:12px}
+footer{color:var(--muted);font-size:12px;margin-top:26px;border-top:1px solid var(--rule);padding-top:12px}
+button{font-family:var(--sans);font-size:13.5px;font-weight:600;background:var(--ink);color:var(--paper);border:0;border-radius:3px;padding:7px 14px;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);font-weight:500}
+input[type=file]{font-size:12.5px;color:var(--muted);max-width:100%}
+.err{color:var(--warn)!important}
+a{color:var(--A)}
+
+table.tc{width:auto;min-width:70%}table.tc thead th{text-transform:none;font-family:var(--sans);font-size:13px;color:var(--ink);font-weight:600;letter-spacing:0}table.tc th,table.tc td{text-align:center;padding:7px 10px;border-bottom:1px solid var(--grid)}
+table.tc th:first-child,table.tc td:first-child{text-align:left}
+table.tc td.cell{font-family:var(--mono);min-width:92px}table.tc td.cell b{font-size:15px}table.tc td.cell small{display:block;color:var(--muted);font-size:11px}
+table.tc th.teste,table.tc td.teste{background:color-mix(in srgb,var(--A) 7%,transparent)}
+table.pv td.p{font-family:var(--mono);font-size:12.5px;text-align:center;min-width:76px;padding:6px 6px}
+table.pv td.p small{display:block;font-family:var(--sans);font-size:11px}
+table.pv td.diff{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--ink)}table.pv td.diff small{color:var(--warn);font-weight:600}
+table.pv td.pasdiff{background:color-mix(in srgb,var(--hit) 14%,transparent);color:var(--ink)}table.pv td.pasdiff small{color:var(--hit);font-weight:600}
+table.pv td.diag{background:var(--grid)}
+.fisher input[type=number]{width:90px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
+table.tc tr.aucune td{border-top:2px solid var(--axis)}
+table.tc td.propre b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);width:160px}
+.upl{display:grid;grid-template-columns:max-content 1fr;gap:10px 14px;align-items:center;font-size:14px}
+@media(max-width:640px){.upl{grid-template-columns:1fr}}
+
+.upl{display:grid;grid-template-columns:max-content 1fr;gap:10px 14px;align-items:center;font-size:14px}@media(max-width:640px){.upl{grid-template-columns:1fr}}
+.cb input[type=number]{width:80px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
+table.res{width:auto}table.res th,table.res td{padding:5px 9px 5px 0;text-align:left;border-bottom:1px solid var(--grid);white-space:nowrap}
+table.res thead th{text-transform:none;font-family:var(--sans);font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0}
+table.res td.g{font-family:var(--mono);font-size:12.5px}table.res td.num{text-align:right;font-family:var(--mono)}
+table.res td.oui{color:var(--hit);font-weight:700}table.res td.non{color:var(--muted)}
+.badge-g{display:inline-block;min-width:26px;text-align:center;font-family:var(--mono);font-weight:700;font-size:12px;padding:1px 6px;border-radius:3px;background:color-mix(in srgb,var(--hit) 16%,transparent);color:var(--ink)}
+tr.taille td{border-top:2px solid var(--axis)}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Combinaisons de nids</h1>
+  <p class="sub">Reconstitution de la femelle pour chaque combinaison de fichiers de juvéniles</p>
+  <p class="sub" id="stamp"></p>
+</header>
+
+<div class="card cb">
+  <p class="tag">Données</p>
+  <p class="note" style="margin:-2px 0 12px">Téléversez plusieurs <b>fichiers de juvéniles</b> (par exemple, un fichier par nid), en disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv. Pour chaque combinaison de fichiers (1 fichier, puis 2, puis 3…), la page fusionne les fichiers en un seul groupe et reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a>. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
+  <div class="upl">
+    <span>Fichiers de juvéniles :</span><input type="file" id="upF" multiple accept=".xls,.xlsx,.csv,.txt">
+  </div>
+  <div class="controls" style="margin-top:12px">
+    <label>Taille maximale des combinaisons : <input type="number" id="kmax" min="1" step="1" value="6"></label>
+    <button id="go">Calculer</button>
+    <button id="upReset" class="ghost">Revenir à l'exemple</button>
+  </div>
+  <p class="note" id="info" style="margin:8px 0 0"></p>
+  <p class="note" id="upStatus" style="margin:4px 0 0"></p>
+</div>
+
+<div class="card">
+  <p class="tag">Femelle reconstituée pour chaque combinaison</p>
+  <div class="controls" style="margin:-2px 0 10px"><label style="font-size:13.5px"><input type="checkbox" id="seulOui"> n'afficher que les combinaisons qui reconstituent un génotype</label></div>
+  <div class="scroll"><table class="res" id="res"></table></div>
+  <div class="reading">Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par la méthode du nombre de compatibilités, règle des génotypes complets comprise. <b>Génotype reconstitué</b> : un seul génotype complet ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Incompatibles</b> : nombre de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. Une combinaison qui réunit des nids de femelles différentes peut produire un génotype unique qui n'existe pas. Elle se trahit souvent par un nombre élevé d'incompatibles, mais pas toujours : avec de petits nids, un mélange peut rester compatible avec tous ses juvéniles. Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des nids d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué), ou aucun, si un locus n'a aucun juvénile génotypé. La page n'émet aucun verdict sur les liens entre femelles.</div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dl">Télécharger la liste (CSV)</button></div>
+</div>
+
+<div class="card">
+  <p class="tag">Génotypes reconstitués distincts</p>
+  <div class="scroll"><table class="res" id="dist"></table></div>
+</div>
+
+<div class="card">
+  <p class="tag">Méthode</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; la taille maximale des combinaisons permet d'en limiter le nombre. Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons de l'exemple ont été vérifiées par une programmation indépendante.</p>
+</div>
+
+<footer id="foot"></footer>
+</div>
+<script>
+/*__RECONSTITUTION__*/
+</script>
+<script>
+/*__COMBINAISONS__*/
+</script>
+<script>
+"use strict";
+var EXAMPLE=/*__EXAMPLE__*/;
+var CUR=null,LIMITE=20000;
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='note'+(err?' err':'');}
+function gs(g){return g?g[0]+'/'+g[1]:'—';}
+function majInfo(){if(!CUR)return;var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n)),t=Combinaisons.nombre(n,k);
+  $("info").textContent=n+' fichier(s) ; combinaisons de 1 à '+k+' fichier(s) : '+t+(t>LIMITE?' — trop nombreuses (maximum '+LIMITE+') : réduisez la taille maximale.':'.');}
+function charger(d,label){CUR={fichiers:d.fichiers,loci:d.loci,label:label,res:null};var k=d.fichiers.length;while(k>1&&Combinaisons.nombre(d.fichiers.length,k)>LIMITE)k--;$("kmax").value=k;majInfo();calculer();}
+function calculer(){
+  var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n));
+  if(Combinaisons.nombre(n,k)>LIMITE){status('Trop de combinaisons ; réduisez la taille maximale.',true);return;}
+  var combs=Combinaisons.lister(n,k),L=CUR.loci.length,out=[],i=0,btn=$("go");btn.disabled=true;
+  (function lot(){
+    var fin=Math.min(i+200,combs.length);
+    for(;i<fin;i++)out.push(Combinaisons.reconstituer(CUR.fichiers,combs[i],L));
+    if(i<combs.length){status('Calcul en cours… '+i+' sur '+combs.length);setTimeout(lot,0);return;}
+    btn.disabled=false;status('');CUR.res=Combinaisons.numeroter(out);afficher();
+  })();
+}
+function afficher(){
+  var d=CUR,seul=$("seulOui").checked,dt=new Date();$("stamp").textContent='Exécuté le '+dt.toLocaleDateString('fr-CA')+' à '+dt.toLocaleTimeString('fr-CA');
+  var h='<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>Femelle reconstituée ?</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
+  d.res.forEach(function(r){if(seul&&!r.geno)return;var t=r.comb.length;
+    h+='<tr'+(t!==prev&&prev?' class="taille"':'')+'><td>'+r.comb.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ')+'</td><td class="num">'+r.n+'</td><td class="num">'+(r.geno?r.incompatibles:'')+'</td>'+
+      (r.geno?'<td class="oui">génotype reconstitué</td><td><span class="badge-g">'+r.num+'</span></td>'+r.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join(''):
+       '<td class="non">non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun : locus sans donnée')+')</td><td></td>'+d.loci.map(function(){return '<td></td>';}).join(''))+'</tr>';prev=t;});
+  $("res").innerHTML=h+'</tbody>';
+  var D=Combinaisons.distincts(d.res);
+  $("dist").innerHTML=D.length?'<thead><tr><th>N°</th><th class="num">Combinaisons</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'<th>Combinaisons qui le donnent</th></tr></thead><tbody>'+
+    D.map(function(x){return '<tr><td><span class="badge-g">'+x.num+'</span></td><td class="num">'+x.combs.length+'</td>'+x.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join('')+'<td style="white-space:normal;min-width:240px">'+x.combs.map(function(c){return c.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ');}).join(' ; ')+'</td></tr>';}).join('')+'</tbody>'
+    :'<tbody><tr><td class="note">Aucune combinaison ne reconstitue un génotype unique.</td></tr></tbody>';
+  $("foot").innerHTML='Données : '+esc(d.label)+' — '+d.fichiers.length+' fichier(s) ('+d.fichiers.map(function(f){return esc(f.nom)+' : '+f.juveniles.length;}).join(', ')+'), '+d.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';
+}
+function download(name,rows){
+  var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  var text='\ufeff'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}
+function csv(){var d=CUR,rows=[['Combinaison','Juvéniles','Incompatibles','Femelle reconstituée','N° du génotype'].concat(d.loci)];
+  d.res.forEach(function(r){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?'oui':'non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun')+')',r.geno?r.num:''].concat(r.geno?r.geno.map(gs):d.loci.map(function(){return '';})));});return rows;}
+
+// ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
+function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}
+function readFile(file){
+  return new Promise(function(res,rej){
+    var ext=(file.name.split('.').pop()||'').toLowerCase(),fr=new FileReader();
+    if(ext==='csv'||ext==='txt'){
+      fr.onload=function(){var txt=String(fr.result).replace(/^﻿/,'');var first=txt.split(/\r?\n/)[0]||'';var d=first.indexOf(';')>=0?';':(first.indexOf('\t')>=0?'\t':',');
+        res(txt.split(/\r?\n/).filter(function(l){return l.trim().length;}).map(function(l){return l.split(d);}));};
+      fr.onerror=rej;fr.readAsText(file);
+    }else{
+      if(typeof XLSX==='undefined'){rej(new Error("lecture .xls indisponible (hors ligne). Enregistrez le fichier en .csv, ou utilisez la page en ligne."));return;}
+      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];res(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}));}catch(e){rej(e);}};
+      fr.onerror=rej;fr.readAsArrayBuffer(file);
+    }
+  });
+}
+function nLoci(rows){var h=rows[0]||[],cnt=0;for(var i=1;i<h.length;i+=2)if(h[i]!=null&&String(h[i]).trim()!=='')cnt++;if(cnt>0)return cnt;var m=0;for(var r=0;r<rows.length;r++)if(rows[r].length>m)m=rows[r].length;return Math.floor((m-1)/2);}
+function lociNames(header,nloc){var out=[];for(var k=0;k<nloc;k++){var nm=(header&&header[1+2*k]!=null)?String(header[1+2*k]).trim():'';out.push(nm||('Locus'+(k+1)));}return out;}
+function parseJuv(rows){var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),juv=[];
+  for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;
+    var g=[];for(var k=0;k<nloc;k++){var a=normA(row[1+2*k]),b=normA(row[2+2*k]);g.push((a==null||b==null)?null:[a,b]);}juv.push({id:String(row[0]).trim(),genos:g});}
+  return {loci:loci,juveniles:juv};}
+function aligner(loci,canon,nom){
+  if(loci.length!==canon.length)throw new Error("« "+nom+" » compte "+loci.length+" locus au lieu de "+canon.length+".");
+  var idx=canon.map(function(c){return loci.indexOf(c);});
+  if(idx.indexOf(-1)>=0)throw new Error("les noms de locus de « "+nom+" » ne correspondent pas à ceux du premier fichier.");
+  return idx;}
+
+(function init(){
+  $("upReset").addEventListener('click',function(){charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);status("Exemple rétabli.");});
+  $("kmax").addEventListener('input',majInfo);
+  $("go").addEventListener('click',function(){
+    var F=[].slice.call($("upF").files);
+    if(!F.length){if(CUR){majInfo();calculer();}return;}   // pas de nouveaux fichiers : recalcul avec la taille choisie
+    if(F.length<1){status("Choisissez au moins un fichier.",true);return;}
+    status("Lecture en cours…");
+    Promise.all(F.map(readFile)).then(function(all){
+      var canon=null,fichiers=[];
+      all.forEach(function(rows,i){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error("aucun juvénile lu dans « "+F[i].name+" ».");
+        if(!canon)canon=p.loci;var idx=aligner(p.loci,canon,F[i].name);
+        fichiers.push({nom:F[i].name.replace(/\.[^.]+$/,''),juveniles:p.juveniles.map(function(j){return idx.map(function(k){return j.genos[k];});})});});
+      $("upF").value='';
+      CUR={fichiers:fichiers,loci:canon,label:'fichiers téléversés',res:null};
+      var k=fichiers.length;while(k>1&&Combinaisons.nombre(fichiers.length,k)>LIMITE)k--;$("kmax").value=k;
+      majInfo();calculer();
+    }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
+  });
+  $("seulOui").addEventListener('change',function(){if(CUR&&CUR.res)afficher();});
+  $("dl").addEventListener('click',function(){if(CUR&&CUR.res)download('combinaisons-reconstitution.csv',csv());});
+  charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);
+})();
+</script>
+</body>
+</html>

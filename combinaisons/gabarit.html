@@ -69,7 +69,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 table.res{width:auto}table.res th,table.res td{padding:5px 9px 5px 0;text-align:left;border-bottom:1px solid var(--grid);white-space:nowrap}
 table.res thead th{text-transform:none;font-family:var(--sans);font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0}
 table.res td.g{font-family:var(--mono);font-size:12.5px}table.res td.num{text-align:right;font-family:var(--mono)}
-table.res td.oui{color:var(--hit);font-weight:700}table.res td.non{color:var(--muted)}
+table.res td.oui{color:var(--hit);font-weight:700}table.res td.rej{color:var(--warn)}table.res td.g.rej{color:var(--muted);text-decoration:line-through}table.res td.non{color:var(--muted)}
 .badge-g{display:inline-block;min-width:26px;text-align:center;font-family:var(--mono);font-weight:700;font-size:12px;padding:1px 6px;border-radius:3px;background:color-mix(in srgb,var(--hit) 16%,transparent);color:var(--ink)}
 tr.taille td{border-top:2px solid var(--axis)}
 </style>
@@ -85,12 +85,13 @@ tr.taille td{border-top:2px solid var(--axis)}
 
 <div class="card cb">
   <p class="tag">Données</p>
-  <p class="note" style="margin:-2px 0 12px">Téléversez plusieurs <b>fichiers de juvéniles</b> (par exemple, un fichier par nid), en disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv. Pour chaque combinaison de fichiers (1 fichier, puis 2, puis 3…), la page fusionne les fichiers en un seul groupe et reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a>. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
+  <p class="note" style="margin:-2px 0 12px">Téléversez plusieurs <b>fichiers de juvéniles</b>, <b>un fichier par femelle</b> (tous les juvéniles d'un fichier proviennent d'une même femelle, qu'ils viennent d'un ou de plusieurs nids), en disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv. Pour chaque combinaison de fichiers (1 fichier, puis 2, puis 3…), la page fusionne les fichiers en un seul groupe et reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a>. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
   <div class="upl">
     <span>Fichiers de juvéniles :</span><input type="file" id="upF" multiple accept=".xls,.xlsx,.csv,.txt">
   </div>
   <div class="controls" style="margin-top:12px">
-    <label>Taille maximale des combinaisons : <input type="number" id="kmax" min="1" step="1" value="6"></label>
+    <label>Nombre maximal de fichiers par combinaison : <input type="number" id="kmax" min="1" step="1" value="6"></label>
+    <label>Plafond d'incompatibles (%) : <input type="number" id="plafond" min="0" max="100" step="1" value="10"></label>
     <button id="go">Calculer</button>
     <button id="upReset" class="ghost">Revenir à l'exemple</button>
   </div>
@@ -100,9 +101,9 @@ tr.taille td{border-top:2px solid var(--axis)}
 
 <div class="card">
   <p class="tag">Femelle reconstituée pour chaque combinaison</p>
-  <div class="controls" style="margin:-2px 0 10px"><label style="font-size:13.5px"><input type="checkbox" id="seulOui"> n'afficher que les combinaisons qui reconstituent un génotype</label></div>
+  <div class="controls" style="margin:-2px 0 10px"><label style="font-size:13.5px"><input type="checkbox" id="seulOui"> n'afficher que les combinaisons dont le génotype reconstitué est retenu</label></div>
   <div class="scroll"><table class="res" id="res"></table></div>
-  <div class="reading">Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par la méthode du nombre de compatibilités, règle des génotypes complets comprise. <b>Génotype reconstitué</b> : un seul génotype complet ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Incompatibles</b> : nombre de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. Une combinaison qui réunit des nids de femelles différentes peut produire un génotype unique qui n'existe pas. Elle se trahit souvent par un nombre élevé d'incompatibles, mais pas toujours : avec de petits nids, un mélange peut rester compatible avec tous ses juvéniles. Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des nids d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué), ou aucun, si un locus n'a aucun juvénile génotypé. La page n'émet aucun verdict sur les liens entre femelles.</div>
+  <div class="reading">Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par la méthode du nombre de compatibilités, règle des génotypes complets comprise. <b>Incompatibles</b> : nombre (et pourcentage) de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. <b>Génotype reconstitué</b> : un seul génotype complet, dont le pourcentage d'incompatibles ne dépasse pas le plafond choisi ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Rejeté</b> : un seul génotype complet, mais trop d'incompatibles : la femelle reconstituée est probablement factice (génotype barré). Une combinaison qui réunit des nids de femelles différentes peut produire un génotype unique qui n'existe pas. Elle se trahit souvent par un nombre élevé d'incompatibles, mais pas toujours : avec de petits nids, un mélange peut rester compatible avec tous ses juvéniles. Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des nids d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué), ou aucun, si un locus n'a aucun juvénile génotypé. La page n'émet aucun verdict sur les liens entre femelles.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dl">Télécharger la liste (CSV)</button></div>
 </div>
 
@@ -113,7 +114,7 @@ tr.taille td{border-top:2px solid var(--axis)}
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; la taille maximale des combinaisons permet d'en limiter le nombre. Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons de l'exemple ont été vérifiées par une programmation indépendante.</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 10 % par défaut, fixé arbitrairement et réglable. Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons de l'exemple ont été vérifiées par une programmation indépendante.</p>
 </div>
 
 <footer id="foot"></footer>
@@ -143,15 +144,19 @@ function calculer(){
     var fin=Math.min(i+200,combs.length);
     for(;i<fin;i++)out.push(Combinaisons.reconstituer(CUR.fichiers,combs[i],L));
     if(i<combs.length){status('Calcul en cours… '+i+' sur '+combs.length);setTimeout(lot,0);return;}
-    btn.disabled=false;status('');CUR.res=Combinaisons.numeroter(out);afficher();
+    btn.disabled=false;status('');CUR.brut=out;renumeroter();
   })();
 }
+function fmtPct(x){return (Math.round(10*x)/10).toString().replace('.',',')+' %';}
+function plafond(){var p=+$("plafond").value;return isFinite(p)&&p>=0?p:10;}
+function renumeroter(){if(!CUR||!CUR.brut)return;CUR.res=Combinaisons.numeroter(CUR.brut,plafond());afficher();}
 function afficher(){
   var d=CUR,seul=$("seulOui").checked,dt=new Date();$("stamp").textContent='Exécuté le '+dt.toLocaleDateString('fr-CA')+' à '+dt.toLocaleTimeString('fr-CA');
-  var h='<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>Femelle reconstituée ?</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
-  d.res.forEach(function(r){if(seul&&!r.geno)return;var t=r.comb.length;
-    h+='<tr'+(t!==prev&&prev?' class="taille"':'')+'><td>'+r.comb.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ')+'</td><td class="num">'+r.n+'</td><td class="num">'+(r.geno?r.incompatibles:'')+'</td>'+
-      (r.geno?'<td class="oui">génotype reconstitué</td><td><span class="badge-g">'+r.num+'</span></td>'+r.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join(''):
+  var h='<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>Femelle reconstituée</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
+  d.res.forEach(function(r){if(seul&&!r.retenu)return;var t=r.comb.length;
+    h+='<tr'+(t!==prev&&prev?' class="taille"':'')+'><td>'+r.comb.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ')+'</td><td class="num">'+r.n+'</td><td class="num">'+(r.geno?r.incompatibles+' ('+fmtPct(r.pctIncompat)+')':'')+'</td>'+
+      (r.retenu?'<td class="oui">génotype reconstitué</td><td><span class="badge-g">'+r.num+'</span></td>'+r.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join(''):
+       r.geno?'<td class="rej">rejeté (incompatibles &gt; '+fmtPct(plafond())+')</td><td></td>'+r.geno.map(function(g){return '<td class="g rej">'+gs(g)+'</td>';}).join(''):
        '<td class="non">non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun : locus sans donnée')+')</td><td></td>'+d.loci.map(function(){return '<td></td>';}).join(''))+'</tr>';prev=t;});
   $("res").innerHTML=h+'</tbody>';
   var D=Combinaisons.distincts(d.res);
@@ -164,8 +169,8 @@ function download(name,rows){
   var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   var text='\ufeff'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}
-function csv(){var d=CUR,rows=[['Combinaison','Juvéniles','Incompatibles','Femelle reconstituée','N° du génotype'].concat(d.loci)];
-  d.res.forEach(function(r){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?'oui':'non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun')+')',r.geno?r.num:''].concat(r.geno?r.geno.map(gs):d.loci.map(function(){return '';})));});return rows;}
+function csv(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Incompatibles','% incompatibles','Femelle reconstituée','N° du génotype'].concat(d.loci)];
+  d.res.forEach(function(r){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?r.pctIncompat.toFixed(1):'',r.retenu?'oui':r.geno?'rejeté':'non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun')+')',r.geno?r.num:''].concat(r.geno?r.geno.map(gs):d.loci.map(function(){return '';})));});return rows;}
 
 // ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
 function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}
@@ -215,6 +220,7 @@ function aligner(loci,canon,nom){
     }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
   });
   $("seulOui").addEventListener('change',function(){if(CUR&&CUR.res)afficher();});
+  $("plafond").addEventListener('input',renumeroter);
   $("dl").addEventListener('click',function(){if(CUR&&CUR.res)download('combinaisons-reconstitution.csv',csv());});
   charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);
 })();

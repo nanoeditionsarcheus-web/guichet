@@ -9,15 +9,13 @@ def lire(csv):
     nl = (len(rows[0]) - 1) // 2
     g = lambda r, k: None if int(r[1+2*k] or 0) == 0 or int(r[2+2*k] or 0) == 0 else [int(r[1+2*k]), int(r[2+2*k])]
     return [rows[0][1+2*k] for k in range(nl)], [(r[0], [g(r, k) for k in range(nl)]) for r in rows[1:]]
-loci, grise = lire("donnees/exemple-maple-FLOCK.csv")
-_, turq = lire("jeux/Turquoise/Turquoise-FLOCK.csv")
-nids = {}
-for jid, ge in grise + turq:
-    nids.setdefault("nid " + jid[:6], []).append(ge)
-ordre = ["nid 201707", "nid 201808", "nid 202105", "nid 201506", "nid 201605", "nid 201905"]
-ex = {"label": "exemple de P. Duchesne — nids de tortues des groupes Grise (201707, 201808, 202105) et Turquoise (201506, 201605, 201905)",
-      "loci": loci, "fichiers": [{"nom": n, "juveniles": nids[n]} for n in ordre]}
+FICHIERS = [("Blanche", "jeux/Blanche/Blanche-FLOCK.csv"), ("Grise", "donnees/exemple-maple-FLOCK.csv"),
+            ("Rose", "jeux/Rose/Rose-FLOCK.csv"), ("Turquoise", "jeux/Turquoise/Turquoise-FLOCK.csv"),
+            ("Inconnue 1", "jeux/Inc_1/Inc_1-FLOCK.csv"), ("Inconnue 2", "jeux/Inc_2/Inc_2-FLOCK.csv")]
+loci = lire(FICHIERS[0][1])[0]
+ex = {"label": "exemple de P. Duchesne — les six fichiers de tortues (un fichier par femelle), versions validées contre ses feuilles Maple",
+      "loci": loci, "fichiers": [{"nom": n, "juveniles": [g for _, g in lire(f)[1]]} for n, f in FICHIERS]}
 html = (d / "gabarit.html").read_text(encoding="utf8")
 html = html.replace("/*__RECONSTITUTION__*/", rec).replace("/*__COMBINAISONS__*/", com).replace("/*__EXAMPLE__*/", json.dumps(ex, ensure_ascii=False, separators=(",", ":")))
 (d / "index.html").write_text(html, encoding="utf8")
-print({n: len(nids[n]) for n in ordre})
+print({f["nom"]: len(f["juveniles"]) for f in ex["fichiers"]})

@@ -36,15 +36,24 @@
     return { comb: comb, n: juv.length, nComplets: nc, geno: geno, incompatibles: incompat };
   }
 
-  // Numérote les génotypes distincts dans l'ordre de première apparition.
-  function numeroter(res) {
+  /* Plafond d'incompatibles (demande de P. Duchesne, 3 octobre 2026) : un génotype reconstitué n'est
+   * retenu que si le pourcentage de juvéniles de la combinaison incompatibles avec lui ne dépasse pas
+   * « plafond » (en %). Au-delà, la femelle est jugée factice : « rejeté ». Puis on numérote les
+   * génotypes retenus distincts dans l'ordre de première apparition. */
+  function numeroter(res, plafond) {
     var vus = {}, k = 0;
-    res.forEach(function (r) { if (!r.geno) return; var c = Rec.cleComplet(r.geno); if (!(c in vus)) vus[c] = ++k; r.num = vus[c]; });
+    res.forEach(function (r) {
+      r.pctIncompat = r.geno ? 100 * r.incompatibles / r.n : null;
+      r.retenu = !!r.geno && r.pctIncompat <= plafond + 1e-9;
+      r.num = null;
+      if (!r.retenu) return;
+      var c = Rec.cleComplet(r.geno); if (!(c in vus)) vus[c] = ++k; r.num = vus[c];
+    });
     return res;
   }
   function distincts(res) {
     var m = {};
-    res.forEach(function (r) { if (!r.geno) return; (m[r.num] = m[r.num] || { num: r.num, geno: r.geno, combs: [] }).combs.push(r.comb); });
+    res.forEach(function (r) { if (!r.retenu) return; (m[r.num] = m[r.num] || { num: r.num, geno: r.geno, combs: [] }).combs.push(r.comb); });
     return Object.keys(m).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return m[k]; });
   }
 

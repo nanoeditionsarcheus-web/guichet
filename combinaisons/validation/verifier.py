@@ -1,5 +1,6 @@
-"""Vérification indépendante (Python, sans le code JS) des 63 combinaisons de l'exemple :
-pour chaque combinaison de nids, nombre de génotypes complets et génotype s'il est unique."""
+"""Vérification indépendante (Python, sans le code JS) des 63 combinaisons de l'exemple (six fichiers,
+un par femelle) : nombre de génotypes complets, génotype s'il est unique, incompatibles, et décision
+« retenu » avec le plafond par défaut de 10 % d'incompatibles."""
 import json, pathlib, itertools, re
 d = pathlib.Path(__file__).resolve().parents[1]
 html = (d / "index.html").read_text(encoding="utf8")
@@ -25,6 +26,7 @@ for k in range(1, len(F) + 1):
         juv = [j for i in comb for j in F[i]["juveniles"]]
         n, g = reconstituer(juv)
         inc = None if g is None else sum(1 for j in juv if any(x and not (set(x) & set(gg)) for x, gg in zip(j, g)))
-        out.append({"comb": list(comb), "n": len(juv), "nComplets": n, "geno": g, "incompatibles": inc})
+        out.append({"comb": list(comb), "n": len(juv), "nComplets": n, "geno": g, "incompatibles": inc,
+                    "retenu": g is not None and 100 * inc / len(juv) <= 10})
 json.dump(out, open(d / "validation/attendu.json", "w"))
-print(len(out), "combinaisons ;", sum(1 for o in out if o["geno"]), "génotypes reconstitués")
+print(len(out), "combinaisons ;", sum(1 for o in out if o["geno"]), "génotypes uniques ;", sum(1 for o in out if o["retenu"]), "retenus (plafond 10 %)")

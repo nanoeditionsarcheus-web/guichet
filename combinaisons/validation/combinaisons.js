@@ -27,13 +27,13 @@
     var juv = [];
     comb.forEach(function (j) { juv = juv.concat(fichiers[j].juveniles); });
     var ret = Rec.retenusParLocus(Rec.analyse(juv, nLoci)), nc = Rec.nombreComplets(ret);
-    var geno = nc === 1 ? Rec.genotypesComplets(ret)[0] : null, incompat = null;
+    var geno = nc === 1 ? Rec.genotypesComplets(ret)[0] : null, incompat = null, parFichier = null;
     if (geno) {   // juvéniles qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus
-      incompat = juv.filter(function (j) {
-        return j.some(function (g, l) { return g && !Rec.compatible(g, geno[l]); });
-      }).length;
+      var inc = function (j) { return j.some(function (g, l) { return g && geno[l] && !Rec.compatible(g, geno[l]); }); };
+      parFichier = comb.map(function (f) { return fichiers[f].juveniles.filter(inc).length; });   // détail, fichier par fichier
+      incompat = parFichier.reduce(function (a, b) { return a + b; }, 0);
     }
-    return { comb: comb, n: juv.length, nComplets: nc, geno: geno, incompatibles: incompat };
+    return { comb: comb, n: juv.length, nComplets: nc, geno: geno, incompatibles: incompat, incParFichier: parFichier };
   }
 
   /* Plafond d'incompatibles (demande de P. Duchesne, 3 octobre 2026) : un génotype reconstitué n'est
@@ -57,6 +57,37 @@
     return Object.keys(m).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return m[k]; });
   }
 
-  var api = { nombre: nombre, lister: lister, reconstituer: reconstituer, numeroter: numeroter, distincts: distincts };
+  /* Groupes de fichiers (demande de P. Duchesne, 4 octobre 2026) : pour chaque fichier, la ou les plus
+   * grandes combinaisons retenues qui le contiennent (plusieurs en cas d'égalité de taille). Chaque
+   * combinaison ainsi choisie n'est présentée qu'une fois, avec les fichiers qui l'ont choisie. Un groupe
+   * est « cohérent » si chacun de ses fichiers a ce groupe, et lui seul, pour plus grande combinaison.
+   * res : résultat de numeroter ; n : nombre de fichiers. */
+  function groupes(res, n) {
+    var parFichier = [], liste = [], index = {};
+    for (var f = 0; f < n; f++) {
+      var max = 0, best = [];
+      res.forEach(function (r) {
+        if (!r.retenu || r.comb.indexOf(f) < 0) return;
+        if (r.comb.length > max) { max = r.comb.length; best = [r]; }
+        else if (r.comb.length === max) best.push(r);
+      });
+      parFichier.push(best.map(function (r) {
+        var cle = r.comb.join(",");
+        if (!(cle in index)) {
+          index[cle] = liste.length;
+          liste.push({ comb: r.comb, num: r.num, geno: r.geno, n: r.n, incompatibles: r.incompatibles, incParFichier: r.incParFichier, pctIncompat: r.pctIncompat, choisiPar: [] });
+        }
+        liste[index[cle]].choisiPar.push(f);
+        return index[cle];
+      }));
+    }
+    liste.forEach(function (g, i) {
+      g.coherent = g.comb.every(function (f) { return parFichier[f].length === 1 && parFichier[f][0] === i; });
+    });
+    return { groupes: liste, parFichier: parFichier,
+             sans: parFichier.map(function (p, f) { return p.length ? null : f; }).filter(function (f) { return f !== null; }) };
+  }
+
+  var api = { nombre: nombre, lister: lister, reconstituer: reconstituer, numeroter: numeroter, distincts: distincts, groupes: groupes };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Combinaisons = api;
 })(this);

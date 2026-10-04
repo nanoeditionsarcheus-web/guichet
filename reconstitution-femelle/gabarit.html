@@ -132,7 +132,7 @@ var EXAMPLE=/*__EXAMPLE__*/;
 var CUR=null;
 var $=function(id){return document.getElementById(id);};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-function gs(g){return g[0]+'/'+g[1];}
+function gs(g){return g?g[0]+'/'+g[1]:'?';}
 // nombre de génotypes possibles pour k allèles : k(k−1)/2 hétérozygotes + k homozygotes
 function nPossible(k){return k*(k-1)/2+k;}
 function fmtBig(b){var s=b.toString(),t=s.replace(/\B(?=(\d{3})+(?!\d))/g,'\u202f');
@@ -147,18 +147,20 @@ function render(data,label){
   res.forEach(function(r,k){
     var gap=r.secondNC==null?'—':(r.maxNC-r.secondNC);
     h+='<tr><td>'+esc(data.loci[k])+'</td><td class="chips">'+r.best.map(function(c){return '<span class="g best'+(c.geno[0]===c.geno[1]?' homo" title="homozygote':'')+'">'+gs(c.geno)+'</span>';}).join('')+
-      (r.best.length>1?'<span class="tie">'+r.best.length+' candidats à égalité</span>':'')+'</td>'+
+      (r.best.length>1?'<span class="tie">'+r.best.length+' candidats à égalité</span>':'')+(r.nTyped?'':'<span class="tie">aucun juvénile génotypé : locus inconnu (?)</span>')+'</td>'+
       '<td class="num">'+r.maxNC+' / '+r.nTyped+'<span class="meter"><i style="width:'+(r.nTyped?100*r.maxNC/r.nTyped:0).toFixed(1)+'%"></i></span></td>'+
       '<td class="num">'+(r.secondNC==null?'—':r.secondNC)+'</td><td class="num">'+gap+'</td><td class="num">'+r.nAlleles+'</td><td class="num">'+nPossible(r.nAlleles)+'</td></tr>';
   });
-  var tot=res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1));
-  h+='</tbody><tfoot><tr><td colspan="6" style="border:0;padding-top:8px"><b>Génotypes multilocus possibles</b> (produit sur les '+res.length+' locus)</td><td class="num" style="border:0;padding-top:8px"><b>'+fmtBig(tot)+'</b></td></tr></tfoot>';
+  var tot=res.reduce(function(p,r){return r.nTyped?p*BigInt(nPossible(r.nAlleles)):p;},BigInt(1)),nConnus=res.filter(function(r){return r.nTyped;}).length;
+  h+='</tbody><tfoot><tr><td colspan="6" style="border:0;padding-top:8px"><b>Génotypes multilocus possibles</b> (produit sur les '+nConnus+' locus'+(nConnus<res.length?' génotypés':'')+')</td><td class="num" style="border:0;padding-top:8px"><b>'+fmtBig(tot)+'</b></td></tr></tfoot>';
   $("summary").innerHTML=h;
   // génotypes complets les plus vraisemblables
   var ret=Reconstitution.retenusParLocus(res),nComp=Reconstitution.nombreComplets(ret),MAXAFF=200;
   var comp=Reconstitution.genotypesComplets(ret,MAXAFF);
   $("complCount").innerHTML=nComp?('<b>'+fmtBig(BigInt(nComp))+'</b> génotype'+(nComp>1?'s':'')+' complet'+(nComp>1?'s':'')+' le'+(nComp>1?'s':'')+' plus vraisemblable'+(nComp>1?'s':'')+
-    (nComp>1?' (produit du nombre de génotypes retenus à chaque locus : '+ret.map(function(l){return l.length;}).join(' × ')+')':'')+'.'+(nComp>MAXAFF?' Les '+MAXAFF+' premiers sont affichés ; le fichier CSV les contient tous.':'')):'Aucun génotype complet : un locus n\'a aucun juvénile génotypé.';
+    (nComp>1?' (produit du nombre de génotypes retenus à chaque locus : '+ret.map(function(l){return l.length;}).join(' × ')+')':'')+'.'+(nComp>MAXAFF?' Les '+MAXAFF+' premiers sont affichés ; le fichier CSV les contient tous.':'')):'Aucun génotype complet.';
+  var inconnus=res.map(function(r,k){return r.nTyped?null:data.loci[k];}).filter(function(x){return x!=null;});
+  if(inconnus.length)$("complCount").innerHTML+=' <span class="tie">'+(inconnus.length>1?'Les locus ':'Le locus ')+esc(inconnus.join(', '))+(inconnus.length>1?' n\'ont':' n\'a')+' aucun juvénile génotypé : '+(inconnus.length>1?'ils restent inconnus':'il reste inconnu')+' (?), et la femelle est reconstituée sur les autres locus.</span>';
   var varie=ret.map(function(l){return l.length>1;});
   CUR.nComp=nComp;CUR.reference=nComp===1?Reconstitution.cleComplet(Reconstitution.genotypesComplets(ret)[0]):null;CUR.reech=null;
   $("reechOn").hidden=nComp!==1;$("reechOff").hidden=nComp===1;$("reechRes").innerHTML='';$("reechStatus").textContent='';

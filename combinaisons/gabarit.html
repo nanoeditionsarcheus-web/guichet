@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Combinaisons de nids</title>
+<title>Agréger les juvéniles d'une même femelle</title>
 <style>
 :root{--ink:#10212E;--paper:#F2F5F7;--card:#FFFFFF;--rule:#D3DCE2;--muted:#5C6F7C;--A:#1F5FC4;--hit:#12894F;--grid:#E4EAEF;--axis:#8A99A5;--warn:#B4283C;
 --serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--mono:Consolas,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
@@ -72,14 +72,22 @@ table.res td.g{font-family:var(--mono);font-size:12.5px}table.res td.num{text-al
 table.res td.oui{color:var(--hit);font-weight:700}table.res td.rej{color:var(--warn)}table.res td.g.rej{color:var(--muted);text-decoration:line-through}table.res td.non{color:var(--muted)}
 .badge-g{display:inline-block;min-width:26px;text-align:center;font-family:var(--mono);font-weight:700;font-size:12px;padding:1px 6px;border-radius:3px;background:color-mix(in srgb,var(--hit) 16%,transparent);color:var(--ink)}
 tr.taille td{border-top:2px solid var(--axis)}
+:root{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#4a3aa7;--s8:#e34948}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--s8:#e66767}}
+:root[data-theme="dark"]{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--s8:#e66767}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+table.res td.coh{white-space:normal;min-width:180px}
+.graphe{width:100%;max-width:820px;display:block;margin:4px auto 0}
+.graphe text{font-family:var(--sans);font-size:12.5px;fill:var(--ink)}.graphe text.gl{fill:var(--muted);font-size:11.5px}
+.avert{color:var(--warn);font-weight:600}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <h1>Combinaisons de nids</h1>
-  <p class="sub">Reconstitution de la femelle pour chaque combinaison de fichiers de juvéniles</p>
+  <h1>Agréger les juvéniles d'une même femelle</h1>
+  <p class="sub">Recherche des fichiers de juvéniles qui pourraient provenir d'une même femelle, par la reconstitution de la femelle pour chaque combinaison de fichiers</p>
   <p class="sub" id="stamp"></p>
 </header>
 
@@ -100,10 +108,23 @@ tr.taille td{border-top:2px solid var(--axis)}
 </div>
 
 <div class="card">
+  <p class="tag">Groupes de fichiers d'une même femelle</p>
+  <div class="scroll"><table class="res" id="grp"></table></div>
+  <p class="note" id="grpNote" style="margin:8px 0 0"></p>
+  <div id="graphe"></div>
+  <div class="reading">Pour chaque fichier, la page cherche la <b>plus grande combinaison retenue</b> qui le contient (un seul génotype complet, incompatibles sous le plafond). Les fichiers de cette combinaison forment son <b>groupe</b> : ils pourraient provenir d'une même femelle. Un groupe choisi par plusieurs fichiers n'est présenté qu'une fois. Il est <b>cohérent</b> si chacun de ses fichiers l'a pour seule plus grande combinaison. Sinon, la page le signale : un fichier appartient à des groupes différents, ou plusieurs combinaisons de même taille sont à égalité, et les données ne permettent pas de trancher. Le tableau donne, pour chaque fichier, ses incompatibles sur son nombre de juvéniles (en rouge s'ils en sont au moins la moitié) ; un fichier dont beaucoup de juvéniles sont incompatibles est suspect, même si le groupe reste sous le plafond (voir la mise en garde plus bas). Dans le graphe, chaque fichier est un point ; les fichiers d'un même groupe sont reliés par des traits de la couleur du groupe, en pointillé si le groupe n'est pas cohérent. Un point plein a la couleur de son groupe ; un point blanc cerclé de rouge a plusieurs plus grandes combinaisons à égalité ; un point blanc cerclé de gris n'appartient à aucune combinaison retenue. Chaque point porte aussi le nom de son ou ses groupes. Un groupe est une hypothèse à examiner, non une conclusion.</div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlG">Télécharger les groupes (CSV)</button></div>
+</div>
+
+<div class="card">
   <p class="tag">Femelle reconstituée pour chaque combinaison</p>
   <div class="controls" style="margin:-2px 0 10px"><label style="font-size:13.5px"><input type="checkbox" id="seulOui"> n'afficher que les combinaisons dont le génotype reconstitué est retenu</label></div>
   <div class="scroll"><table class="res" id="res"></table></div>
-  <div class="reading">Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par la méthode du nombre de compatibilités, règle des génotypes complets comprise. <b>Incompatibles</b> : nombre (et pourcentage) de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. <b>Génotype reconstitué</b> : un seul génotype complet, dont le pourcentage d'incompatibles ne dépasse pas le plafond choisi ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Rejeté</b> : un seul génotype complet, mais trop d'incompatibles : la femelle reconstituée est probablement factice (génotype barré). Une combinaison qui réunit des nids de femelles différentes peut produire un génotype unique qui n'existe pas. Elle se trahit souvent par un nombre élevé d'incompatibles, mais pas toujours : avec de petits nids, un mélange peut rester compatible avec tous ses juvéniles. Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des nids d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué), ou aucun, si un locus n'a aucun juvénile génotypé. La page n'émet aucun verdict sur les liens entre femelles.</div>
+  <div class="reading">Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par la méthode du nombre de compatibilités, règle des génotypes complets comprise. <b>Incompatibles</b> : nombre (et pourcentage) de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. <b>Génotype reconstitué</b> : un seul génotype complet, dont le pourcentage d'incompatibles ne dépasse pas le plafond choisi ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Rejeté</b> : un seul génotype complet, mais trop d'incompatibles : la femelle reconstituée est probablement factice (génotype barré). Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des fichiers d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué). Un locus sans aucun juvénile génotypé dans la combinaison reste inconnu (« ? ») et la femelle est reconstituée sur les autres locus. La page n'émet aucun verdict sur les liens entre femelles.</div>
+  <div class="reading"><b>Mise en garde : un mélange peut rester sous le plafond.</b> Une combinaison qui réunit des fichiers de femelles différentes peut donner un génotype unique qui n'existe pas, avec peu d'incompatibles, pour deux raisons.<br>
+  1) <b>La dilution.</b> Le pourcentage est calculé sur l'ensemble des juvéniles de la combinaison, et le génotype reconstitué est surtout celui de la femelle du fichier le plus gros. Les incompatibles viennent alors du petit fichier et se diluent dans le total. Exemple fictif : 40 juvéniles tous compatibles, plus un nid de 4 juvéniles d'une autre femelle, tous incompatibles : 4 sur 44, soit 9 %, sous un plafond de 10 %. Avec ce plafond, un fichier étranger peut passer inaperçu s'il compte au plus un neuvième des juvéniles des autres fichiers.<br>
+  2) <b>Une femelle « composite ».</b> À un locus, le génotype reconstitué peut prendre un allèle de chacune des deux femelles. Il est compatible avec les juvéniles des deux nids si, dans chaque nid, tous les juvéniles portent cet allèle de leur mère. C'est toujours le cas si la mère est homozygote, et c'est fréquent dans un petit nid : à un locus donné, tous les juvéniles d'une mère hétérozygote ont reçu d'elle le même allèle une fois sur 2 avec 2 juvéniles, une fois sur 8 avec 4, une fois sur 512 avec 10. De plus, un allèle très fréquent, porté par les deux femelles, rend un locus peu informatif. Une femelle composite peut ainsi être compatible avec tous les juvéniles du mélange.<br>
+  Le piège tient donc à la petite taille d'un fichier, par rapport aux autres (dilution) ou en elle-même (femelle composite). Le tableau des groupes donne les incompatibles fichier par fichier et signale les groupes non cohérents.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dl">Télécharger la liste (CSV)</button></div>
 </div>
 
@@ -114,7 +135,7 @@ tr.taille td{border-top:2px solid var(--axis)}
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 10 % par défaut, fixé arbitrairement et réglable. Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons de l'exemple ont été vérifiées par une programmation indépendante.</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle, sans jamais découper un fichier en nids. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 10 % par défaut, fixé arbitrairement et réglable. Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons et les groupes de l'exemple ont été vérifiés par une programmation indépendante, ainsi que les groupes d'un essai à 11 fichiers.</p>
 </div>
 
 <footer id="foot"></footer>
@@ -132,24 +153,62 @@ var CUR=null,LIMITE=20000;
 var $=function(id){return document.getElementById(id);};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='note'+(err?' err':'');}
-function gs(g){return g?g[0]+'/'+g[1]:'—';}
+function gs(g){return g?g[0]+'/'+g[1]:'?';}
 function majInfo(){if(!CUR)return;var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n)),t=Combinaisons.nombre(n,k);
-  $("info").textContent=n+' fichier(s) ; combinaisons de 1 à '+k+' fichier(s) : '+t+(t>LIMITE?' — trop nombreuses (maximum '+LIMITE+') : réduisez la taille maximale.':'.');}
+  $("info").textContent=n+' fichier(s) ; combinaisons de 1 à '+k+' fichier(s) : '+t+(t>LIMITE?' — trop nombreuses (maximum '+LIMITE+') : réduisez le nombre maximal de fichiers par combinaison.':'.');}
 function charger(d,label){CUR={fichiers:d.fichiers,loci:d.loci,label:label,res:null};var k=d.fichiers.length;while(k>1&&Combinaisons.nombre(d.fichiers.length,k)>LIMITE)k--;$("kmax").value=k;majInfo();calculer();}
 function calculer(){
   var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n));
-  if(Combinaisons.nombre(n,k)>LIMITE){status('Trop de combinaisons ; réduisez la taille maximale.',true);return;}
+  if(Combinaisons.nombre(n,k)>LIMITE){status('Trop de combinaisons ; réduisez le nombre maximal de fichiers par combinaison.',true);return;}
   var combs=Combinaisons.lister(n,k),L=CUR.loci.length,out=[],i=0,btn=$("go");btn.disabled=true;
   (function lot(){
     var fin=Math.min(i+200,combs.length);
     for(;i<fin;i++)out.push(Combinaisons.reconstituer(CUR.fichiers,combs[i],L));
     if(i<combs.length){status('Calcul en cours… '+i+' sur '+combs.length);setTimeout(lot,0);return;}
-    btn.disabled=false;status('');CUR.brut=out;renumeroter();
+    btn.disabled=false;status('');CUR.brut=out;CUR.k=k;renumeroter();
   })();
 }
 function fmtPct(x){return (Math.round(10*x)/10).toString().replace('.',',')+' %';}
 function plafond(){var p=+$("plafond").value;return isFinite(p)&&p>=0?p:10;}
-function renumeroter(){if(!CUR||!CUR.brut)return;CUR.res=Combinaisons.numeroter(CUR.brut,plafond());afficher();}
+function renumeroter(){if(!CUR||!CUR.brut)return;CUR.res=Combinaisons.numeroter(CUR.brut,plafond());afficher();afficherGroupes();}
+// ---------- groupes de fichiers d'une même femelle, et graphe ----------
+function couleur(i){return i<8?'var(--s'+(i+1)+')':'var(--axis)';}
+function nomG(i){return 'G'+(i+1);}
+function noms(c){return c.map(function(j){return esc(CUR.fichiers[j].nom);}).join(' + ');}
+function afficherGroupes(){
+  var d=CUR,G=Combinaisons.groupes(d.res,d.fichiers.length);CUR.G=G;
+  $("grp").innerHTML=G.groupes.length?'<thead><tr><th>Groupe</th><th>Fichiers (incompatibles / juvéniles)</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>N° du génotype</th><th>Cohérence</th></tr></thead><tbody>'+
+    G.groupes.map(function(g,i){
+      var pb=g.comb.filter(function(f){return !(G.parFichier[f].length===1&&G.parFichier[f][0]===i);});
+      return '<tr><td style="white-space:nowrap"><span class="sw" style="background:'+couleur(i)+'"></span><b>'+nomG(i)+'</b><br><span class="note">'+g.comb.length+' fichier'+(g.comb.length>1?'s':'')+'</span></td><td>'+g.comb.map(function(f,k){var n=d.fichiers[f].juveniles.length,x=g.incParFichier[k];return esc(d.fichiers[f].nom)+' : <span style="font-family:var(--mono)">'+x+' / '+n+'</span>'+(x&&2*x>=n?' <span class="avert">('+fmtPct(100*x/n)+')</span>':'');}).join('<br>')+'</td>'+
+        '<td class="num">'+g.n+'</td><td class="num">'+g.incompatibles+' ('+fmtPct(g.pctIncompat)+')</td>'+
+        '<td><span class="badge-g">'+g.num+'</span></td><td class="coh">'+(g.coherent?'cohérent':'<span class="avert">non cohérent</span><br>'+pb.map(function(f){return esc(d.fichiers[f].nom)+' → '+G.parFichier[f].slice().sort(function(a,b){return a-b;}).map(nomG).join(', ');}).join('<br>'))+'</td></tr>';}).join('')+'</tbody>'
+    :'<tbody><tr><td class="note">Aucune combinaison retenue : aucun groupe.</td></tr></tbody>';
+  var notes=[];
+  if(G.sans.length)notes.push('Fichier'+(G.sans.length>1?'s':'')+' sans aucune combinaison retenue : '+noms(G.sans).replace(/ \+ /g,', ')+'.');
+  if(d.k<d.fichiers.length)notes.push('Les combinaisons sont limitées à '+d.k+' fichier'+(d.k>1?'s':'')+' : un groupe plus grand ne peut pas être détecté.');
+  $("grpNote").textContent='';$("grpNote").innerHTML=notes.join(' ');
+  $("graphe").innerHTML=graphe(G);
+}
+function graphe(G){
+  var d=CUR,n=d.fichiers.length,ordre=[],vu={};
+  G.groupes.forEach(function(g){g.comb.forEach(function(f){if(!vu[f]){vu[f]=1;ordre.push(f);}});});
+  for(var f=0;f<n;f++)if(!vu[f])ordre.push(f);
+  var R=n>1?Math.max(90,Math.min(210,26*n)):0,W=2*R+380,H=2*R+90,cx=W/2,cy=H/2,pos={};
+  ordre.forEach(function(f,k){var a=-Math.PI/2+2*Math.PI*k/n;pos[f]={x:cx+R*Math.cos(a),y:cy+R*Math.sin(a),a:a};});
+  var s='<svg class="graphe" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Graphe des groupes de fichiers">';
+  G.groupes.forEach(function(g,i){for(var a=0;a<g.comb.length;a++)for(var b=a+1;b<g.comb.length;b++){var p=pos[g.comb[a]],q=pos[g.comb[b]];
+    s+='<line x1="'+p.x.toFixed(1)+'" y1="'+p.y.toFixed(1)+'" x2="'+q.x.toFixed(1)+'" y2="'+q.y.toFixed(1)+'" style="stroke:'+couleur(i)+'" stroke-width="2.5"'+(g.coherent?'':' stroke-dasharray="7 5"')+' stroke-linecap="round"><title>'+nomG(i)+' : '+noms(g.comb)+'</title></line>';}});
+  ordre.forEach(function(f){var p=pos[f],gs_=G.parFichier[f],c=gs_.length===1?couleur(gs_[0]):'var(--card)',st=gs_.length===1?'var(--card)':gs_.length?'var(--warn)':'var(--axis)';
+    var droite=Math.cos(p.a)>0.2,gauche=Math.cos(p.a)<-0.2,anc=droite?'start':gauche?'end':'middle',dx=droite?14:gauche?-14:0,dy=Math.sin(p.a)>0.5?24:Math.sin(p.a)<-0.5?-16:4;
+    var lab=gs_.length?gs_.slice().sort(function(a,b){return a-b;}).map(nomG).join(', '):'aucun groupe';
+    s+='<g><title>'+esc(d.fichiers[f].nom)+' — '+lab+'</title><circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="9" style="fill:'+c+';stroke:'+st+'" stroke-width="2"></circle>'+
+      '<text x="'+(p.x+dx).toFixed(1)+'" y="'+(p.y+dy).toFixed(1)+'" text-anchor="'+anc+'">'+esc(d.fichiers[f].nom)+' <tspan class="gl">· '+lab+'</tspan></text></g>';});
+  return s+'</svg>';
+}
+function csvGroupes(){var d=CUR,G=CUR.G,rows=[['Plafond d\'incompatibles (%)',plafond()],['Groupe','Fichiers','Nombre de fichiers','Juvéniles','Incompatibles','% incompatibles','Incompatibles par fichier','N° du génotype','Cohérent','Choisi par']];
+  G.groupes.forEach(function(g,i){rows.push([nomG(i),g.comb.map(function(f){return d.fichiers[f].nom;}).join(' + '),g.comb.length,g.n,g.incompatibles,g.pctIncompat.toFixed(1),g.comb.map(function(f,k){return d.fichiers[f].nom+' '+g.incParFichier[k]+'/'+d.fichiers[f].juveniles.length;}).join(' ; '),g.num,g.coherent?'oui':'non',g.choisiPar.map(function(f){return d.fichiers[f].nom;}).join(' ; ')]);});
+  G.sans.forEach(function(f){rows.push(['aucun',d.fichiers[f].nom]);});return rows;}
 function afficher(){
   var d=CUR,seul=$("seulOui").checked,dt=new Date();$("stamp").textContent='Exécuté le '+dt.toLocaleDateString('fr-CA')+' à '+dt.toLocaleTimeString('fr-CA');
   var h='<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>Femelle reconstituée</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
@@ -222,6 +281,7 @@ function aligner(loci,canon,nom){
   $("seulOui").addEventListener('change',function(){if(CUR&&CUR.res)afficher();});
   $("plafond").addEventListener('input',renumeroter);
   $("dl").addEventListener('click',function(){if(CUR&&CUR.res)download('combinaisons-reconstitution.csv',csv());});
+  $("dlG").addEventListener('click',function(){if(CUR&&CUR.G)download('groupes-de-fichiers.csv',csvGroupes());});
   charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);
 })();
 </script>

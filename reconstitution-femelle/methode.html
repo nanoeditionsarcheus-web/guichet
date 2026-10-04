@@ -111,6 +111,7 @@ a{color:var(--A)}
     <li><b>Juvéniles non compatibles.</b> Pour chaque meilleur candidat, l'outil nomme les juvéniles avec lesquels il n'est pas compatible, pour faciliter la recherche d'erreurs de génotypage.</li>
     <li><b>Nombre de génotypes possibles.</b> Avec <i>k</i> allèles à un locus, il y a <i>k</i>(<i>k</i>−1)/2 hétérozygotes et <i>k</i> homozygotes possibles, soit <i>k</i>(<i>k</i>−1)/2 + <i>k</i> génotypes : ce sont les candidats examinés à ce locus. Pour le génotype au complet, le nombre de possibilités est le produit de ces nombres sur tous les locus.</li>
     <li><b>Nombre d'allèles.</b> Il s'agit des allèles réellement observés chez les juvéniles génotypés ; le code des données manquantes n'est pas compté.</li>
+    <li><b>Données manquantes.</b> À chaque locus, la femelle est reconstituée avec les juvéniles génotypés à ce locus ; les autres ne comptent pas à ce locus. Si aucun juvénile du fichier n'est génotypé à un locus, ce locus reste inconnu (noté « ? ») et la femelle est reconstituée sur les autres locus (règle retenue par l'auteur en octobre 2026). Un locus inconnu n'est pas examiné dans le calcul des compatibilités.</li>
     <li><b>Génotypes à 3 ou 4 allèles.</b> Ils ne sont pas pris en compte pour le moment.</li>
   </ul>
 </div>

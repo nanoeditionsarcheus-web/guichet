@@ -62,9 +62,13 @@
    *  - présence d'un homozygote : ne retenir que l'homozygote (s'il y avait plusieurs homozygotes à
    *    égalité, cas qui ne s'est pas présenté, tous seraient retenus) ;
    *  - sinon (plusieurs candidats, aucun homozygote) : les retenir tous.
-   * Les génotypes complets sont toutes les combinaisons des candidats retenus, locus par locus. */
+   * Les génotypes complets sont toutes les combinaisons des candidats retenus, locus par locus.
+   * Locus sans aucun juvénile génotypé (règle approuvée par P. Duchesne, 4 octobre 2026) : le locus
+   * reste inconnu (génotype null) et la femelle est reconstituée sur les autres locus. Un locus génotypé
+   * chez une partie seulement des juvéniles est reconstitué avec ceux-là, comme toujours. */
   function retenusParLocus(res) {
     return res.map(function (r) {
+      if (!r.best.length) return [{ geno: null, nc: 0, incompatibles: [], inconnu: true }];
       var homo = r.best.filter(function (c) { return c.geno[0] === c.geno[1]; });
       return (r.best.length > 1 && homo.length) ? homo : r.best;
     });
@@ -91,7 +95,7 @@
    * on tire n juvéniles au hasard, sans remise (mélange de Fisher-Yates partiel), on reconstitue la
    * femelle et on note si l'on obtient un seul génotype complet, et s'il est identique à « reference »
    * (chaîne produite par cleComplet sur l'échantillon complet). « rnd » : générateur uniforme [0, 1). */
-  function cleComplet(comb) { return comb.map(function (g) { return g[0] + "/" + g[1]; }).join(" "); }
+  function cleComplet(comb) { return comb.map(function (g) { return g ? g[0] + "/" + g[1] : "?"; }).join(" "); }
   function reechantillonnerTaille(juveniles, nLoci, n, iterations, reference, rnd) {
     var unique = 0, identique = 0, a = juveniles.slice();
     for (var it = 0; it < iterations; it++) {

@@ -1,19 +1,35 @@
 // Test de la page (Chromium/Playwright) : les 63 combinaisons de l'exemple, comparées à validation/attendu.json
-// (calcul Python indépendant), puis téléversement de fichiers et taille maximale réduite.
+// (calcul Python indépendant) ; les groupes de fichiers (attendu-groupes.json) aux plafonds de 10 % et 20 %,
+// puis pour l'essai à 11 fichiers téléversés ; enfin, le téléversement avec un nombre maximal de fichiers réduit.
 const {chromium}=require(process.env.PW||'playwright');const fs=require('fs'),path=require('path'),os=require('os');
-const V=__dirname,A=JSON.parse(fs.readFileSync(path.join(V,'attendu.json'),'utf8'));
+const V=__dirname,A=JSON.parse(fs.readFileSync(path.join(V,'attendu.json'),'utf8')),AG=JSON.parse(fs.readFileSync(path.join(V,'attendu-groupes.json'),'utf8'));
+const cle=G=>JSON.stringify({g:G.groupes.map(g=>({comb:g.comb,choisiPar:g.choisiPar,coherent:g.coherent})).sort((a,b)=>a.comb.join()<b.comb.join()?-1:1).map(JSON.stringify),sans:G.sans});
+const cleA=L=>JSON.stringify({g:L.slice(0,-1).map(g=>({comb:g.comb,choisiPar:g.choisiPar,coherent:g.coherent})).sort((a,b)=>a.comb.join()<b.comb.join()?-1:1).map(JSON.stringify),sans:L[L.length-1].sans});
+function ecrire(dir,loci,f,i){const p=path.join(dir,f.nom.replace(/ /g,'-')+'.csv');fs.writeFileSync(p,['ID;'+loci.map(l=>l+';').join(';')+';'].concat(f.juveniles.map((j,k)=>['J'+i+'_'+k].concat(j.map(g=>g?g.join(';'):'0;0')).join(';'))).join('\n'));return p;}
+let mauvais=0;
 (async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1300,height:900}}),errs=[];pg.on('pageerror',e=>errs.push(e.message));
  await pg.route('**/*',r=>r.request().url().startsWith('file:')?r.continue():r.abort());
- await pg.goto('file://'+path.join(V,'..','index.html'));await pg.waitForFunction(()=>CUR&&CUR.res);
- const R=await pg.evaluate(()=>CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,retenu:r.retenu})));
- let d=0;A.forEach((a,i)=>{const r=R[i];if(!r||JSON.stringify(r.comb)!==JSON.stringify(a.comb)||r.n!==a.n||r.nComplets!==a.nComplets||JSON.stringify(r.geno)!==JSON.stringify(a.geno)||(r.geno&&r.incompatibles!==a.incompatibles)||r.retenu!==a.retenu)d++;});
- console.log('exemple :',R.length,'combinaisons ; écarts avec le calcul indépendant :',d,'(attendu',A.length,')');
- console.log('génotypes distincts :',await pg.evaluate(()=>Combinaisons.distincts(CUR.res).map(x=>x.num+' ('+x.combs.length+' comb.)').join(', ')));
- // téléversement : 3 fichiers FLOCK, taille maximale 2
- const ex=await pg.evaluate(()=>EXAMPLE);const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cb-'));const files=[];
- ex.fichiers.slice(0,3).forEach((f,i)=>{const p=path.join(dir,f.nom.replace(' ','-')+'.csv');fs.writeFileSync(p,['ID;'+ex.loci.map(l=>l+';').join('')].concat(f.juveniles.map((j,k)=>['J'+i+'_'+k].concat(j.map(g=>g?g.join(';'):'0;0')).join(';'))).join('\n'));files.push(p);});
- await pg.setInputFiles('#upF',files);await pg.click('#go');
- await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res);
- console.log('téléversés :',await pg.textContent('#info'),'| lignes',await pg.evaluate(()=>CUR.res.length));
- if(process.argv[2]){await pg.click('#upReset');await pg.waitForFunction(()=>CUR.res&&CUR.res.length===63&&CUR.label.indexOf('exemple')===0);await pg.screenshot({path:process.argv[2],fullPage:true});}
- console.log('erreurs JS',errs);await br.close();process.exit(d||errs.length?1:0);})();
+ await pg.goto('file://'+path.join(V,'..','index.html'));await pg.waitForFunction(()=>CUR&&CUR.res&&CUR.G);
+ const R=await pg.evaluate(()=>CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,incParFichier:r.incParFichier,retenu:r.retenu})));
+ let d=0;A.forEach((a,i)=>{const r=R[i];if(!r||JSON.stringify(r.comb)!==JSON.stringify(a.comb)||r.n!==a.n||r.nComplets!==a.nComplets||JSON.stringify(r.geno)!==JSON.stringify(a.geno)||(r.geno&&(r.incompatibles!==a.incompatibles||JSON.stringify(r.incParFichier)!==JSON.stringify(a.incParFichier)))||r.retenu!==a.retenu)d++;});
+ console.log('exemple :',R.length,'combinaisons ; écarts avec le calcul indépendant :',d,'(attendu',A.length,')');mauvais+=d;
+ for(const p of [10,20]){await pg.fill('#plafond',String(p));await pg.dispatchEvent('#plafond','input');
+  const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(AG['exemple-'+p]);if(!ok)mauvais++;
+  console.log('groupes, plafond',p,'% :',ok?'identiques':'DIFFÉRENTS','—',await pg.evaluate(()=>CUR.G.groupes.map(g=>g.comb.map(f=>CUR.fichiers[f].nom).join('+')).join(' | ')));}
+ if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
+ await pg.fill('#plafond','10');await pg.dispatchEvent('#plafond','input');
+ // essai : 11 fichiers téléversés
+ const E=AG.essai,dir=fs.mkdtempSync(path.join(os.tmpdir(),'cb-'));
+ await pg.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await pg.click('#go');
+ await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res&&CUR.G,null,{timeout:120000});
+ const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(E.groupes);if(!ok)mauvais++;
+ console.log('essai,',E.fichiers.length,'fichiers :',await pg.textContent('#info'),'groupes',ok?'identiques':'DIFFÉRENTS','au calcul indépendant');
+ console.log(await pg.evaluate(()=>[...document.querySelectorAll('#grp tbody tr')].map(t=>t.innerText.replace(/\s+/g,' ')).join('\n')));
+ if(process.argv[3])await pg.screenshot({path:process.argv[3],fullPage:false});
+ // téléversement : 3 fichiers, au plus 2 par combinaison
+ const ex=await pg.evaluate(()=>EXAMPLE);const files=ex.fichiers.slice(0,3).map((f,i)=>ecrire(dir,ex.loci,f,i));
+ await pg.setInputFiles('#upF',files);await pg.fill('#kmax','2');await pg.click('#go');
+ await pg.waitForFunction(()=>CUR.res&&CUR.fichiers.length===3);await pg.fill('#kmax','2');await pg.click('#go');
+ await pg.waitForFunction(()=>CUR.res&&CUR.res.length===6);
+ console.log('téléversés :',await pg.textContent('#info'),'| lignes',await pg.evaluate(()=>CUR.res.length),'|',await pg.textContent('#grpNote'));
+ console.log('erreurs JS',errs);await br.close();process.exit(mauvais||errs.length?1:0);})();

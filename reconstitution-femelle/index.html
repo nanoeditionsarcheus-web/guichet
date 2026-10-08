@@ -47,6 +47,8 @@ button.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule
 input[type=file]{font-size:12.5px;color:var(--muted);max-width:100%}
 .err{color:var(--warn)!important}
 a{color:var(--A)}
+
+#fmtGeno{font-family:var(--sans);font-size:13.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -84,7 +86,7 @@ a{color:var(--A)}
   <p class="note" style="margin:-2px 0 10px">Combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
   <p id="complCount" style="margin:0 0 8px"></p>
   <div class="scroll"><table class="complets" id="complets"></table></div>
-  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button></div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
 </div>
 
 <div class="card reech">
@@ -306,6 +308,15 @@ function render(data,label){
   $("foot").innerHTML='Données : '+esc(label)+' — '+data.juveniles.length+' juvéniles, '+data.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';
 }
 
+// ---------- format des génotypes dans les fichiers CSV (demande de N. Tessier, 8 octobre 2026) ----------
+// « colles » : 268268, comme les classeurs de saisie (3 chiffres par allèle, 000000 si inconnu) ;
+// « flock » : deux colonnes par locus (0 0 si inconnu), relisible par les outils du guichet ; « barre » : 268/268.
+function fmtGeno(){var e=document.getElementById('fmtGeno');return e?e.value:'colles';}
+function a3(a){a=String(a);while(a.length<3)a='0'+a;return a;}
+function genoCells(g){var f=fmtGeno();if(f==='flock')return g?[g[0],g[1]]:[0,0];if(f==='colles')return [g?a3(g[0])+a3(g[1]):'000000'];return [g?g[0]+'/'+g[1]:'?'];}
+function genoVides(n){var r=[];for(var i=0;i<n*(fmtGeno()==='flock'?2:1);i++)r.push('');return r;}
+function genoLigne(geno){var r=[];geno.forEach(function(g){r.push.apply(r,genoCells(g));});return r;}
+function genoEntete(loci){var h=[];loci.forEach(function(l){h.push(l);if(fmtGeno()==='flock')h.push('');});return h;}
 function download(name,rows){
   var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   var text='﻿'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
@@ -315,7 +326,7 @@ function csvSummary(){var rows=[['Locus','Génotype(s) de NC maximal','NC maxima
   CUR.res.forEach(function(r,k){rows.push([CUR.data.loci[k],r.best.map(function(c){return gs(c.geno);}).join(' ; '),r.maxNC,r.nTyped,r.secondNC==null?'':r.secondNC,r.secondNC==null?'':r.maxNC-r.secondNC,r.nAlleles,nPossible(r.nAlleles)]);});
   rows.push(['Génotypes multilocus possibles (produit)','','','','','','',CUR.res.reduce(function(p,r){return p*BigInt(nPossible(r.nAlleles));},BigInt(1)).toString()]);return rows;}
 function csvComplets(){var ret=Reconstitution.retenusParLocus(CUR.res),LIM=100000;
-  var rows=[['#'].concat(CUR.data.loci)];Reconstitution.genotypesComplets(ret,LIM).forEach(function(c,i){rows.push([i+1].concat(c.map(gs)));});return rows;}
+  var rows=[['#'].concat(genoEntete(CUR.data.loci))];Reconstitution.genotypesComplets(ret,LIM).forEach(function(c,i){rows.push([i+1].concat(genoLigne(c)));});return rows;}
 function lancerReech(){
   var it=Math.round(+$("reechIt").value),pas=Math.round(+$("reechPas").value),J=CUR.data.juveniles.map(function(j){return j.genos;}),N=J.length,L=CUR.data.loci.length;
   if(!(it>=10&&it<=100000)){$("reechStatus").textContent='Le nombre d\'itérations doit être compris entre 10 et 100 000.';return;}

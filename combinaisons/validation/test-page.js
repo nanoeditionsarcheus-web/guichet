@@ -10,8 +10,10 @@ let mauvais=0;
 (async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1300,height:900}}),errs=[];pg.on('pageerror',e=>errs.push(e.message));
  await pg.route('**/*',r=>r.request().url().startsWith('file:')?r.continue():r.abort());
  await pg.goto('file://'+path.join(V,'..','index.html'));await pg.waitForFunction(()=>CUR&&CUR.res&&CUR.G);
- const R=await pg.evaluate(()=>CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,incParFichier:r.incParFichier,retenu:r.retenu})));
- let d=0;A.forEach((a,i)=>{const r=R[i];if(!r||JSON.stringify(r.comb)!==JSON.stringify(a.comb)||r.n!==a.n||r.nComplets!==a.nComplets||JSON.stringify(r.geno)!==JSON.stringify(a.geno)||(r.geno&&(r.incompatibles!==a.incompatibles||JSON.stringify(r.incParFichier)!==JSON.stringify(a.incParFichier)))||r.retenu!==a.retenu)d++;});
+ const R=await pg.evaluate(()=>CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,incParFichier:r.incParFichier,retenu:r.retenu,deux:r.deux?r.deux.map(x=>({geno:x.geno,incParFichier:x.incParFichier,sousPlafond:x.sousPlafond})):undefined})));
+ let d=0;A.forEach((a,i)=>{const r=R[i];if(!r||JSON.stringify(r.comb)!==JSON.stringify(a.comb)||r.n!==a.n||r.nComplets!==a.nComplets||JSON.stringify(r.geno)!==JSON.stringify(a.geno)||(r.geno&&(r.incompatibles!==a.incompatibles||JSON.stringify(r.incParFichier)!==JSON.stringify(a.incParFichier)))||r.retenu!==a.retenu||JSON.stringify(r.deux)!==JSON.stringify(a.deux))d++;});
+ const nDeux=A.filter(a=>a.deux).length,lignesDeux=await pg.evaluate(()=>document.querySelectorAll('#deux tbody tr').length),jaunes=await pg.evaluate(()=>document.querySelectorAll('#res tr.deux').length);
+ if(lignesDeux!==2*nDeux||jaunes!==nDeux)d++;console.log('cas de deux génotypes complets :',nDeux,'; lignes affichées',lignesDeux,'; surlignées en jaune',jaunes);
  console.log('exemple :',R.length,'combinaisons ; écarts avec le calcul indépendant :',d,'(attendu',A.length,')');mauvais+=d;
  for(const p of [10,20]){await pg.fill('#plafond',String(p));await pg.dispatchEvent('#plafond','input');
   const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(AG['exemple-'+p]);if(!ok)mauvais++;
@@ -20,7 +22,7 @@ let mauvais=0;
  await pg.fill('#plafond','10');await pg.dispatchEvent('#plafond','input');
  // essai : 11 fichiers téléversés
  const E=AG.essai,dir=fs.mkdtempSync(path.join(os.tmpdir(),'cb-'));
- await pg.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await pg.click('#go');
+ await pg.fill('#kmax','11');await pg.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await pg.click('#go');
  await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res&&CUR.G,null,{timeout:120000});
  const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(E.groupes);if(!ok)mauvais++;
  console.log('essai,',E.fichiers.length,'fichiers :',await pg.textContent('#info'),'groupes',ok?'identiques':'DIFFÉRENTS','au calcul indépendant');
@@ -28,8 +30,8 @@ let mauvais=0;
  if(process.argv[3])await pg.screenshot({path:process.argv[3],fullPage:false});
  // téléversement : 3 fichiers, au plus 2 par combinaison
  const ex=await pg.evaluate(()=>EXAMPLE);const files=ex.fichiers.slice(0,3).map((f,i)=>ecrire(dir,ex.loci,f,i));
- await pg.setInputFiles('#upF',files);await pg.fill('#kmax','2');await pg.click('#go');
- await pg.waitForFunction(()=>CUR.res&&CUR.fichiers.length===3);await pg.fill('#kmax','2');await pg.click('#go');
- await pg.waitForFunction(()=>CUR.res&&CUR.res.length===6);
+ await pg.fill('#kmax','2');await pg.setInputFiles('#upF',files);await pg.click('#go');   // un seul clic : la valeur choisie (2) doit être respectée
+ await pg.waitForFunction(()=>CUR.res&&CUR.fichiers.length===3);const nPremier=await pg.evaluate(()=>CUR.res.length);if(nPremier!==6){d++;console.log('ÉCHEC nombre maximal non respecté :',nPremier,'combinaisons');}
+ mauvais+=d;
  console.log('téléversés :',await pg.textContent('#info'),'| lignes',await pg.evaluate(()=>CUR.res.length),'|',await pg.textContent('#grpNote'));
  console.log('erreurs JS',errs);await br.close();process.exit(mauvais||errs.length?1:0);})();

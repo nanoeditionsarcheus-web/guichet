@@ -24,6 +24,13 @@ pourraient provenir d'une même femelle.
   étranger, ou par une femelle « composite » (un allèle de chaque mère à un locus).
 - Locus sans aucun juvénile génotypé dans une combinaison : inconnu (« ? »), femelle reconstituée sur
   les autres locus (règle de `../reconstitution-femelle`).
+- Plafond par fichier (P. Duchesne, 9 octobre 2026) : le plafond s'applique aussi au pourcentage
+  d'incompatibles de chaque fichier de la combinaison ; les pourcentages sont affichés en vecteur
+  (fichier par fichier, dans l'ordre de la combinaison, puis global).
+- Cas de deux génotypes complets : surlignés en jaune dans la liste et détaillés dans une section
+  (les deux génotypes, leurs incompatibles, locus où ils diffèrent), téléchargeable.
+- Le nombre maximal de fichiers par combinaison choisi est respecté au chargement de nouveaux fichiers
+  (il n'est réduit que si la limite de 20 000 combinaisons l'exige).
 - Paramètres : nombre maximal de fichiers par combinaison ; plafond d'incompatibles en %
   (10 % par défaut, valeur arbitraire proposée par P. Duchesne, réglable). Au plus 20 000 combinaisons.
 - Exemple : les six fichiers de tortues de P. Duchesne (Blanche, Grise, Rose, Turquoise, Inconnue 1,

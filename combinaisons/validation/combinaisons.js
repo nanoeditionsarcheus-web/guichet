@@ -23,28 +23,47 @@
     return out;
   }
 
+  // Incompatibles avec un génotype complet, fichier par fichier (dans l'ordre de la combinaison) : juvéniles
+  // qui ne partagent aucun allèle avec le génotype à au moins un locus génotypé chez les deux.
+  function incompatibles(fichiers, comb, geno) {
+    var inc = function (j) { return j.some(function (g, l) { return g && geno[l] && !Rec.compatible(g, geno[l]); }); };
+    return comb.map(function (f) { return fichiers[f].juveniles.filter(inc).length; });
+  }
+  function somme(t) { return t.reduce(function (a, b) { return a + b; }, 0); }
+
   function reconstituer(fichiers, comb, nLoci) {
     var juv = [];
     comb.forEach(function (j) { juv = juv.concat(fichiers[j].juveniles); });
     var ret = Rec.retenusParLocus(Rec.analyse(juv, nLoci)), nc = Rec.nombreComplets(ret);
-    var geno = nc === 1 ? Rec.genotypesComplets(ret)[0] : null, incompat = null, parFichier = null;
-    if (geno) {   // juvéniles qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus
-      var inc = function (j) { return j.some(function (g, l) { return g && geno[l] && !Rec.compatible(g, geno[l]); }); };
-      parFichier = comb.map(function (f) { return fichiers[f].juveniles.filter(inc).length; });   // détail, fichier par fichier
-      incompat = parFichier.reduce(function (a, b) { return a + b; }, 0);
-    }
-    return { comb: comb, n: juv.length, nComplets: nc, geno: geno, incompatibles: incompat, incParFichier: parFichier };
+    var geno = nc === 1 ? Rec.genotypesComplets(ret)[0] : null, parFichier = geno ? incompatibles(fichiers, comb, geno) : null;
+    var r = { comb: comb, n: juv.length, nParFichier: comb.map(function (f) { return fichiers[f].juveniles.length; }), nComplets: nc,
+              geno: geno, incompatibles: parFichier ? somme(parFichier) : null, incParFichier: parFichier };
+    // Cas de deux génotypes complets (demande de P. Duchesne, 9 octobre 2026) : les deux, avec leurs incompatibles.
+    if (nc === 2) r.deux = Rec.genotypesComplets(ret).map(function (g) {
+      var p = incompatibles(fichiers, comb, g); return { geno: g, incParFichier: p, incompatibles: somme(p) };
+    });
+    return r;
   }
 
   /* Plafond d'incompatibles (demande de P. Duchesne, 3 octobre 2026) : un génotype reconstitué n'est
    * retenu que si le pourcentage de juvéniles de la combinaison incompatibles avec lui ne dépasse pas
    * « plafond » (en %). Au-delà, la femelle est jugée factice : « rejeté ». Puis on numérote les
    * génotypes retenus distincts dans l'ordre de première apparition. */
+  /* Plafond par fichier (demande de P. Duchesne, 9 octobre 2026) : le même plafond s'applique aussi à chaque
+   * fichier de la combinaison (pourcentage de ses juvéniles incompatibles avec le génotype de la combinaison).
+   * Un génotype est rejeté si le pourcentage global ou celui d'un fichier dépasse le plafond. */
+  function pourcentages(x, r, plafond) {
+    x.pctIncompat = 100 * x.incompatibles / r.n;
+    x.pctParFichier = x.incParFichier.map(function (v, k) { return 100 * v / r.nParFichier[k]; });
+    x.sousPlafond = x.pctIncompat <= plafond + 1e-9 && x.pctParFichier.every(function (p) { return p <= plafond + 1e-9; });
+  }
   function numeroter(res, plafond) {
     var vus = {}, k = 0;
     res.forEach(function (r) {
-      r.pctIncompat = r.geno ? 100 * r.incompatibles / r.n : null;
-      r.retenu = !!r.geno && r.pctIncompat <= plafond + 1e-9;
+      r.pctIncompat = null; r.pctParFichier = null;
+      if (r.geno) pourcentages(r, r, plafond);
+      if (r.deux) r.deux.forEach(function (x) { pourcentages(x, r, plafond); });
+      r.retenu = !!r.geno && r.sousPlafond;
       r.num = null;
       if (!r.retenu) return;
       var c = Rec.cleComplet(r.geno); if (!(c in vus)) vus[c] = ++k; r.num = vus[c];
@@ -75,7 +94,7 @@
         var cle = r.comb.join(",");
         if (!(cle in index)) {
           index[cle] = liste.length;
-          liste.push({ comb: r.comb, num: r.num, geno: r.geno, n: r.n, incompatibles: r.incompatibles, incParFichier: r.incParFichier, pctIncompat: r.pctIncompat, choisiPar: [] });
+          liste.push({ comb: r.comb, num: r.num, geno: r.geno, n: r.n, incompatibles: r.incompatibles, incParFichier: r.incParFichier, pctIncompat: r.pctIncompat, pctParFichier: r.pctParFichier, choisiPar: [] });
         }
         liste[index[cle]].choisiPar.push(f);
         return index[cle];
@@ -88,6 +107,6 @@
              sans: parFichier.map(function (p, f) { return p.length ? null : f; }).filter(function (f) { return f !== null; }) };
   }
 
-  var api = { nombre: nombre, lister: lister, reconstituer: reconstituer, numeroter: numeroter, distincts: distincts, groupes: groupes };
+  var api = { nombre: nombre, lister: lister, reconstituer: reconstituer, incompatibles: incompatibles, numeroter: numeroter, distincts: distincts, groupes: groupes };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Combinaisons = api;
 })(this);

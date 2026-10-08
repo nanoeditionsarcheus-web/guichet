@@ -83,7 +83,7 @@ a{color:var(--A)}
 
 <div class="card">
   <p class="tag">Les génotypes complets les plus vraisemblables</p>
-  <p class="note" style="margin:-2px 0 10px">Combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
+  <p class="note" style="margin:-2px 0 10px"><b>Génotype complet</b> : génotype de la femelle à tous les locus à la fois, un génotype à deux allèles par locus (« ? » pour un locus sans aucun juvénile génotypé). Les génotypes complets sont les combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
   <p id="complCount" style="margin:0 0 8px"></p>
   <div class="scroll"><table class="complets" id="complets"></table></div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>

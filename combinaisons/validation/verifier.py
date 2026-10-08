@@ -3,7 +3,10 @@
    s'il est unique, incompatibles, et décision « retenu » avec le plafond par défaut de 10 %.
 2) Les groupes de fichiers (plus grande combinaison retenue contenant chaque fichier) : exemple aux plafonds
    de 10 % et de 20 %, et essai à 11 fichiers, un par nid de Grise, Rose et Turquoise (identifiants AAAANN…),
-   au plafond de 10 %. Cet essai découpe des fichiers en nids pour la seule vérification."""
+   au plafond de 10 %. Cet essai découpe des fichiers en nids pour la seule vérification.
+Règle (P. Duchesne, 9 octobre 2026) : un génotype unique est retenu si le pourcentage d'incompatibles ne
+dépasse le plafond ni au total ni dans aucun fichier de la combinaison. Les combinaisons à exactement deux
+génotypes complets donnent leurs deux génotypes, avec leurs incompatibles fichier par fichier."""
 import json, pathlib, itertools, re
 d = pathlib.Path(__file__).resolve().parents[1]
 html = (d / "index.html").read_text(encoding="utf8")
@@ -22,18 +25,23 @@ def reconstituer(juv):
         retenus.append(homo if len(best) > 1 and homo else best)
     n = 1
     for r in retenus: n *= len(r)
-    return n, ([list(r[0]) if r[0] else None for r in retenus] if n == 1 else None)
+    tous = [[list(g) if g else None for g in c] for c in itertools.product(*retenus)] if n <= 2 else []
+    return n, (tous[0] if n == 1 else None), tous
 def incompatible(j, g): return any(x and gg and not (set(x) & set(gg)) for x, gg in zip(j, g))
 def combinaisons(F, plafond):
     out = []
     for k in range(1, len(F) + 1):
         for comb in itertools.combinations(range(len(F)), k):
             juv = [j for i in comb for j in F[i]["juveniles"]]
-            n, g = reconstituer(juv)
-            inc = None if g is None else [sum(1 for j in F[i]["juveniles"] if incompatible(j, g)) for i in comb]
-            out.append({"comb": list(comb), "n": len(juv), "nComplets": n, "geno": g,
-                        "incompatibles": None if inc is None else sum(inc), "incParFichier": inc,
-                        "retenu": g is not None and 100 * sum(inc) / len(juv) <= plafond})
+            n, g, tous = reconstituer(juv)
+            par = lambda geno: [sum(1 for j in F[i]["juveniles"] if incompatible(j, geno)) for i in comb]
+            sous = lambda inc: 100 * sum(inc) / len(juv) <= plafond + 1e-9 and all(100 * x / len(F[i]["juveniles"]) <= plafond + 1e-9 for x, i in zip(inc, comb))
+            inc = None if g is None else par(g)
+            o = {"comb": list(comb), "n": len(juv), "nComplets": n, "geno": g,
+                 "incompatibles": None if inc is None else sum(inc), "incParFichier": inc,
+                 "retenu": g is not None and sous(inc)}
+            if n == 2: o["deux"] = [{"geno": t, "incParFichier": par(t), "sousPlafond": sous(par(t))} for t in tous]
+            out.append(o)
     return out
 def groupes(res, n):
     choix = []

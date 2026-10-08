@@ -72,6 +72,12 @@ table.res td.g{font-family:var(--mono);font-size:12.5px}table.res td.num{text-al
 table.res td.oui{color:var(--hit);font-weight:700}table.res td.rej{color:var(--warn)}table.res td.g.rej{color:var(--muted);text-decoration:line-through}table.res td.non{color:var(--muted)}
 .badge-g{display:inline-block;min-width:26px;text-align:center;font-family:var(--mono);font-weight:700;font-size:12px;padding:1px 6px;border-radius:3px;background:color-mix(in srgb,var(--hit) 16%,transparent);color:var(--ink)}
 tr.taille td{border-top:2px solid var(--axis)}
+:root{--jaune:#F2C230}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--jaune:#C99A12}}
+:root[data-theme="dark"]{--jaune:#C99A12}
+table.res tr.deux td{background:color-mix(in srgb,var(--jaune) 22%,transparent)}
+table.res td.dif,.g.dif{background:color-mix(in srgb,var(--jaune) 40%,transparent)}
+table.res td.num b{font-weight:700}
 :root{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#4a3aa7;--s8:#e34948}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--s8:#e66767}}
 :root[data-theme="dark"]{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--s8:#e66767}
@@ -115,7 +121,7 @@ table.res td.coh{white-space:normal;min-width:180px}
   <div class="scroll"><table class="res" id="grp"></table></div>
   <p class="note" id="grpNote" style="margin:8px 0 0"></p>
   <div id="graphe"></div>
-  <div class="reading">Pour chaque fichier, la page cherche la <b>plus grande combinaison retenue</b> qui le contient (un seul génotype complet, incompatibles sous le plafond). Les fichiers de cette combinaison forment son <b>groupe</b> : ils pourraient provenir d'une même femelle. Un groupe choisi par plusieurs fichiers n'est présenté qu'une fois. Il est <b>cohérent</b> si chacun de ses fichiers l'a pour seule plus grande combinaison. Sinon, la page le signale : un fichier appartient à des groupes différents, ou plusieurs combinaisons de même taille sont à égalité, et les données ne permettent pas de trancher. Le tableau donne, pour chaque fichier, ses incompatibles sur son nombre de juvéniles (en rouge s'ils en sont au moins la moitié) ; un fichier dont beaucoup de juvéniles sont incompatibles est suspect, même si le groupe reste sous le plafond (voir la mise en garde plus bas). Dans le graphe, chaque fichier est un point ; les fichiers d'un même groupe sont reliés par des traits de la couleur du groupe, en pointillé si le groupe n'est pas cohérent. Un point plein a la couleur de son groupe ; un point blanc cerclé de rouge a plusieurs plus grandes combinaisons à égalité ; un point blanc cerclé de gris n'appartient à aucune combinaison retenue. Chaque point porte aussi le nom de son ou ses groupes. Un groupe est une hypothèse à examiner, non une conclusion.</div>
+  <div class="reading">Pour chaque fichier, la page cherche la <b>plus grande combinaison retenue</b> qui le contient (un seul génotype complet, incompatibles sous le plafond, au total et dans chaque fichier). Les fichiers de cette combinaison forment son <b>groupe</b> : ils pourraient provenir d'une même femelle. Un groupe choisi par plusieurs fichiers n'est présenté qu'une fois. Il est <b>cohérent</b> si chacun de ses fichiers l'a pour seule plus grande combinaison. Sinon, la page le signale : un fichier appartient à des groupes différents, ou plusieurs combinaisons de même taille sont à égalité, et les données ne permettent pas de trancher. Le tableau donne, pour chaque fichier, ses incompatibles sur son nombre de juvéniles ; comme le plafond s'applique aussi à chaque fichier, aucun ne le dépasse dans un groupe. Dans le graphe, chaque fichier est un point ; les fichiers d'un même groupe sont reliés par des traits de la couleur du groupe, en pointillé si le groupe n'est pas cohérent. Un point plein a la couleur de son groupe ; un point blanc cerclé de rouge a plusieurs plus grandes combinaisons à égalité ; un point blanc cerclé de gris n'appartient à aucune combinaison retenue. Chaque point porte aussi le nom de son ou ses groupes. Un groupe est une hypothèse à examiner, non une conclusion.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlG">Télécharger les groupes (CSV)</button></div>
 </div>
 
@@ -123,11 +129,12 @@ table.res td.coh{white-space:normal;min-width:180px}
   <p class="tag">Femelle reconstituée pour chaque combinaison</p>
   <div class="controls" style="margin:-2px 0 10px"><label style="font-size:13.5px"><input type="checkbox" id="seulOui"> n'afficher que les combinaisons dont le génotype reconstitué est retenu</label></div>
   <div class="scroll"><table class="res" id="res"></table></div>
-  <div class="reading">Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par la méthode du nombre de compatibilités, règle des génotypes complets comprise. <b>Incompatibles</b> : nombre (et pourcentage) de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. <b>Génotype reconstitué</b> : un seul génotype complet, dont le pourcentage d'incompatibles ne dépasse pas le plafond choisi ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Rejeté</b> : un seul génotype complet, mais trop d'incompatibles : la femelle reconstituée est probablement factice (génotype barré). Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des fichiers d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué). Un locus sans aucun juvénile génotypé dans la combinaison reste inconnu (« ? ») et la femelle est reconstituée sur les autres locus. La page n'émet aucun verdict sur les liens entre femelles.</div>
+  <div class="reading"><b>Génotype complet</b> : génotype de la femelle à tous les locus à la fois, un génotype à deux allèles par locus. À chaque locus, la méthode du nombre de compatibilités retient un ou plusieurs génotypes (s'il y a égalité et qu'un homozygote en fait partie, seul l'homozygote est retenu). Les génotypes complets sont toutes les façons de choisir un génotype retenu à chaque locus ; leur nombre est le produit des nombres de génotypes retenus, locus par locus. Il n'y en a qu'un si un seul génotype est retenu à chaque locus. Un locus sans aucun juvénile génotypé reste inconnu (« ? »).<br>
+  Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par cette méthode. <b>Incompatibles</b> : nombre de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. Entre parenthèses, les pourcentages d'incompatibles de chaque fichier (sur son nombre de juvéniles), dans l'ordre de la combinaison, puis le pourcentage global, en gras ; en rouge, ceux qui dépassent le plafond. <b>Génotype reconstitué</b> : un seul génotype complet, dont aucun de ces pourcentages, global ou par fichier, ne dépasse le plafond choisi ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Rejeté</b> : un seul génotype complet, mais trop d'incompatibles, au total ou dans l'un des fichiers : la femelle reconstituée est probablement factice (génotype barré). Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des fichiers d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué) ; <span style="background:color-mix(in srgb,var(--jaune) 22%,transparent);padding:0 3px">en jaune</span>, les combinaisons qui en donnent exactement deux, détaillées plus bas. Un locus sans aucun juvénile génotypé dans la combinaison reste inconnu (« ? ») et la femelle est reconstituée sur les autres locus. La page n'émet aucun verdict sur les liens entre femelles.</div>
   <div class="reading"><b>Mise en garde : un mélange peut rester sous le plafond.</b> Une combinaison qui réunit des fichiers de femelles différentes peut donner un génotype unique qui n'existe pas, avec peu d'incompatibles, pour deux raisons.<br>
   1) <b>La dilution.</b> Le pourcentage est calculé sur l'ensemble des juvéniles de la combinaison, et le génotype reconstitué est surtout celui de la femelle du fichier le plus gros. Les incompatibles viennent alors du petit fichier et se diluent dans le total. Exemple fictif : 40 juvéniles tous compatibles, plus un nid de 4 juvéniles d'une autre femelle, tous incompatibles : 4 sur 44, soit 9 %, sous un plafond de 10 %. Avec ce plafond, un fichier étranger peut passer inaperçu s'il compte au plus un neuvième des juvéniles des autres fichiers.<br>
   2) <b>Une femelle « composite ».</b> À un locus, le génotype reconstitué peut prendre un allèle de chacune des deux femelles. Il est compatible avec les juvéniles des deux nids si, dans chaque nid, tous les juvéniles portent cet allèle de leur mère. C'est toujours le cas si la mère est homozygote, et c'est fréquent dans un petit nid : à un locus donné, tous les juvéniles d'une mère hétérozygote ont reçu d'elle le même allèle une fois sur 2 avec 2 juvéniles, une fois sur 8 avec 4, une fois sur 512 avec 10. De plus, un allèle très fréquent, porté par les deux femelles, rend un locus peu informatif. Une femelle composite peut ainsi être compatible avec tous les juvéniles du mélange.<br>
-  Le piège tient donc à la petite taille d'un fichier, par rapport aux autres (dilution) ou en elle-même (femelle composite). Le tableau des groupes donne les incompatibles fichier par fichier et signale les groupes non cohérents.</div>
+  Le piège tient donc à la petite taille d'un fichier, par rapport aux autres (dilution) ou en elle-même (femelle composite). Le plafond appliqué à chaque fichier écarte la dilution ; une femelle composite, elle, peut rester sous le plafond partout. Le tableau des groupes signale les groupes non cohérents.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dl">Télécharger la liste (CSV)</button></div>
 </div>
 
@@ -138,9 +145,16 @@ table.res td.coh{white-space:normal;min-width:180px}
   <p class="note" style="margin:8px 0 0">Un génotype par ligne. En disposition FLOCK, le fichier se recharge tel quel dans le tableau des compatibilités, comme fichier de « femelles déjà connues ».</p>
 </div>
 
+<div class="card" id="cas-deux">
+  <p class="tag">Les cas de deux génotypes complets</p>
+  <div class="scroll"><table class="res" id="deux"></table></div>
+  <div class="reading">Quand une combinaison donne exactement <b>deux génotypes complets</b>, la page ne retient ni l'un ni l'autre ; pourtant, l'un des deux peut être celui de la femelle. Ces combinaisons sont surlignées en jaune dans la liste. Ici, pour chacune, les deux génotypes (A et B) sont donnés avec leurs incompatibles, calculés comme pour un génotype reconstitué : pourcentages fichier par fichier puis global, en rouge au-delà du plafond. <b>Sous le plafond</b> : oui si aucun de ces pourcentages ne dépasse le plafond. <span class="g dif" style="padding:0 3px">En surligné</span> : les locus où les deux génotypes diffèrent. Des informations additionnelles (autres nids, femelles connues) peuvent permettre de trancher entre les deux.</div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlDeux">Télécharger ces cas (CSV)</button></div>
+</div>
+
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle, sans jamais découper un fichier en nids. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 10 % par défaut, fixé arbitrairement et réglable. Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons et les groupes de l'exemple ont été vérifiés par une programmation indépendante, ainsi que les groupes d'un essai à 11 fichiers.</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle, sans jamais découper un fichier en nids. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 10 % par défaut, fixé arbitrairement et réglable ; il s'applique au pourcentage global et à celui de chaque fichier (proposition de P. Duchesne, octobre 2026). Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons et les groupes de l'exemple ont été vérifiés par une programmation indépendante, ainsi que les groupes d'un essai à 11 fichiers.</p>
 </div>
 
 <footer id="foot"></footer>
@@ -161,7 +175,13 @@ function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='n
 function gs(g){return g?g[0]+'/'+g[1]:'?';}
 function majInfo(){if(!CUR)return;var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n)),t=Combinaisons.nombre(n,k);
   $("info").textContent=n+' fichier(s) ; combinaisons de 1 à '+k+' fichier(s) : '+t+(t>LIMITE?' — trop nombreuses (maximum '+LIMITE+') : réduisez le nombre maximal de fichiers par combinaison.':'.');}
-function charger(d,label){CUR={fichiers:d.fichiers,loci:d.loci,label:label,res:null};var k=d.fichiers.length;while(k>1&&Combinaisons.nombre(d.fichiers.length,k)>LIMITE)k--;$("kmax").value=k;majInfo();calculer();}
+// Nombre maximal de fichiers par combinaison : la valeur choisie est respectée (bogue signalé par P. Duchesne,
+// 9 octobre 2026 : elle était remplacée par le nombre de fichiers au chargement). Elle n'est réduite que si
+// le nombre de combinaisons dépasse la limite.
+function ajusterK(n){var v=Math.round(+$("kmax").value),k=v>=1?Math.min(v,n):n;
+  if(Combinaisons.nombre(n,k)>LIMITE){while(k>1&&Combinaisons.nombre(n,k)>LIMITE)k--;$("kmax").value=k;
+    status('Nombre maximal de fichiers par combinaison ramené à '+k+' (au plus '+LIMITE+' combinaisons).');}}
+function charger(d,label){CUR={fichiers:d.fichiers,loci:d.loci,label:label,res:null};ajusterK(d.fichiers.length);majInfo();calculer();}
 function calculer(){
   var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n));
   if(Combinaisons.nombre(n,k)>LIMITE){status('Trop de combinaisons ; réduisez le nombre maximal de fichiers par combinaison.',true);return;}
@@ -170,12 +190,30 @@ function calculer(){
     var fin=Math.min(i+200,combs.length);
     for(;i<fin;i++)out.push(Combinaisons.reconstituer(CUR.fichiers,combs[i],L));
     if(i<combs.length){status('Calcul en cours… '+i+' sur '+combs.length);setTimeout(lot,0);return;}
-    btn.disabled=false;status('');CUR.brut=out;CUR.k=k;renumeroter();
+    btn.disabled=false;if(/^Calcul en cours/.test($("upStatus").textContent))status('');CUR.brut=out;CUR.k=k;renumeroter();
   })();
 }
 function fmtPct(x){return (Math.round(10*x)/10).toString().replace('.',',')+' %';}
+function nb(x){return (Math.round(10*x)/10).toString().replace('.',',');}
+// Pourcentages d'incompatibles : (fichier 1 ; fichier 2 ; … ; global) %, dans l'ordre de la combinaison ;
+// en rouge, ceux qui dépassent le plafond. Pour un seul fichier, le pourcentage global suffit.
+function vecteur(x,r){var p=plafond(),c=function(v){return v>p+1e-9?'<span class="avert">'+nb(v)+'</span>':nb(v);};
+  return '('+(r.comb.length>1?x.pctParFichier.map(c).join(' ; ')+' ; ':'')+'<b>'+c(x.pctIncompat)+'</b>) %';}
+function vecteurTexte(x,r){return (r.comb.length>1?x.pctParFichier.map(nb).join(' ; ')+' ; ':'')+nb(x.pctIncompat);}
 function plafond(){var p=+$("plafond").value;return isFinite(p)&&p>=0?p:10;}
 function renumeroter(){if(!CUR||!CUR.brut)return;CUR.res=Combinaisons.numeroter(CUR.brut,plafond());afficher();afficherGroupes();}
+// ---------- cas de deux génotypes complets (demande de P. Duchesne, 9 octobre 2026) ----------
+function afficherDeux(){
+  var d=CUR,C=d.res.filter(function(r){return r.nComplets===2;});
+  $("deux").innerHTML=C.length?'<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th></th><th class="num">Incompatibles</th><th>Sous le plafond</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>'+
+    C.map(function(r){var A=r.deux[0].geno,B=r.deux[1].geno;
+      return r.deux.map(function(x,i){return '<tr'+(i===0?' class="taille"':'')+'>'+(i===0?'<td rowspan="2">'+noms(r.comb)+'</td><td class="num" rowspan="2">'+r.n+'</td>':'')+
+        '<td><b>'+(i===0?'A':'B')+'</b></td><td class="num">'+x.incompatibles+' '+vecteur(x,r)+'</td><td>'+(x.sousPlafond?'<span class="oui">oui</span>':'non')+'</td>'+
+        x.geno.map(function(g,l){var dif=gs(A[l])!==gs(B[l]);return '<td class="g'+(dif?' dif':'')+'">'+gs(g)+'</td>';}).join('')+'</tr>';}).join('');}).join('')+'</tbody>'
+    :'<tbody><tr><td class="note">Aucune combinaison ne donne exactement deux génotypes complets.</td></tr></tbody>';
+}
+function csvDeux(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Génotype','Incompatibles','% incompatibles (fichier par fichier ; global)','Sous le plafond'].concat(genoEntete(d.loci))];
+  d.res.forEach(function(r){if(r.nComplets!==2)return;r.deux.forEach(function(x,i){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,i===0?'A':'B',x.incompatibles,vecteurTexte(x,r),x.sousPlafond?'oui':'non'].concat(genoLigne(x.geno)));});});return rows;}
 // ---------- groupes de fichiers d'une même femelle, et graphe ----------
 function couleur(i){return i<8?'var(--s'+(i+1)+')':'var(--axis)';}
 function nomG(i){return 'G'+(i+1);}
@@ -185,7 +223,7 @@ function afficherGroupes(){
   $("grp").innerHTML=G.groupes.length?'<thead><tr><th>Groupe</th><th>Fichiers (incompatibles / juvéniles)</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>N° du génotype</th><th>Cohérence</th></tr></thead><tbody>'+
     G.groupes.map(function(g,i){
       var pb=g.comb.filter(function(f){return !(G.parFichier[f].length===1&&G.parFichier[f][0]===i);});
-      return '<tr><td style="white-space:nowrap"><span class="sw" style="background:'+couleur(i)+'"></span><b>'+nomG(i)+'</b><br><span class="note">'+g.comb.length+' fichier'+(g.comb.length>1?'s':'')+'</span></td><td>'+g.comb.map(function(f,k){var n=d.fichiers[f].juveniles.length,x=g.incParFichier[k];return esc(d.fichiers[f].nom)+' : <span style="font-family:var(--mono)">'+x+' / '+n+'</span>'+(x&&2*x>=n?' <span class="avert">('+fmtPct(100*x/n)+')</span>':'');}).join('<br>')+'</td>'+
+      return '<tr><td style="white-space:nowrap"><span class="sw" style="background:'+couleur(i)+'"></span><b>'+nomG(i)+'</b><br><span class="note">'+g.comb.length+' fichier'+(g.comb.length>1?'s':'')+'</span></td><td>'+g.comb.map(function(f,k){var n=d.fichiers[f].juveniles.length,x=g.incParFichier[k];return esc(d.fichiers[f].nom)+' : <span style="font-family:var(--mono)">'+x+' / '+n+' ('+nb(100*x/n)+' %)</span>';}).join('<br>')+'</td>'+
         '<td class="num">'+g.n+'</td><td class="num">'+g.incompatibles+' ('+fmtPct(g.pctIncompat)+')</td>'+
         '<td><span class="badge-g">'+g.num+'</span></td><td class="coh">'+(g.coherent?'cohérent':'<span class="avert">non cohérent</span><br>'+pb.map(function(f){return esc(d.fichiers[f].nom)+' → '+G.parFichier[f].slice().sort(function(a,b){return a-b;}).map(nomG).join(', ');}).join('<br>'))+'</td></tr>';}).join('')+'</tbody>'
     :'<tbody><tr><td class="note">Aucune combinaison retenue : aucun groupe.</td></tr></tbody>';
@@ -218,15 +256,17 @@ function afficher(){
   var d=CUR,seul=$("seulOui").checked,dt=new Date();$("stamp").textContent='Exécuté le '+dt.toLocaleDateString('fr-CA')+' à '+dt.toLocaleTimeString('fr-CA');
   var h='<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>Femelle reconstituée</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
   d.res.forEach(function(r){if(seul&&!r.retenu)return;var t=r.comb.length;
-    h+='<tr'+(t!==prev&&prev?' class="taille"':'')+'><td>'+r.comb.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ')+'</td><td class="num">'+r.n+'</td><td class="num">'+(r.geno?r.incompatibles+' ('+fmtPct(r.pctIncompat)+')':'')+'</td>'+
+    var cl=[];if(t!==prev&&prev)cl.push('taille');if(r.nComplets===2)cl.push('deux');
+    h+='<tr'+(cl.length?' class="'+cl.join(' ')+'"':'')+'><td>'+r.comb.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ')+'</td><td class="num">'+r.n+'</td><td class="num">'+(r.geno?r.incompatibles+' '+vecteur(r,r):'')+'</td>'+
       (r.retenu?'<td class="oui">génotype reconstitué</td><td><span class="badge-g">'+r.num+'</span></td>'+r.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join(''):
        r.geno?'<td class="rej">rejeté (incompatibles &gt; '+fmtPct(plafond())+')</td><td></td>'+r.geno.map(function(g){return '<td class="g rej">'+gs(g)+'</td>';}).join(''):
-       '<td class="non">non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun : locus sans donnée')+')</td><td></td>'+d.loci.map(function(){return '<td></td>';}).join(''))+'</tr>';prev=t;});
+       '<td class="non">non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun : locus sans donnée')+')'+(r.nComplets===2?' — <a href="#cas-deux">voir les deux cas</a>':'')+'</td><td></td>'+d.loci.map(function(){return '<td></td>';}).join(''))+'</tr>';prev=t;});
   $("res").innerHTML=h+'</tbody>';
   var D=Combinaisons.distincts(d.res);
   $("dist").innerHTML=D.length?'<thead><tr><th>N°</th><th class="num">Combinaisons</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'<th>Combinaisons qui le donnent</th></tr></thead><tbody>'+
     D.map(function(x){return '<tr><td><span class="badge-g">'+x.num+'</span></td><td class="num">'+x.combs.length+'</td>'+x.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join('')+'<td style="white-space:normal;min-width:240px">'+x.combs.map(function(c){return c.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ');}).join(' ; ')+'</td></tr>';}).join('')+'</tbody>'
     :'<tbody><tr><td class="note">Aucune combinaison ne reconstitue un génotype unique.</td></tr></tbody>';
+  afficherDeux();
   $("foot").innerHTML='Données : '+esc(d.label)+' — '+d.fichiers.length+' fichier(s) ('+d.fichiers.map(function(f){return esc(f.nom)+' : '+f.juveniles.length;}).join(', ')+'), '+d.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';
 }
 // ---------- format des génotypes dans les fichiers CSV (demande de N. Tessier, 8 octobre 2026) ----------
@@ -242,8 +282,8 @@ function download(name,rows){
   var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   var text='\ufeff'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}
-function csv(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Incompatibles','% incompatibles','Femelle reconstituée','N° du génotype'].concat(genoEntete(d.loci))];
-  d.res.forEach(function(r){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?r.pctIncompat.toFixed(1):'',r.retenu?'oui':r.geno?'rejeté':'non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun')+')',r.geno?r.num:''].concat(r.geno?genoLigne(r.geno):genoVides(d.loci.length)));});return rows;}
+function csv(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Incompatibles','% incompatibles (global)','% incompatibles (fichier par fichier ; global)','Femelle reconstituée','N° du génotype'].concat(genoEntete(d.loci))];
+  d.res.forEach(function(r){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?r.pctIncompat.toFixed(1):'',r.geno?vecteurTexte(r,r):'',r.retenu?'oui':r.geno?'rejeté':'non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun')+')',r.geno?r.num:''].concat(r.geno?genoLigne(r.geno):genoVides(d.loci.length)));});return rows;}
 // génotypes retenus distincts, un par ligne : identifiant « femelle<n°>_<première combinaison qui le donne> »
 function csvDistincts(){var d=CUR;return [['Femelle'].concat(genoEntete(d.loci))].concat(Combinaisons.distincts(d.res).map(function(x){
   return ['femelle'+x.num+'_'+x.combs[0].map(function(j){return d.fichiers[j].nom;}).join('+')].concat(genoLigne(x.geno));}));}
@@ -291,7 +331,7 @@ function aligner(loci,canon,nom){
         fichiers.push({nom:F[i].name.replace(/\.[^.]+$/,''),juveniles:p.juveniles.map(function(j){return idx.map(function(k){return j.genos[k];});})});});
       $("upF").value='';
       CUR={fichiers:fichiers,loci:canon,label:'fichiers téléversés',res:null};
-      var k=fichiers.length;while(k>1&&Combinaisons.nombre(fichiers.length,k)>LIMITE)k--;$("kmax").value=k;
+      ajusterK(fichiers.length);
       majInfo();calculer();
     }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
   });
@@ -299,6 +339,7 @@ function aligner(loci,canon,nom){
   $("plafond").addEventListener('input',renumeroter);
   $("dl").addEventListener('click',function(){if(CUR&&CUR.res)download('combinaisons-reconstitution.csv',csv());});
   $("dlG").addEventListener('click',function(){if(CUR&&CUR.G)download('groupes-de-fichiers.csv',csvGroupes());});
+  $("dlDeux").addEventListener('click',function(){if(CUR&&CUR.res)download('deux-genotypes-complets.csv',csvDeux());});
   $("dlD").addEventListener('click',function(){if(CUR&&CUR.res)download('genotypes-distincts.csv',csvDistincts());});
   charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);
 })();

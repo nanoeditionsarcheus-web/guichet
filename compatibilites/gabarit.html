@@ -63,6 +63,8 @@ table.tc td.propre b{text-decoration:underline;text-decoration-thickness:2px;tex
 table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink);width:160px}
 .upl{display:grid;grid-template-columns:max-content 1fr;gap:10px 14px;align-items:center;font-size:14px}
 @media(max-width:640px){.upl{grid-template-columns:1fr}}
+
+#fmtGeno{font-family:var(--sans);font-size:13.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -100,7 +102,8 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   <p class="tag">Tableau des compatibilités</p>
   <div class="scroll"><table class="tc" id="tc"></table></div>
   <div class="reading">Chaque cellule donne le <b>nombre de juvéniles</b> du groupe (colonne) dont le génotype est compatible avec celui de la femelle (rangée) <b>à tous les locus</b>, c'est-à-dire qui partagent au moins un allèle avec elle à chaque locus génotypé chez les deux. Sous le nombre : l'effectif du groupe et le pourcentage. La dernière rangée, <b>Aucune</b>, compte les juvéniles compatibles avec <b>aucune</b> des femelles ; comme un juvénile peut être compatible avec plusieurs femelles, les rangées ne s'additionnent pas forcément à l'effectif. Souligné : la femelle reconstituée à partir de ce groupe. Sur fond teinté : le ou les groupes testés. La page n'émet aucun verdict ; la comparaison des colonnes revient à l'usagère.</div>
-  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCsv">Télécharger le tableau (CSV)</button></div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCsv">Télécharger le tableau (CSV)</button><button class="ghost" id="dlFem">Télécharger les génotypes des femelles (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
+  <p class="note" style="margin:8px 0 0">Le fichier des génotypes des femelles (reconstituées et déjà connues) donne une femelle par ligne. En disposition FLOCK, il se recharge tel quel comme fichier de « femelles déjà connues » : c'est une façon de tenir la banque.</p>
 </div>
 
 <div class="card fisher">
@@ -141,7 +144,7 @@ function preparer(d){
   d.references.forEach(function(g,i){
     var ret=Reconstitution.retenusParLocus(Reconstitution.analyse(g.juveniles,L)),n=Reconstitution.nombreComplets(ret);
     g.nComplets=n;g.femelle=null;
-    if(n===1){g.femelle=fem.length;fem.push({nom:'F'+g.nom,geno:Reconstitution.genotypesComplets(ret)[0],source:i});}
+    if(n===1){g.femelle=fem.length;fem.push({nom:(/^F[0-9_\-]/.test(g.nom)?'':'F')+g.nom,geno:Reconstitution.genotypesComplets(ret)[0],source:i});}   // « F1_Grise » reste tel quel
   });
   (d.femellesConnues||[]).forEach(function(f){fem.push({nom:f.nom,geno:f.geno,source:null});});
   d.femelles=fem;
@@ -201,6 +204,15 @@ function renderNoms(){
 function show(d,label){CUR=preparer(d);CUR.label=label;renderNoms();render();
   $("foot").innerHTML='Données : '+esc(label)+' — '+d.references.length+' groupe(s) de référence, '+d.testes.length+' groupe(s) testé(s), '+d.femelles.length+' femelle(s), '+d.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';}
 
+// ---------- format des génotypes dans les fichiers CSV (demande de N. Tessier, 8 octobre 2026) ----------
+// « colles » : 268268, comme les classeurs de saisie (3 chiffres par allèle, 000000 si inconnu) ;
+// « flock » : deux colonnes par locus (0 0 si inconnu), relisible par les outils du guichet ; « barre » : 268/268.
+function fmtGeno(){var e=document.getElementById('fmtGeno');return e?e.value:'colles';}
+function a3(a){a=String(a);while(a.length<3)a='0'+a;return a;}
+function genoCells(g){var f=fmtGeno();if(f==='flock')return g?[g[0],g[1]]:[0,0];if(f==='colles')return [g?a3(g[0])+a3(g[1]):'000000'];return [g?g[0]+'/'+g[1]:'?'];}
+function genoVides(n){var r=[];for(var i=0;i<n*(fmtGeno()==='flock'?2:1);i++)r.push('');return r;}
+function genoLigne(geno){var r=[];geno.forEach(function(g){r.push.apply(r,genoCells(g));});return r;}
+function genoEntete(loci){var h=[];loci.forEach(function(l){h.push(l);if(fmtGeno()==='flock')h.push('');});return h;}
 function download(name,rows){
   var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   var text='\ufeff'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
@@ -264,6 +276,7 @@ function nomDe(f){return f.name.replace(/\.[^.]+$/,'');}
   $("seuil").addEventListener('input',function(){renderPv();});
   $("dlPv").addEventListener('click',function(){if(CUR&&CUR.cat)download('pvaleurs-fisher.csv',csvPv());});
   $("dlCsv").addEventListener('click',function(){if(CUR)download('tableau-compatibilites.csv',csv());});
+  $("dlFem").addEventListener('click',function(){if(CUR&&CUR.femelles)download('genotypes-femelles.csv',[['Femelle'].concat(genoEntete(CUR.loci))].concat(CUR.femelles.map(function(f){return [f.nom].concat(genoLigne(f.geno));})));});
   show(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);
 })();
 </script>

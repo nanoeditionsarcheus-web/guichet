@@ -24,3 +24,9 @@ femelle inconnue proviennent-ils d'une des femelles déjà reconstituées (la «
 
 Construction : `python3 construire.py` produit `index.html` à partir de `gabarit.html`, du code de
 reconstitution validé et de `validation/compatibilites.js`.
+
+Fichiers de génotypes (demande de N. Tessier, 8 octobre 2026) : les génotypes téléchargés depuis les
+trois pages (reconstitution, agrégation, compatibilités) s'écrivent au choix avec les allèles collés
+(268268), en deux colonnes par locus (disposition FLOCK) ou avec une barre oblique (268/268). En
+disposition FLOCK, le fichier des femelles se recharge tel quel comme « femelles déjà connues ».
+`validation/test-export.js` vérifie les trois formats et ce rechargement.

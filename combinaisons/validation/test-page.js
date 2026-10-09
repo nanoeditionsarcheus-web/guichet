@@ -18,12 +18,30 @@ let mauvais=0;
  for(const p of [10,20]){await pg.fill('#plafond',String(p));await pg.dispatchEvent('#plafond','input');
   const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(AG['exemple-'+p]);if(!ok)mauvais++;
   console.log('groupes, plafond',p,'% :',ok?'identiques':'DIFFÉRENTS','—',await pg.evaluate(()=>CUR.G.groupes.map(g=>g.comb.map(f=>CUR.fichiers[f].nom).join('+')).join(' | ')));}
+ // présence dans la banque (plafond 20 %, deux fichiers de banque d'essai) : comparée à attendu-banque.json
+ const AB=JSON.parse(fs.readFileSync(path.join(V,'attendu-banque.json'),'utf8'));
+ await pg.setInputFiles('#upB',[path.join(V,'banque-essai-1.csv'),path.join(V,'banque-essai-2.csv')]);await pg.click('#goB');
+ await pg.waitForFunction(()=>CUR.banqueRes);
+ const PB=await pg.evaluate(()=>CUR.banqueRes.liste.map(x=>({type:x.type,num:x.num,lettre:x.lettre,combs:x.combs,geno:x.geno,present:x.banque.present,presentes:x.banque.presentes.map(c=>[c.index,c.compares]),proche:x.banque.proche?[x.banque.proche.index,x.banque.proche.differents,x.banque.proche.compares]:null})));
+ let db=PB.length===AB.length?0:1;AB.forEach((a,i)=>{const b=PB[i];if(!b||b.type!==a.type||(a.num&&b.num!==a.num)||(a.lettre&&b.lettre!==a.lettre)||JSON.stringify(b.combs)!==JSON.stringify(a.combs)||JSON.stringify(b.geno)!==JSON.stringify(a.geno)||b.present!==a.banque.present||JSON.stringify(b.presentes)!==JSON.stringify(a.banque.presentes)||JSON.stringify(b.proche)!==JSON.stringify(a.banque.proche))db++;});
+ const marques=await pg.evaluate(()=>[...document.querySelectorAll('#banque tbody tr')].map(t=>[...t.querySelectorAll('td.case')].map(c=>c.textContent).join('|')).join(' '));
+ console.log('banque :',PB.length,'génotypes examinés ; écarts avec le calcul indépendant :',db,'; cases',marques);mauvais+=db;
  if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
+ // juvéniles très incomplets : un juvénile à 6 locus manquants est écarté (seuil 5), gardé si le champ est vide
+ const J=await pg.evaluate(()=>EXAMPLE.fichiers[1]);const dirM=fs.mkdtempSync(path.join(os.tmpdir(),'manq-'));
+ const jm=J.juveniles.concat([J.juveniles[0].map((g,l)=>l<6?null:g)]);
+ const pM=ecrire(dirM,await pg.evaluate(()=>EXAMPLE.loci),{nom:'Grise-plus-incomplet',juveniles:jm},9);
+ await pg.setInputFiles('#upF',[pM]);await pg.click('#go');await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res);
+ const m1=await pg.evaluate(()=>[CUR.res[0].n,document.getElementById('ecartes').textContent]);
+ await pg.fill('#maxManq','');await pg.dispatchEvent('#maxManq','change');await pg.waitForFunction(n=>CUR.res&&CUR.res[0].n===n,jm.length);
+ const m2=await pg.evaluate(()=>[CUR.res[0].n,document.getElementById('ecartes').textContent]);
+ if(m1[0]!==J.juveniles.length||m2[0]!==jm.length){mauvais++;console.log('ÉCHEC données manquantes',m1,m2);}
+ console.log('données manquantes :',m1.join(' — '),'|',m2.join(' — '));await pg.fill('#maxManq','5');
  await pg.fill('#plafond','10');await pg.dispatchEvent('#plafond','input');
  // essai : 11 fichiers téléversés
  const E=AG.essai,dir=fs.mkdtempSync(path.join(os.tmpdir(),'cb-'));
  await pg.fill('#kmax','11');await pg.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await pg.click('#go');
- await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res&&CUR.G,null,{timeout:120000});
+ await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.fichiers.length===11&&CUR.res&&CUR.res.length===2047&&CUR.G,null,{timeout:120000});
  const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(E.groupes);if(!ok)mauvais++;
  console.log('essai,',E.fichiers.length,'fichiers :',await pg.textContent('#info'),'groupes',ok?'identiques':'DIFFÉRENTS','au calcul indépendant');
  console.log(await pg.evaluate(()=>[...document.querySelectorAll('#grp tbody tr')].map(t=>t.innerText.replace(/\s+/g,' ')).join('\n')));

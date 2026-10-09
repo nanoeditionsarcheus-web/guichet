@@ -45,5 +45,19 @@ const attendu=(g,fmt)=>fmt==='flock'?(g?[String(g[0]),String(g[1])]:['0','0']):f
  // nommage : un groupe « F1_Grise » donne la femelle « F1_Grise » (pas « FF1_Grise »), « Grise » donne « FGrise »
  const noms=await tc.evaluate(()=>{const d=JSON.parse(JSON.stringify(EXAMPLE));d.references[0].nom='F1_Grise';return preparer(d).femelles.map(f=>f.nom).join(', ');});
  if(noms.indexOf('F1_Grise')!==0||noms.indexOf('FF1')>=0)ko('nommage '+noms);console.log('nommage :',noms);
+ // juvéniles très incomplets (plus de 5 locus manquants) : écartés dans la reconstitution et les compatibilités
+ const L=ex.loci,base=ex.refs[0];const inc={nom:'Avec-incomplet',juveniles:base.juveniles.concat([base.juveniles[0].map((g,l)=>l<6?null:g)])};
+ const pInc=ecrire(inc);
+ await rc.setInputFiles('#upJuv',pInc);await rc.click('#upLoad');await rc.waitForFunction(()=>document.getElementById('foot').textContent.indexOf('Avec-incomplet')>=0);
+ const r1=await rc.evaluate(()=>[CUR.data.juveniles.length,document.getElementById('ecartes').textContent]);
+ await rc.fill('#maxManq','');await rc.dispatchEvent('#maxManq','change');const r2=await rc.evaluate(()=>CUR.data.juveniles.length);
+ if(r1[0]!==base.juveniles.length||r2!==inc.juveniles.length)ko('reconstitution, données manquantes '+r1+' '+r2);
+ console.log('reconstitution, données manquantes :',r1.join(' — '),'| champ vide :',r2);
+ await tc.setInputFiles('#upRef',[pInc]);await tc.setInputFiles('#upTest',[groupes[1]]);await tc.setInputFiles('#upFem',[]);await tc.click('#upLoad');
+ await tc.waitForFunction(()=>CUR&&CUR.references.length===1&&CUR.references[0].nom==='Avec-incomplet');
+ const t1=await tc.evaluate(()=>[CUR.references[0].juveniles.length,document.getElementById('ecartes').textContent]);
+ await tc.fill('#maxManq','');await tc.dispatchEvent('#maxManq','change');const t2=await tc.evaluate(()=>CUR.references[0].juveniles.length);
+ if(t1[0]!==base.juveniles.length||t2!==inc.juveniles.length)ko('compatibilités, données manquantes '+t1+' '+t2);
+ console.log('compatibilités, données manquantes :',t1.join(' — '),'| champ vide :',t2);
  const err=[...rc.errs,...cb.errs,...tc.errs];console.log('erreurs JS',err);if(err.length)mauvais++;
  await br.close();console.log(mauvais?'ÉCHECS : '+mauvais:'TOUT OK');process.exit(mauvais?1:0);})();

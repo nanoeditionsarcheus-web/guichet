@@ -86,10 +86,12 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   </div>
   <p class="note" style="margin:8px 0 12px">Le fichier facultatif des femelles contient une femelle par ligne (identifiant, puis son génotype, même disposition) ; il permet d'ajouter à la banque des femelles connues autrement.</p>
   <div class="controls">
+    <label>Écarter les juvéniles auxquels il manque plus de <input type="number" id="maxManq" min="0" step="1" value="5" style="width:70px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"> locus</label>
     <button id="upLoad">Construire le tableau</button>
     <button id="upReset" class="ghost">Revenir à l'exemple</button>
   </div>
   <p class="note" id="upStatus" style="margin:8px 0 0"></p>
+  <p class="note" id="ecartes" style="margin:4px 0 0"></p>
 </div>
 
 <div class="card">
@@ -446,7 +448,15 @@ function renderNoms(){
   $("noms").querySelectorAll('input[data-g]').forEach(function(el){el.addEventListener('input',function(){var j=+el.dataset.g,all=CUR.references.concat(CUR.testes);all[j].nom=el.value;render();});});
   $("noms").querySelectorAll('input[data-f]').forEach(function(el){el.addEventListener('input',function(){CUR.femelles[+el.dataset.f].nom=el.value;render();});});
 }
-function show(d,label){CUR=preparer(d);CUR.label=label;renderNoms();render();
+// Juvéniles très incomplets (décision de P. Duchesne et N. Tessier, octobre 2026) : un juvénile auquel il manque
+// plus de « maxManquants » locus est écarté avant tout calcul. Champ vide : aucun juvénile écarté.
+function maxManquants(){var v=$("maxManq").value.trim();if(v==='')return Infinity;var n=Math.round(+v);return isFinite(n)&&n>=0?n:5;}
+function trop(g){return g.filter(function(x){return !x;}).length>maxManquants();}
+function noteEcartes(ec){var m=maxManquants();$("ecartes").innerHTML=m===Infinity?'Aucun juvénile écarté (champ vide).':ec.length?'Juvéniles écartés (plus de '+m+' locus manquants) — '+ec.join(' ; ')+'.':'Aucun juvénile n\'a plus de '+m+' locus manquants.';}
+var SRC=null;
+function show(d,label){SRC={d:JSON.parse(JSON.stringify(d)),label:label};var ec=[];
+  d.references.concat(d.testes).forEach(function(g){var n=g.juveniles.length;g.juveniles=g.juveniles.filter(function(j){return !trop(j);});if(g.juveniles.length<n)ec.push(esc(g.nom)+' : '+(n-g.juveniles.length));});
+  noteEcartes(ec);CUR=preparer(d);CUR.label=label;renderNoms();render();
   $("foot").innerHTML='Données : '+esc(label)+' — '+d.references.length+' groupe(s) de référence, '+d.testes.length+' groupe(s) testé(s), '+d.femelles.length+' femelle(s), '+d.loci.length+' locus. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';}
 
 // ---------- format des génotypes dans les fichiers CSV (demande de N. Tessier, 8 octobre 2026) ----------
@@ -499,6 +509,7 @@ function aligner(loci,canon,nom){
 function nomDe(f){return f.name.replace(/\.[^.]+$/,'');}
 
 (function init(){
+  $("maxManq").addEventListener('change',function(){if(SRC)show(JSON.parse(JSON.stringify(SRC.d)),SRC.label);});
   $("upReset").addEventListener('click',function(){show(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);status("Exemple rétabli.");});
   $("upLoad").addEventListener('click',function(){
     var R=[].slice.call($("upRef").files),T=[].slice.call($("upTest").files),Fm=$("upFem").files[0];

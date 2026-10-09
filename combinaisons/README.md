@@ -31,6 +31,14 @@ pourraient provenir d'une même femelle.
   (les deux génotypes, leurs incompatibles, locus où ils diffèrent), téléchargeable.
 - Le nombre maximal de fichiers par combinaison choisi est respecté au chargement de nouveaux fichiers
   (il n'est réduit que si la limite de 20 000 combinaisons l'exige).
+- Présence dans la banque de femelles (P. Duchesne, 9 octobre 2026) : un ou plusieurs fichiers de banque
+  (disposition FLOCK, une femelle par ligne). Pour chaque génotype retenu, puis chaque génotype d'un cas
+  à deux génotypes complets sous le plafond : présent si identique à une femelle de la banque à chaque
+  locus où les deux sont connus ; sinon, femelle la plus proche (plus faible proportion de locus
+  différents). Vérifié contre `validation/attendu-banque.json` (banques d'essai `banque-essai-*.csv`,
+  construites par `verifier.py` à partir de l'exemple).
+- Juvéniles très incomplets (P. Duchesne et N. Tessier) : écartés s'il leur manque plus de 5 locus
+  (réglable ; champ vide : aucun écarté). Même réglage dans la reconstitution et les compatibilités.
 - Paramètres : nombre maximal de fichiers par combinaison ; plafond d'incompatibles en %
   (10 % par défaut, valeur arbitraire proposée par P. Duchesne, réglable). Au plus 20 000 combinaisons.
 - Exemple : les six fichiers de tortues de P. Duchesne (Blanche, Grise, Rose, Turquoise, Inconnue 1,

@@ -107,6 +107,39 @@
              sans: parFichier.map(function (p, f) { return p.length ? null : f; }).filter(function (f) { return f !== null; }) };
   }
 
-  var api = { nombre: nombre, lister: lister, reconstituer: reconstituer, incompatibles: incompatibles, numeroter: numeroter, distincts: distincts, groupes: groupes };
+  /* Présence dans la banque de femelles (demande de P. Duchesne, 9 octobre 2026). Un génotype est « présent »
+   * s'il est identique à celui d'une femelle de la banque à chaque locus où les deux sont connus (au moins un
+   * locus comparé). On donne aussi, s'il n'est pas présent, la femelle la plus proche : la plus faible
+   * proportion de locus différents parmi les locus comparés, puis le plus de locus comparés. banque : [{nom, source, geno}]. */
+  function memeGeno(a, b) { return (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]); }
+  function comparerFemelle(geno, f) {
+    var compares = 0, differents = 0;
+    geno.forEach(function (g, l) { var h = f.geno[l]; if (!g || !h) return; compares++; if (!memeGeno(g, h)) differents++; });
+    return { compares: compares, differents: differents };
+  }
+  function presenceBanque(geno, banque) {
+    var presentes = [], proche = null;
+    banque.forEach(function (f, i) {
+      var c = comparerFemelle(geno, f); c.index = i;
+      if (c.compares > 0 && c.differents === 0) presentes.push(c);
+      // la plus proche : la plus faible proportion de locus différents (différents × comparés croisés, sans division), puis le plus de locus comparés
+      if (c.compares > 0 && (!proche || c.differents * proche.compares < proche.differents * c.compares ||
+          (c.differents * proche.compares === proche.differents * c.compares && c.compares > proche.compares))) proche = c;
+    });
+    return { present: presentes.length > 0, presentes: presentes, proche: proche };
+  }
+  // Liste examinée : d'abord les génotypes retenus distincts, puis, pour chaque combinaison à deux génotypes
+  // complets, ceux qui respectent le plafond (global et par fichier).
+  function listeBanque(res, banque) {
+    var out = [];
+    distincts(res).forEach(function (x) { out.push({ type: "retenu", num: x.num, combs: x.combs, geno: x.geno, banque: presenceBanque(x.geno, banque) }); });
+    res.forEach(function (r) {
+      if (!r.deux) return;
+      r.deux.forEach(function (x, i) { if (x.sousPlafond) out.push({ type: "deux", lettre: i === 0 ? "A" : "B", combs: [r.comb], geno: x.geno, banque: presenceBanque(x.geno, banque) }); });
+    });
+    return out;
+  }
+
+  var api = { nombre: nombre, comparerFemelle: comparerFemelle, presenceBanque: presenceBanque, listeBanque: listeBanque, lister: lister, reconstituer: reconstituer, incompatibles: incompatibles, numeroter: numeroter, distincts: distincts, groupes: groupes };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Combinaisons = api;
 })(this);

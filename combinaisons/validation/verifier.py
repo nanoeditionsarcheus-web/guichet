@@ -8,6 +8,7 @@ Règle (P. Duchesne, 9 octobre 2026) : un génotype unique est retenu si le pour
 dépasse le plafond ni au total ni dans aucun fichier de la combinaison. Les combinaisons à exactement deux
 génotypes complets donnent leurs deux génotypes, avec leurs incompatibles fichier par fichier."""
 import json, pathlib, itertools, re
+from fractions import Fraction
 d = pathlib.Path(__file__).resolve().parents[1]
 html = (d / "index.html").read_text(encoding="utf8")
 ex = json.loads(re.search(r"var EXAMPLE=(\{.*?\});\n", html, re.S).group(1))
@@ -74,3 +75,47 @@ print("essai", len(essai), "fichiers :")
 for g in G["essai"]["groupes"][:-1]:
     print("  ", " + ".join(essai[i]["nom"] for i in g["comb"]), "| choisi par", [essai[i]["nom"] for i in g["choisiPar"]], "cohérent" if g["coherent"] else "NON COHÉRENT")
 print("   sans :", [essai[i]["nom"] for i in G["essai"]["groupes"][-1]["sans"]])
+
+# 3) Présence dans la banque de femelles (P. Duchesne, 9 octobre 2026), exemple au plafond de 20 %.
+# Deux fichiers de banque d'essai, construits ici à partir des génotypes de l'exemple :
+#  - banque-essai-1.csv : Grise identique mais deux locus manquants ; Rose avec un allèle changé à tm64 ;
+#  - banque-essai-2.csv : génotype A de Blanche (cas de deux génotypes complets).
+# Règle : présent si identique à une femelle à chaque locus où les deux sont connus (au moins un locus) ;
+# sinon, femelle la plus proche : la plus faible proportion de locus différents, puis le plus de locus comparés.
+res20 = combinaisons(F, 20)
+def nom(c): return " + ".join(F[i]["nom"] for i in c)
+def seul(nm): return next(o for o in res20 if [F[i]["nom"] for i in o["comb"]] == [nm])
+grise, rose, blanche = seul("Grise")["geno"], seul("Rose")["geno"], seul("Blanche")["deux"][0]["geno"]
+b1 = [("Essai_Grise_2_manquants", [None, None] + grise[2:]), ("Essai_Rose_tm64_change", rose[:-1] + [[rose[-1][0], 999]])]
+b2 = [("Essai_Blanche_A", blanche)]
+def ecrire(chemin, lignes):
+    with open(chemin, "w", encoding="utf-8") as f:
+        f.write("ID;" + "".join(l + ";;" for l in ex["loci"]) + "\n")
+        for n, g in lignes: f.write(n + ";" + ";".join(f"{x[0]};{x[1]}" if x else "0;0" for x in g) + "\n")
+ecrire(d / "validation/banque-essai-1.csv", b1); ecrire(d / "validation/banque-essai-2.csv", b2)
+banque = [{"nom": n, "geno": g} for n, g in b1 + b2]
+def presence(g):
+    pres, proche = [], None
+    for i, f in enumerate(banque):
+        c = [(x, y) for x, y in zip(g, f["geno"]) if x and y]
+        diff = sum(1 for x, y in c if sorted(x) != sorted(y))
+        if c and not diff: pres.append([i, len(c)])
+        if c and (proche is None or (Fraction(diff, len(c)), -len(c)) < (Fraction(proche[1], proche[2]), -proche[2])): proche = [i, diff, len(c)]
+    return {"present": bool(pres), "presentes": pres, "proche": proche}
+liste, vus = [], {}
+for o in res20:
+    if o["retenu"]:
+        k = json.dumps(o["geno"])
+        if k not in vus: vus[k] = len(vus) + 1; liste.append({"type": "retenu", "num": vus[k], "combs": [], "geno": o["geno"]})
+        liste[vus[k] - 1]["combs"].append(o["comb"])
+for o in res20:
+    for i, x in enumerate(o.get("deux", [])):
+        if x["sousPlafond"]: liste.append({"type": "deux", "lettre": "AB"[i], "combs": [o["comb"]], "geno": x["geno"]})
+for x in liste: x["banque"] = presence(x["geno"])
+json.dump(liste, open(d / "validation/attendu-banque.json", "w"))
+print("banque (plafond 20 %) :")
+for x in liste:
+    p = x["banque"]
+    print("  ", x["type"], x.get("num", x.get("lettre")), " ; ".join(nom(c) for c in x["combs"])[:60], "→",
+          ("présent : " + ", ".join(banque[i]["nom"] + f" ({n} locus)" for i, n in p["presentes"])) if p["present"] else
+          ("absent ; plus proche : " + banque[p["proche"][0]]["nom"] + f" ({p['proche'][1]} diff. / {p['proche'][2]})" if p["proche"] else "absent"))

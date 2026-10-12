@@ -110,7 +110,7 @@ table.res td.coh{white-space:normal;min-width:180px}
   </div>
   <div class="controls" style="margin-top:12px">
     <label>Nombre maximal de fichiers par combinaison : <input type="number" id="kmax" min="1" step="1" value="6"></label>
-    <label>Plafond d'incompatibles (%) : <input type="number" id="plafond" min="0" max="100" step="1" value="10"></label>
+    <label>Plafond d'incompatibles (%) : <input type="number" id="plafond" min="0" max="100" step="1" value="20"></label>
     <label>Écarter les juvéniles auxquels il manque plus de <input type="number" id="maxManq" min="0" step="1" value="5"> locus</label>
 <label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label>
     <button id="go">Calculer</button>
@@ -137,7 +137,7 @@ table.res td.coh{white-space:normal;min-width:180px}
   <div class="reading"><b>Génotype complet</b> : génotype de la femelle à tous les locus à la fois, un génotype à deux allèles par locus. À chaque locus, la méthode du nombre de compatibilités retient un ou plusieurs génotypes (s'il y a égalité et qu'un homozygote en fait partie, seul l'homozygote est retenu). Les génotypes complets sont toutes les façons de choisir un génotype retenu à chaque locus ; leur nombre est le produit des nombres de génotypes retenus, locus par locus. Il n'y en a qu'un si un seul génotype est retenu à chaque locus. Un locus sans aucun juvénile génotypé reste inconnu (« ? »).<br>
   Pour chaque combinaison, les fichiers sont fusionnés et la femelle est reconstituée par cette méthode. <b>Incompatibles</b> : nombre de juvéniles de la combinaison qui ne partagent aucun allèle avec le génotype reconstitué à au moins un locus ; un vrai rejeton de la femelle n'en a aucun, sauf erreur de génotypage. Entre parenthèses, les pourcentages d'incompatibles de chaque fichier (sur son nombre de juvéniles), dans l'ordre de la combinaison, puis le pourcentage global, en gras ; en rouge, ceux qui dépassent le plafond. <b>Génotype reconstitué</b> : un seul génotype complet, dont aucun de ces pourcentages, global ou par fichier, ne dépasse le plafond choisi ; il est affiché, avec un <b>numéro</b> qui est le même pour toutes les combinaisons qui donnent ce génotype. <b>Rejeté</b> : un seul génotype complet, mais trop d'incompatibles, au total ou dans l'un des fichiers : la femelle reconstituée est probablement factice (génotype barré). Inversement, quelques incompatibles peuvent venir d'erreurs de génotypage dans des fichiers d'une même femelle. <b>Non</b> : plusieurs génotypes complets sont possibles (leur nombre est indiqué) ; <span style="background:color-mix(in srgb,var(--jaune) 22%,transparent);padding:0 3px">en jaune</span>, les combinaisons qui en donnent exactement deux, détaillées plus bas. Un locus sans aucun juvénile génotypé dans la combinaison reste inconnu (« ? ») et la femelle est reconstituée sur les autres locus. La page n'émet aucun verdict sur les liens entre femelles.</div>
   <div class="reading"><b>Mise en garde : un mélange peut rester sous le plafond.</b> Une combinaison qui réunit des fichiers de femelles différentes peut donner un génotype unique qui n'existe pas, avec peu d'incompatibles, pour deux raisons.<br>
-  1) <b>La dilution.</b> Le pourcentage est calculé sur l'ensemble des juvéniles de la combinaison, et le génotype reconstitué est surtout celui de la femelle du fichier le plus gros. Les incompatibles viennent alors du petit fichier et se diluent dans le total. Exemple fictif : 40 juvéniles tous compatibles, plus un nid de 4 juvéniles d'une autre femelle, tous incompatibles : 4 sur 44, soit 9 %, sous un plafond de 10 %. Avec ce plafond, un fichier étranger peut passer inaperçu s'il compte au plus un neuvième des juvéniles des autres fichiers.<br>
+  1) <b>La dilution.</b> Le pourcentage est calculé sur l'ensemble des juvéniles de la combinaison, et le génotype reconstitué est surtout celui de la femelle du fichier le plus gros. Les incompatibles viennent alors du petit fichier et se diluent dans le total. Exemple fictif : 40 juvéniles tous compatibles, plus un nid de 4 juvéniles d'une autre femelle, tous incompatibles : 4 sur 44, soit 9 %, sous un plafond de 10 % comme de 20 %. Au seul plafond global, un fichier étranger peut ainsi passer inaperçu s'il compte au plus un neuvième des juvéniles des autres fichiers (plafond de 10 %), ou un quart (plafond de 20 %).<br>
   2) <b>Une femelle « composite ».</b> À un locus, le génotype reconstitué peut prendre un allèle de chacune des deux femelles. Il est compatible avec les juvéniles des deux nids si, dans chaque nid, tous les juvéniles portent cet allèle de leur mère. C'est toujours le cas si la mère est homozygote, et c'est fréquent dans un petit nid : à un locus donné, tous les juvéniles d'une mère hétérozygote ont reçu d'elle le même allèle une fois sur 2 avec 2 juvéniles, une fois sur 8 avec 4, une fois sur 512 avec 10. De plus, un allèle très fréquent, porté par les deux femelles, rend un locus peu informatif. Une femelle composite peut ainsi être compatible avec tous les juvéniles du mélange.<br>
   Le piège tient donc à la petite taille d'un fichier, par rapport aux autres (dilution) ou en elle-même (femelle composite). Le plafond appliqué à chaque fichier écarte la dilution ; une femelle composite, elle, peut rester sous le plafond partout. Le tableau des groupes signale les groupes non cohérents.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dl">Télécharger la liste (CSV)</button></div>
@@ -152,6 +152,7 @@ table.res td.coh{white-space:normal;min-width:180px}
 
 <div class="card" id="cas-deux">
   <p class="tag">Les cas de deux génotypes complets</p>
+  <div class="controls" style="margin:-2px 0 10px"><label style="font-size:13.5px"><input type="checkbox" id="deuxSous"> n'afficher que les combinaisons dont au moins un des deux génotypes a tous ses pourcentages d'incompatibles sous le plafond</label></div>
   <div class="scroll"><table class="res" id="deux"></table></div>
   <div class="reading">Quand une combinaison donne exactement <b>deux génotypes complets</b>, la page ne retient ni l'un ni l'autre ; pourtant, l'un des deux peut être celui de la femelle. Ces combinaisons sont surlignées en jaune dans la liste. Ici, pour chacune, les deux génotypes (A et B) sont donnés avec leurs incompatibles, calculés comme pour un génotype reconstitué : pourcentages fichier par fichier puis global, en rouge au-delà du plafond. <b>Sous le plafond</b> : oui si aucun de ces pourcentages ne dépasse le plafond. <span class="g dif" style="padding:0 3px">En surligné</span> : les locus où les deux génotypes diffèrent. Des informations additionnelles (autres nids, femelles connues) peuvent permettre de trancher entre les deux.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlDeux">Télécharger ces cas (CSV)</button></div>
@@ -171,7 +172,7 @@ table.res td.coh{white-space:normal;min-width:180px}
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle, sans jamais découper un fichier en nids. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 10 % par défaut, fixé arbitrairement et réglable ; il s'applique au pourcentage global et à celui de chaque fichier (proposition de P. Duchesne, octobre 2026). Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons et les groupes de l'exemple ont été vérifiés par une programmation indépendante, ainsi que les groupes d'un essai à 11 fichiers.</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Chaque fichier contient des juvéniles d'une <b>même femelle</b> (un ou plusieurs nids) ; la page cherche les fichiers qui partagent une femelle, sans jamais découper un fichier en nids. Avec <i>n</i> fichiers, il y a 2<sup><i>n</i></sup> − 1 combinaisons ; le nombre maximal de fichiers par combinaison permet d'en limiter le nombre. Plafond d'incompatibles : 20 % par défaut (10 % jusqu'au 12 octobre 2026), fixé arbitrairement et réglable : un plafond large risque moins d'écarter une vraie reconstitution, et l'on peut toujours écarter ensuite un génotype douteux ; il s'applique au pourcentage global et à celui de chaque fichier (proposition de P. Duchesne, octobre 2026). Reconstitution : méthode du nombre de compatibilités de P. Duchesne, validée contre son programme Maple (voir l'outil de reconstitution). Les combinaisons et les groupes de l'exemple ont été vérifiés par une programmation indépendante, ainsi que les groupes d'un essai à 11 fichiers.</p>
 </div>
 
 <footer id="foot"></footer>
@@ -225,17 +226,17 @@ function nb(x){return (Math.round(10*x)/10).toString().replace('.',',');}
 function vecteur(x,r){var p=plafond(),c=function(v){return v>p+1e-9?'<span class="avert">'+nb(v)+'</span>':nb(v);};
   return '('+(r.comb.length>1?x.pctParFichier.map(c).join(' ; ')+' ; ':'')+'<b>'+c(x.pctIncompat)+'</b>) %';}
 function vecteurTexte(x,r){return (r.comb.length>1?x.pctParFichier.map(nb).join(' ; ')+' ; ':'')+nb(x.pctIncompat);}
-function plafond(){var p=+$("plafond").value;return isFinite(p)&&p>=0?p:10;}
+function plafond(){var p=+$("plafond").value;return isFinite(p)&&p>=0?p:20;}
 function renumeroter(){if(!CUR||!CUR.brut)return;CUR.res=Combinaisons.numeroter(CUR.brut,plafond());afficher();afficherGroupes();}
 // ---------- cas de deux génotypes complets (demande de P. Duchesne, 9 octobre 2026) ----------
 function afficherDeux(){
-  var d=CUR,C=d.res.filter(function(r){return r.nComplets===2;});
+  var d=CUR,sous=$("deuxSous").checked,C=d.res.filter(function(r){return r.nComplets===2&&(!sous||r.deux.some(function(x){return x.sousPlafond;}));});
   $("deux").innerHTML=C.length?'<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th></th><th class="num">Incompatibles</th><th>Sous le plafond</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>'+
     C.map(function(r){var A=r.deux[0].geno,B=r.deux[1].geno;
       return r.deux.map(function(x,i){return '<tr'+(i===0?' class="taille"':'')+'>'+(i===0?'<td rowspan="2">'+noms(r.comb)+'</td><td class="num" rowspan="2">'+r.n+'</td>':'')+
         '<td><b>'+(i===0?'A':'B')+'</b></td><td class="num">'+x.incompatibles+' '+vecteur(x,r)+'</td><td>'+(x.sousPlafond?'<span class="oui">oui</span>':'non')+'</td>'+
         x.geno.map(function(g,l){var dif=gs(A[l])!==gs(B[l]);return '<td class="g'+(dif?' dif':'')+'">'+gs(g)+'</td>';}).join('')+'</tr>';}).join('');}).join('')+'</tbody>'
-    :'<tbody><tr><td class="note">Aucune combinaison ne donne exactement deux génotypes complets.</td></tr></tbody>';
+    :'<tbody><tr><td class="note">'+(sous?'Aucun cas de deux génotypes complets sous le plafond.':'Aucune combinaison ne donne exactement deux génotypes complets.')+'</td></tr></tbody>';
 }
 function csvDeux(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Génotype','Incompatibles','% incompatibles (fichier par fichier ; global)','Sous le plafond'].concat(genoEntete(d.loci))];
   d.res.forEach(function(r){if(r.nComplets!==2)return;r.deux.forEach(function(x,i){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,i===0?'A':'B',x.incompatibles,vecteurTexte(x,r),x.sousPlafond?'oui':'non'].concat(genoLigne(x.geno)));});});return rows;}
@@ -311,7 +312,7 @@ function afficher(){
        '<td class="non">non ('+(r.nComplets?r.nComplets+' génotypes complets':'aucun : locus sans donnée')+')'+(r.nComplets===2?' — <a href="#cas-deux">voir les deux cas</a>':'')+'</td><td></td>'+d.loci.map(function(){return '<td></td>';}).join(''))+'</tr>';prev=t;});
   $("res").innerHTML=h+'</tbody>';
   var D=Combinaisons.distincts(d.res);
-  $("dist").innerHTML=D.length?'<thead><tr><th>N°</th><th class="num">Combinaisons</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'<th>Combinaisons qui le donnent</th></tr></thead><tbody>'+
+  $("dist").innerHTML=D.length?'<thead><tr><th>N°</th><th class="num"># combinaisons</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'<th>Combinaisons qui le donnent</th></tr></thead><tbody>'+
     D.map(function(x){return '<tr><td><span class="badge-g">'+x.num+'</span></td><td class="num">'+x.combs.length+'</td>'+x.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join('')+'<td style="white-space:normal;min-width:240px">'+x.combs.map(function(c){return c.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ');}).join(' ; ')+'</td></tr>';}).join('')+'</tbody>'
     :'<tbody><tr><td class="note">Aucune combinaison ne reconstitue un génotype unique.</td></tr></tbody>';
   afficherDeux();
@@ -402,6 +403,7 @@ function aligner(loci,canon,nom){
   });
   $("resetB").addEventListener('click',function(){BANQUE=null;$("upB").value='';$("banqueInfo").textContent='';if(CUR&&CUR.res)afficherBanque();});
   $("dlB").addEventListener('click',function(){if(CUR&&CUR.banqueRes)download('presence-banque.csv',csvBanque());});
+  $("deuxSous").addEventListener('change',function(){if(CUR&&CUR.res)afficherDeux();});
   $("dlDeux").addEventListener('click',function(){if(CUR&&CUR.res)download('deux-genotypes-complets.csv',csvDeux());});
   $("dlD").addEventListener('click',function(){if(CUR&&CUR.res)download('genotypes-distincts.csv',csvDistincts());});
   charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);

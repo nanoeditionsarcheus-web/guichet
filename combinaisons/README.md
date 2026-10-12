@@ -28,7 +28,8 @@ pourraient provenir d'une même femelle.
   d'incompatibles de chaque fichier de la combinaison ; les pourcentages sont affichés en vecteur
   (fichier par fichier, dans l'ordre de la combinaison, puis global).
 - Cas de deux génotypes complets : surlignés en jaune dans la liste et détaillés dans une section
-  (les deux génotypes, leurs incompatibles, locus où ils diffèrent), téléchargeable.
+  (les deux génotypes, leurs incompatibles, locus où ils diffèrent), téléchargeable ; une case permet de
+  n'afficher que les cas dont au moins un génotype est sous le plafond.
 - Le nombre maximal de fichiers par combinaison choisi est respecté au chargement de nouveaux fichiers
   (il n'est réduit que si la limite de 20 000 combinaisons l'exige).
 - Présence dans la banque de femelles (P. Duchesne, 9 octobre 2026) : un ou plusieurs fichiers de banque
@@ -40,7 +41,7 @@ pourraient provenir d'une même femelle.
 - Juvéniles très incomplets (P. Duchesne et N. Tessier) : écartés s'il leur manque plus de 5 locus
   (réglable ; champ vide : aucun écarté). Même réglage dans la reconstitution et les compatibilités.
 - Paramètres : nombre maximal de fichiers par combinaison ; plafond d'incompatibles en %
-  (10 % par défaut, valeur arbitraire proposée par P. Duchesne, réglable). Au plus 20 000 combinaisons.
+  (20 % par défaut depuis le 12 octobre 2026, 10 % auparavant ; valeur arbitraire proposée par P. Duchesne, réglable). Au plus 20 000 combinaisons.
 - Exemple : les six fichiers de tortues de P. Duchesne (Blanche, Grise, Rose, Turquoise, Inconnue 1,
   Inconnue 2), versions validées contre ses feuilles Maple.
 - Vérification : `validation/verifier.py` recalcule de façon indépendante, en Python :

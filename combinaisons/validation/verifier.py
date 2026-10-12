@@ -1,6 +1,6 @@
 """Vérification indépendante (Python, sans le code JS).
 1) Les 63 combinaisons de l'exemple (six fichiers, un par femelle) : nombre de génotypes complets, génotype
-   s'il est unique, incompatibles, et décision « retenu » avec le plafond par défaut de 10 %.
+   s'il est unique, incompatibles, et décision « retenu » avec le plafond par défaut de 20 % (depuis le 12 octobre 2026).
 2) Les groupes de fichiers (plus grande combinaison retenue contenant chaque fichier) : exemple aux plafonds
    de 10 % et de 20 %, et essai à 11 fichiers, un par nid de Grise, Rose et Turquoise (identifiants AAAANN…),
    au plafond de 10 %. Cet essai découpe des fichiers en nids pour la seule vérification.
@@ -55,9 +55,9 @@ def groupes(res, n):
              "coherent": all(choix[f] == [c] for f in c)} for c in gr] + \
            [{"sans": [f for f in range(n) if not choix[f]]}]
 F = ex["fichiers"]
-res = combinaisons(F, 10)
+res = combinaisons(F, 20)
 json.dump(res, open(d / "validation/attendu.json", "w"))
-print(len(res), "combinaisons ;", sum(1 for o in res if o["geno"]), "génotypes uniques ;", sum(1 for o in res if o["retenu"]), "retenus (plafond 10 %)")
+print(len(res), "combinaisons ;", sum(1 for o in res if o["geno"]), "génotypes uniques ;", sum(1 for o in res if o["retenu"]), "retenus (plafond 20 %)")
 # essai : un fichier par nid
 src = d.parent / "reconstitution-femelle/validation"
 nids = {}
@@ -66,7 +66,7 @@ for nom, chemin in [("Grise", "donnees/exemple-maple-FLOCK.csv"), ("Rose", "jeux
         c = ligne.split(";"); a = [int(x or 0) for x in c[1:1 + 2 * L]]
         nids.setdefault(nom + "-" + c[0][:6], []).append([[a[2 * k], a[2 * k + 1]] if a[2 * k] and a[2 * k + 1] else None for k in range(L)])
 essai = [{"nom": k, "juveniles": v} for k, v in nids.items()]
-G = {"exemple-10": groupes(res, len(F)), "exemple-20": groupes(combinaisons(F, 20), len(F)),
+G = {"exemple-10": groupes(combinaisons(F, 10), len(F)), "exemple-20": groupes(res, len(F)),
      "essai": {"loci": ex["loci"], "fichiers": essai, "groupes": groupes(combinaisons(essai, 10), len(essai))}}
 json.dump(G, open(d / "validation/attendu-groupes.json", "w"))
 for k in ("exemple-10", "exemple-20"):

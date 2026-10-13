@@ -85,23 +85,23 @@ a{color:var(--A)}
 </div>
 
 <div class="card">
-  <p class="tag">Les génotypes complets les plus vraisemblables</p>
-  <p style="margin:0 0 8px"><b>Définition.</b> Un <b>génotype complet</b> est un génotype de la femelle à tous les locus à la fois : un génotype à deux allèles pour chaque locus (un locus sans aucun juvénile génotypé reste inconnu, noté « ? »). L'outil forme les génotypes complets en choisissant, à chaque locus, l'un des génotypes retenus selon la règle ci-dessous ; il y en a donc autant que le produit des nombres de génotypes retenus, locus par locus. Il n'y en a qu'un seul quand un seul génotype est retenu à chaque locus : on dit alors que la femelle est reconstituée de façon unique.</p>
+  <p class="tag">Les génotypes candidats les plus vraisemblables</p>
+  <p style="margin:0 0 8px"><b>Définition.</b> Un <b>génotype candidat</b> est l'un des meilleurs candidats à la reconstitution de la femelle. C'est un génotype à tous les locus à la fois, deux allèles pour chaque locus (un locus sans aucun juvénile génotypé reste inconnu, noté « ? »). L'outil forme les génotypes candidats en choisissant, à chaque locus, l'un des génotypes retenus selon la règle ci-dessous ; il y en a donc autant que le produit des nombres de génotypes retenus, locus par locus. Il n'y en a qu'un seul quand un seul génotype est retenu à chaque locus : on dit alors que la femelle est reconstituée de façon unique. À ne pas confondre avec les <b>candidats à un locus</b>, décrits plus haut : les génotypes à deux allèles examinés à un seul locus, dont on calcule le nombre de compatibilités.</p>
   <p style="margin:0 0 8px">À partir des candidats de NC maximal, l'outil retient à chaque locus :</p>
   <ul style="margin:0 0 8px">
     <li>le candidat, s'il n'y en a qu'un ;</li>
     <li>seulement l'homozygote, si un homozygote est parmi eux ;</li>
     <li>tous les candidats, dans les autres cas (plusieurs candidats et aucun homozygote).</li>
   </ul>
-  <p style="margin:0 0 8px">Les génotypes complets les plus vraisemblables sont toutes les combinaisons de ces génotypes retenus. Par exemple (fictif), avec quatre locus dont les candidats de NC maximal sont :</p>
+  <p style="margin:0 0 8px">Les génotypes candidats les plus vraisemblables sont toutes les combinaisons de ces génotypes retenus. Par exemple (fictif), avec quatre locus dont les candidats de NC maximal sont :</p>
   <p style="margin:0 0 8px;font-family:var(--mono);font-size:13.5px">264/268 · 280/282 264/268 · 258/258 258/260 258/262 · 262/266 272/276</p>
-  <p style="margin:0 0 6px">on retient 264/268 ; 280/282 et 264/268 ; 258/258 seulement ; 262/266 et 272/276, d'où 1 × 2 × 1 × 2 = 4 génotypes complets :</p>
+  <p style="margin:0 0 6px">on retient 264/268 ; 280/282 et 264/268 ; 258/258 seulement ; 262/266 et 272/276, d'où 1 × 2 × 1 × 2 = 4 génotypes candidats :</p>
   <p style="margin:0;font-family:var(--mono);font-size:13.5px;line-height:1.7">264/268 280/282 258/258 262/266<br>264/268 264/268 258/258 262/266<br>264/268 280/282 258/258 272/276<br>264/268 264/268 258/258 272/276</p>
 </div>
 
 <div class="card">
   <p class="tag">Rééchantillonnage aléatoire</p>
-  <p style="margin:0 0 8px">Lorsqu'un seul génotype complet est reconstitué avec l'ensemble des juvéniles, l'outil peut tirer au hasard, sans remise, des sous-échantillons de juvéniles de tailles croissantes (par exemple 10, 20, 30… jusqu'à la taille de l'échantillon complet), un grand nombre de fois pour chaque taille (1000 par défaut). Pour chaque taille, il donne le pourcentage des tirages qui produisent un seul génotype complet, et celui des tirages qui produisent le même génotype que l'échantillon complet.</p>
+  <p style="margin:0 0 8px">Lorsqu'un seul génotype candidat est reconstitué avec l'ensemble des juvéniles, l'outil peut tirer au hasard, sans remise, des sous-échantillons de juvéniles de tailles croissantes (par exemple 10, 20, 30… jusqu'à la taille de l'échantillon complet), un grand nombre de fois pour chaque taille (1000 par défaut). Pour chaque taille, il donne le pourcentage des tirages qui produisent un seul génotype candidat, et celui des tirages qui produisent le même génotype que l'échantillon complet.</p>
   <p style="margin:0">Deux lectures sont utiles : la <b>stabilité</b> (si le même génotype revient sur une suite de tailles, on peut d'autant plus s'y fier) et la <b>taille à partir de laquelle</b> on retrouve le génotype de l'échantillon complet, qui donne une idée du nombre minimal de juvéniles nécessaire. Les tirages étant aléatoires, les pourcentages varient légèrement d'une exécution à l'autre.</p>
 </div>
 
@@ -110,7 +110,7 @@ a{color:var(--A)}
   <ul style="margin:0">
     <li><b>Égalités.</b> Plusieurs candidats peuvent avoir le même NC maximal, par exemple un homozygote et un hétérozygote qui partagent un même allèle présent chez tous les juvéniles. Le critère ne permet pas de les départager : l'outil les présente tous, sans en choisir un.</li>
     <li><b>Juvéniles non compatibles.</b> Pour chaque meilleur candidat, l'outil nomme les juvéniles avec lesquels il n'est pas compatible, pour faciliter la recherche d'erreurs de génotypage.</li>
-    <li><b>Nombre de génotypes possibles.</b> Avec <i>k</i> allèles à un locus, il y a <i>k</i>(<i>k</i>−1)/2 hétérozygotes et <i>k</i> homozygotes possibles, soit <i>k</i>(<i>k</i>−1)/2 + <i>k</i> génotypes : ce sont les candidats examinés à ce locus. Pour le génotype au complet, le nombre de possibilités est le produit de ces nombres sur tous les locus.</li>
+    <li><b>Nombre de génotypes possibles.</b> Avec <i>k</i> allèles à un locus, il y a <i>k</i>(<i>k</i>−1)/2 hétérozygotes et <i>k</i> homozygotes possibles, soit <i>k</i>(<i>k</i>−1)/2 + <i>k</i> génotypes : ce sont les candidats examinés à ce locus. Pour le génotype multilocus, le nombre de possibilités est le produit de ces nombres sur tous les locus.</li>
     <li><b>Nombre d'allèles.</b> Il s'agit des allèles réellement observés chez les juvéniles génotypés ; le code des données manquantes n'est pas compté.</li>
     <li><b>Données manquantes.</b> À chaque locus, la femelle est reconstituée avec les juvéniles génotypés à ce locus ; les autres ne comptent pas à ce locus. Si aucun juvénile du fichier n'est génotypé à un locus, ce locus reste inconnu (noté « ? ») et la femelle est reconstituée sur les autres locus (règle retenue par l'auteur en octobre 2026). Un locus inconnu n'est pas examiné dans le calcul des compatibilités.</li>
     <li><b>Génotypes à 3 ou 4 allèles.</b> Ils ne sont pas pris en compte pour le moment.</li>

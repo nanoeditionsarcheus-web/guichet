@@ -86,18 +86,18 @@ a{color:var(--A)}
 </div>
 
 <div class="card">
-  <p class="tag">Les génotypes complets les plus vraisemblables</p>
-  <p class="note" style="margin:-2px 0 10px"><b>Génotype complet</b> : génotype de la femelle à tous les locus à la fois, un génotype à deux allèles par locus (« ? » pour un locus sans aucun juvénile génotypé). Les génotypes complets sont les combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
+  <p class="tag">Les génotypes candidats les plus vraisemblables</p>
+  <p class="note" style="margin:-2px 0 10px"><b>Génotype candidat</b> : l'un des meilleurs candidats à la reconstitution de la femelle ; c'est un génotype à tous les locus à la fois, deux allèles par locus (« ? » pour un locus sans aucun juvénile génotypé). Les génotypes candidats sont les combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
   <p id="complCount" style="margin:0 0 8px"></p>
   <div class="scroll"><table class="complets" id="complets"></table></div>
-  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select autocomplete="off" id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes candidats (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select autocomplete="off" id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
 </div>
 
 <div class="card reech">
   <p class="tag">Rééchantillonnage aléatoire</p>
   <div id="reechOff" class="note" style="margin:0"></div>
   <div id="reechOn">
-    <p class="note" style="margin:-2px 0 10px">Pour chaque taille d'échantillon, la page tire au hasard, sans remise, ce nombre de juvéniles parmi ceux du fichier, reconstitue la femelle, et répète le tirage autant de fois que demandé. Elle compte les tirages qui donnent <b>un seul génotype complet</b>, et ceux qui donnent <b>le même génotype que l'échantillon complet</b>. Si le même génotype revient sur une suite de tailles, on peut d'autant plus s'y fier ; la taille à partir de laquelle on le retrouve donne une idée du nombre minimal de juvéniles nécessaire. Les pourcentages varient légèrement d'une exécution à l'autre ; à la taille de l'échantillon complet, ils valent 100 % par construction.</p>
+    <p class="note" style="margin:-2px 0 10px">Pour chaque taille d'échantillon, la page tire au hasard, sans remise, ce nombre de juvéniles parmi ceux du fichier, reconstitue la femelle, et répète le tirage autant de fois que demandé. Elle compte les tirages qui donnent <b>un seul génotype candidat</b>, et ceux qui donnent <b>le même génotype que l'échantillon complet</b>. Si le même génotype revient sur une suite de tailles, on peut d'autant plus s'y fier ; la taille à partir de laquelle on le retrouve donne une idée du nombre minimal de juvéniles nécessaire. Les pourcentages varient légèrement d'une exécution à l'autre ; à la taille de l'échantillon complet, ils valent 100 % par construction.</p>
     <div class="controls">
       <label>Nombre d'itérations : <input autocomplete="off" type="number" id="reechIt" min="10" max="100000" step="10" value="1000"></label>
       <label>Intervalle entre les tailles : <input autocomplete="off" type="number" id="reechPas" min="1" step="1" value="10"></label>
@@ -169,17 +169,17 @@ function rendre(data,label){
   var tot=res.reduce(function(p,r){return r.nTyped?p*BigInt(nPossible(r.nAlleles)):p;},BigInt(1)),nConnus=res.filter(function(r){return r.nTyped;}).length;
   h+='</tbody><tfoot><tr><td colspan="6" style="border:0;padding-top:8px"><b>Génotypes multilocus possibles</b> (produit sur les '+nConnus+' locus'+(nConnus<res.length?' génotypés':'')+')</td><td class="num" style="border:0;padding-top:8px"><b>'+fmtBig(tot)+'</b></td></tr></tfoot>';
   $("summary").innerHTML=h;
-  // génotypes complets les plus vraisemblables
+  // génotypes candidats les plus vraisemblables
   var ret=Reconstitution.retenusParLocus(res),nComp=Reconstitution.nombreComplets(ret),MAXAFF=200;
   var comp=Reconstitution.genotypesComplets(ret,MAXAFF);
-  $("complCount").innerHTML=nComp?('<b>'+fmtBig(BigInt(nComp))+'</b> génotype'+(nComp>1?'s':'')+' complet'+(nComp>1?'s':'')+' le'+(nComp>1?'s':'')+' plus vraisemblable'+(nComp>1?'s':'')+
-    (nComp>1?' (produit du nombre de génotypes retenus à chaque locus : '+ret.map(function(l){return l.length;}).join(' × ')+')':'')+'.'+(nComp>MAXAFF?' Les '+MAXAFF+' premiers sont affichés ; le fichier CSV les contient tous.':'')):'Aucun génotype complet.';
+  $("complCount").innerHTML=nComp?('<b>'+fmtBig(BigInt(nComp))+'</b> génotype'+(nComp>1?'s':'')+' candidat'+(nComp>1?'s':'')+' le'+(nComp>1?'s':'')+' plus vraisemblable'+(nComp>1?'s':'')+
+    (nComp>1?' (produit du nombre de génotypes retenus à chaque locus : '+ret.map(function(l){return l.length;}).join(' × ')+')':'')+'.'+(nComp>MAXAFF?' Les '+MAXAFF+' premiers sont affichés ; le fichier CSV les contient tous.':'')):'Aucun génotype candidat.';
   var inconnus=res.map(function(r,k){return r.nTyped?null:data.loci[k];}).filter(function(x){return x!=null;});
   if(inconnus.length)$("complCount").innerHTML+=' <span class="tie">'+(inconnus.length>1?'Les locus ':'Le locus ')+esc(inconnus.join(', '))+(inconnus.length>1?' n\'ont':' n\'a')+' aucun juvénile génotypé : '+(inconnus.length>1?'ils restent inconnus':'il reste inconnu')+' (?), et la femelle est reconstituée sur les autres locus.</span>';
   var varie=ret.map(function(l){return l.length>1;});
   CUR.nComp=nComp;CUR.reference=nComp===1?Reconstitution.cleComplet(Reconstitution.genotypesComplets(ret)[0]):null;CUR.reech=null;
   $("reechOn").hidden=nComp!==1;$("reechOff").hidden=nComp===1;$("reechRes").innerHTML='';$("reechStatus").textContent='';
-  $("reechOff").innerHTML='Le rééchantillonnage est offert seulement lorsqu\'un seul génotype complet est reconstitué avec l\'ensemble des juvéniles (ici : '+fmtBig(BigInt(nComp))+').';
+  $("reechOff").innerHTML='Le rééchantillonnage est offert seulement lorsqu\'un seul génotype candidat est reconstitué avec l\'ensemble des juvéniles (ici : '+fmtBig(BigInt(nComp))+').';
   $("complets").innerHTML=comp.length?'<thead><tr><th>#</th>'+data.loci.map(function(n,k){return '<th'+(varie[k]?' style="color:var(--ink)"':'')+'>'+esc(n)+'</th>';}).join('')+'</tr></thead><tbody>'+
     comp.map(function(c,i){return '<tr><td>'+(i+1)+'</td>'+c.map(function(x,k){return '<td class="g'+(varie[k]?' best':'')+'">'+gs(x)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>':'';
   // détail
@@ -305,7 +305,7 @@ function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='n
   $("openAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=true;});});
   $("closeAll").addEventListener('click',function(){document.querySelectorAll('details.loc').forEach(function(d){d.open=false;});});
   $("dlSum").addEventListener('click',function(){if(CUR)download('reconstitution-resume.csv',csvSummary());});
-  $("dlCompl").addEventListener('click',function(){if(CUR)download('reconstitution-genotypes-complets.csv',csvComplets());});
+  $("dlCompl").addEventListener('click',function(){if(CUR)download('reconstitution-genotypes-candidats.csv',csvComplets());});
   $("dlAll").addEventListener('click',function(){if(CUR)download('reconstitution-candidats.csv',csvAll());});
   render(EXAMPLE,EXAMPLE.label);
 })();

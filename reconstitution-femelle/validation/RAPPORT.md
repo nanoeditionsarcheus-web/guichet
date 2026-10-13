@@ -143,17 +143,17 @@ Les écarts viennent de différences entre les fichiers de données, pas du calc
 identiques, la page et Maple concordent (sections 3 et 6). Les fichiers PAPA ne diffèrent de Maple
 que pour Grise (même génotype 20170704, tm64).
 
-## 8. Génotypes complets les plus vraisemblables (règle de P. Duchesne, 29 septembre 2026)
+## 8. Génotypes candidats les plus vraisemblables (règle de P. Duchesne, 29 septembre 2026)
 
 Nouvelle règle, sans équivalent dans le programme Maple : à chaque locus, parmi les candidats de NC
 maximal, on retient le candidat unique ; ou seulement l'homozygote s'il y en a un ; ou sinon tous les
-candidats. Les génotypes complets sont toutes les combinaisons des génotypes retenus
+candidats. Les génotypes candidats sont toutes les combinaisons des génotypes retenus
 (`retenusParLocus`, `genotypesComplets` dans `js/reconstitution.js`).
 
 Vérification : `js/test-complets.js` applique la règle à l'exemple fictif donné par P. Duchesne dans
-son message. On obtient ses 4 génotypes complets, ni plus ni moins. Sur les six nids :
+son message. On obtient ses 4 génotypes candidats, ni plus ni moins. Sur les six nids :
 
-| Nid | Génotypes retenus par locus | Génotypes complets |
+| Nid | Génotypes retenus par locus | Génotypes candidats |
 |---|---|---|
 | Grise, Rose, Turquoise | 1 partout | 1 |
 | Blanche | 2 à Tm6 | 2 |
@@ -164,10 +164,10 @@ Dans la page, les 16 lignes d'Inconnue 2 ont été vérifiées : toutes distinct
 
 ## 9. Rééchantillonnage aléatoire dans la page (demande de P. Duchesne, 30 septembre 2026)
 
-Offert seulement si un seul génotype complet est reconstitué avec l'échantillon complet. Paramètres :
+Offert seulement si un seul génotype candidat est reconstitué avec l'échantillon complet. Paramètres :
 nombre d'itérations (1000 par défaut) et intervalle entre les tailles (10 par défaut) ; tailles
 intervalle, 2 × intervalle, … sans dépasser la taille de l'échantillon complet. Sorties : % de tirages
-donnant un génotype complet unique, % donnant le même génotype que l'échantillon complet, avec le nom
+donnant un génotype candidat unique, % donnant le même génotype que l'échantillon complet, avec le nom
 du fichier et le nombre d'itérations en en-tête (fonction `reechantillonnerTaille`).
 
 Vérifications :
@@ -177,4 +177,4 @@ Vérifications :
   1,5 point, ce qui est l'ordre de grandeur attendu du hasard.
 - `page/test-reech.js` (Chromium) : pour Rose, la section est offerte, et le tableau est cohérent
   avec l'étude publiée (écart de quelques points au plus, attendu pour des tirages différents) ;
-  pour Inconnue 2 (16 génotypes complets), la section n'est pas offerte et la page dit pourquoi.
+  pour Inconnue 2 (16 génotypes candidats), la section n'est pas offerte et la page dit pourquoi.

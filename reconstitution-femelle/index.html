@@ -49,6 +49,7 @@ input[type=file]{font-size:12.5px;color:var(--muted);max-width:100%}
 a{color:var(--A)}
 
 #fmtGeno{font-family:var(--sans);font-size:13.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
+.outils{margin-top:6px}.outils a{color:var(--A)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -57,6 +58,7 @@ a{color:var(--A)}
 <header>
   <h1>Reconstitution du génotype d'une femelle</h1>
   <p class="sub">À partir des génotypes de ses juvéniles, locus par locus, par le nombre de compatibilités</p>
+  <p class="sub outils">Outils : <a href="https://nanoeditionsarcheus-web.github.io/flock-convert/">Mise en forme pour FLOCK</a> · <b>Reconstitution d'une femelle</b> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/combinaisons/">Agréger les juvéniles d'une même femelle</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/compatibilites/">Tableau des compatibilités</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/">Guichet (tous les outils)</a></p>
   <p class="sub" id="stamp"></p>
 </header>
 
@@ -65,7 +67,7 @@ a{color:var(--A)}
   <p class="note" style="margin:-2px 0 10px">Téléversez le fichier des <b>génotypes des juvéniles</b> (tous les nids ensemble). Disposition FLOCK : identifiant, puis 2 colonnes par locus, une par allèle, avec le nom du locus au-dessus de la première colonne. Formats : .xls, .xlsx, .csv. Un allèle vide ou égal à 0 rend le génotype manquant à ce locus. Pour convertir des génotypes à allèles collés (6 chiffres), utilisez l'outil <a href="https://nanoeditionsarcheus-web.github.io/flock-convert/">Mise en forme pour FLOCK</a>. À l'ouverture, la page montre un <b>jeu d'exemple</b> (voir le pied de page).</p>
   <div class="controls">
     <label>Juvéniles : <input type="file" id="upJuv" accept=".xls,.xlsx,.csv,.txt"></label>
-    <label>Écarter les juvéniles auxquels il manque plus de <input type="number" id="maxManq" min="0" step="1" value="5" style="width:70px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"> locus</label>
+    <label>Écarter les juvéniles auxquels il manque plus de <input autocomplete="off" type="number" id="maxManq" min="0" step="1" value="5" style="width:70px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"> locus</label>
     <button id="upLoad">Reconstituer</button>
     <button id="upReset" class="ghost">Revenir à l'exemple</button>
   </div>
@@ -88,7 +90,7 @@ a{color:var(--A)}
   <p class="note" style="margin:-2px 0 10px"><b>Génotype complet</b> : génotype de la femelle à tous les locus à la fois, un génotype à deux allèles par locus (« ? » pour un locus sans aucun juvénile génotypé). Les génotypes complets sont les combinaisons, sur tous les locus, des génotypes retenus à chaque locus : s'il n'y a qu'un candidat de NC maximal, on le retient ; si un homozygote est parmi eux, on ne retient que l'homozygote ; sinon, on retient tous les candidats à égalité. L'ordre des lignes n'a pas de signification. <span style="color:var(--hit);font-weight:600">En vert</span> : les locus où plusieurs génotypes sont retenus.</p>
   <p id="complCount" style="margin:0 0 8px"></p>
   <div class="scroll"><table class="complets" id="complets"></table></div>
-  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCompl">Télécharger les génotypes complets (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select autocomplete="off" id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
 </div>
 
 <div class="card reech">
@@ -97,8 +99,8 @@ a{color:var(--A)}
   <div id="reechOn">
     <p class="note" style="margin:-2px 0 10px">Pour chaque taille d'échantillon, la page tire au hasard, sans remise, ce nombre de juvéniles parmi ceux du fichier, reconstitue la femelle, et répète le tirage autant de fois que demandé. Elle compte les tirages qui donnent <b>un seul génotype complet</b>, et ceux qui donnent <b>le même génotype que l'échantillon complet</b>. Si le même génotype revient sur une suite de tailles, on peut d'autant plus s'y fier ; la taille à partir de laquelle on le retrouve donne une idée du nombre minimal de juvéniles nécessaire. Les pourcentages varient légèrement d'une exécution à l'autre ; à la taille de l'échantillon complet, ils valent 100 % par construction.</p>
     <div class="controls">
-      <label>Nombre d'itérations : <input type="number" id="reechIt" min="10" max="100000" step="10" value="1000"></label>
-      <label>Intervalle entre les tailles : <input type="number" id="reechPas" min="1" step="1" value="10"></label>
+      <label>Nombre d'itérations : <input autocomplete="off" type="number" id="reechIt" min="10" max="100000" step="10" value="1000"></label>
+      <label>Intervalle entre les tailles : <input autocomplete="off" type="number" id="reechPas" min="1" step="1" value="10"></label>
       <button id="reechGo">Lancer le rééchantillonnage</button>
     </div>
     <p class="note" id="reechStatus" style="margin:8px 0 0"></p>
@@ -365,6 +367,19 @@ function csvAll(){var rows=[['Locus','Candidat','NC','Juvéniles génotypés','N
 
 // ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
 function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}
+// Identifiants (1re colonne) qu'Excel a transformés en dates : rétablis sous la forme AAAAMMJJ, par exemple
+// 6/1/15 (1er juin 2015) → 20150601. Pour les tortues : année 2015, nid 06, juvénile 01. Les autres cellules
+// sont lues telles quelles. DATES_ID compte les identifiants rétablis depuis la dernière remise à zéro.
+var DATES_ID=0;
+function lignesFeuille(ws){
+  var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:'',blankrows:true});if(!ws['!ref'])return rows;
+  var R=XLSX.utils.decode_range(ws['!ref']),p=function(n){return (n<10?'0':'')+n;};
+  rows.forEach(function(row,i){var c=ws[XLSX.utils.encode_cell({r:R.s.r+i,c:R.s.c})],d=null;if(!c)return;
+    if(c.t==='d'&&c.v instanceof Date)d={y:c.v.getFullYear(),m:c.v.getMonth()+1,d:c.v.getDate()};
+    else if(c.t==='n'&&c.z&&XLSX.SSF.is_date(c.z))d=XLSX.SSF.parse_date_code(c.v);
+    if(d){row[0]=String(d.y)+p(d.m)+p(d.d);DATES_ID++;}});
+  return rows;}
+function noteDates(){var n=DATES_ID;DATES_ID=0;return n?' '+n+' identifiant'+(n>1?'s':'')+' en format de date Excel '+(n>1?'ont été rétablis':'a été rétabli')+' sous la forme AAAAMMJJ (ex. 6/1/15 → 20150601).':'';}
 function readFile(file){
   return new Promise(function(res,rej){
     var ext=(file.name.split('.').pop()||'').toLowerCase(),fr=new FileReader();
@@ -374,7 +389,7 @@ function readFile(file){
       fr.onerror=rej;fr.readAsText(file);
     }else{
       if(typeof XLSX==='undefined'){rej(new Error("lecture .xls indisponible (hors ligne). Enregistrez le fichier en .csv, ou utilisez la page en ligne."));return;}
-      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];res(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}));}catch(e){rej(e);}};
+      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array',cellNF:true});var ws=wb.Sheets[wb.SheetNames[0]];res(lignesFeuille(ws));}catch(e){rej(e);}};
       fr.onerror=rej;fr.readAsArrayBuffer(file);
     }
   });
@@ -392,13 +407,13 @@ function status(msg,err){var el=$("upStatus");el.textContent=msg;el.className='n
   $("upLoad").addEventListener('click',function(){
     var f=$("upJuv").files[0];
     if(!f){status("Choisissez le fichier des juvéniles.",true);return;}
-    status("Lecture en cours…");
+    status("Lecture en cours…");DATES_ID=0;
     readFile(f).then(function(rows){
       var d=parseJuv(rows);
       if(!d.juveniles.length)throw new Error("aucun juvénile lu dans « "+f.name+" ».");
       if(!d.loci.length)throw new Error("aucun locus reconnu dans « "+f.name+" ».");
       render(d,'fichier « '+f.name+' »');
-      status(d.juveniles.length+" juvéniles chargés — "+d.loci.length+" locus ("+d.loci.join(', ')+").");
+      status(d.juveniles.length+" juvéniles chargés — "+d.loci.length+" locus ("+d.loci.join(', ')+")."+noteDates());
     }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
   });
   $("maxManq").addEventListener('change',function(){if(SRC)render(SRC.data,SRC.label);});

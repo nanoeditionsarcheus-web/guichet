@@ -65,6 +65,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 @media(max-width:640px){.upl{grid-template-columns:1fr}}
 
 #fmtGeno{font-family:var(--sans);font-size:13.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)}
+.outils{margin-top:6px}.outils a{color:var(--A)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -73,6 +74,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 <header>
   <h1>Tableau des compatibilités</h1>
   <p class="sub">Des juvéniles d'une femelle inconnue proviennent-ils d'une femelle déjà reconstituée ?</p>
+  <p class="sub outils">Outils : <a href="https://nanoeditionsarcheus-web.github.io/flock-convert/">Mise en forme pour FLOCK</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/combinaisons/">Agréger les juvéniles d'une même femelle</a> · <b>Tableau des compatibilités</b> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/">Guichet (tous les outils)</a></p>
   <p class="sub" id="stamp"></p>
 </header>
 
@@ -86,7 +88,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   </div>
   <p class="note" style="margin:8px 0 12px">Le fichier facultatif des femelles contient une femelle par ligne (identifiant, puis son génotype, même disposition) ; il permet d'ajouter à la banque des femelles connues autrement.</p>
   <div class="controls">
-    <label>Écarter les juvéniles auxquels il manque plus de <input type="number" id="maxManq" min="0" step="1" value="5" style="width:70px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"> locus</label>
+    <label>Écarter les juvéniles auxquels il manque plus de <input autocomplete="off" type="number" id="maxManq" min="0" step="1" value="5" style="width:70px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"> locus</label>
     <button id="upLoad">Construire le tableau</button>
     <button id="upReset" class="ghost">Revenir à l'exemple</button>
   </div>
@@ -104,7 +106,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   <p class="tag">Tableau des compatibilités</p>
   <div class="scroll"><table class="tc" id="tc"></table></div>
   <div class="reading">Chaque cellule donne le <b>nombre de juvéniles</b> du groupe (colonne) dont le génotype est compatible avec celui de la femelle (rangée) <b>à tous les locus</b>, c'est-à-dire qui partagent au moins un allèle avec elle à chaque locus génotypé chez les deux. Sous le nombre : l'effectif du groupe et le pourcentage. La dernière rangée, <b>Aucune</b>, compte les juvéniles compatibles avec <b>aucune</b> des femelles ; comme un juvénile peut être compatible avec plusieurs femelles, les rangées ne s'additionnent pas forcément à l'effectif. Souligné : la femelle reconstituée à partir de ce groupe. Sur fond teinté : le ou les groupes testés. La page n'émet aucun verdict ; la comparaison des colonnes revient à l'usagère.</div>
-  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCsv">Télécharger le tableau (CSV)</button><button class="ghost" id="dlFem">Télécharger les génotypes des femelles (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
+  <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCsv">Télécharger le tableau (CSV)</button><button class="ghost" id="dlFem">Télécharger les génotypes des femelles (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select autocomplete="off" id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
   <p class="note" style="margin:8px 0 0">Le fichier des génotypes des femelles (reconstituées et déjà connues) donne une femelle par ligne. En disposition FLOCK, il se recharge tel quel comme fichier de « femelles déjà connues » : c'est une façon de tenir la banque.</p>
 </div>
 
@@ -112,7 +114,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   <p class="tag">Comparaison des groupes deux à deux (test exact de Fisher)</p>
   <p class="note" style="margin:-2px 0 10px">Pour chaque paire de groupes, la page teste si la répartition de leurs juvéniles entre les catégories de compatibilité diffère. Le test exige que chaque juvénile compte <b>une seule fois</b> : un juvénile compatible avec plusieurs femelles est donc placé dans une catégorie combinée (par exemple « FGrise + FRose »), au lieu d'être compté dans chaque rangée comme dans le tableau ci-dessus.</p>
   <div class="scroll"><table class="tc" id="cat"></table></div>
-  <div class="controls" style="margin:14px 0 10px"><label>Seuil de signification : <input type="number" id="seuil" min="0" max="1" step="0.01" value="0.05"></label></div>
+  <div class="controls" style="margin:14px 0 10px"><label>Seuil de signification : <input autocomplete="off" type="number" id="seuil" min="0" max="1" step="0.01" value="0.05"></label></div>
   <p class="note" style="margin:0 0 6px"><span style="background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);font-weight:700;padding:1px 6px;border-radius:2px">S</span> différence significative (p &lt; seuil) &nbsp;·&nbsp; <span style="background:color-mix(in srgb,var(--hit) 14%,transparent);color:var(--hit);font-weight:700;padding:1px 6px;border-radius:2px">NS</span> pas de différence significative (p ≥ seuil)</p>
   <div class="scroll"><table class="tc pv" id="pv"></table></div>
   <div class="reading">Chaque case donne la <b>p-valeur</b> du test exact de Fisher pour la paire (rangée, colonne). <span style="color:var(--warn);font-weight:600">p &lt; seuil</span> : les deux groupes diffèrent probablement. <span style="color:var(--hit);font-weight:600">p ≥ seuil</span> : on ne peut pas conclure qu'ils diffèrent. <b>Prudence</b> : deux groupes presque entièrement dans la catégorie « Aucune » ne diffèrent pas, mais cela ne veut pas dire qu'ils viennent de la même femelle ; il est préférable de ne tester qu'un seul groupe hors référence à la fois. Les p-valeurs ne sont pas corrigées pour le nombre de comparaisons.</div>
@@ -235,6 +237,19 @@ function csv(){var g=CUR.references.concat(CUR.testes),n=CUR.references.length;
 
 // ---------- lecture du fichier (même disposition que les autres outils du guichet) ----------
 function normA(v){if(v===null||v===undefined)return null;if(typeof v==='number')v=Math.round(v);var s=String(v).trim();if(s===''||/^0+$/.test(s)||s==='0.0')return null;var n=parseInt(s,10);return isNaN(n)?null:n;}
+// Identifiants (1re colonne) qu'Excel a transformés en dates : rétablis sous la forme AAAAMMJJ, par exemple
+// 6/1/15 (1er juin 2015) → 20150601. Pour les tortues : année 2015, nid 06, juvénile 01. Les autres cellules
+// sont lues telles quelles. DATES_ID compte les identifiants rétablis depuis la dernière remise à zéro.
+var DATES_ID=0;
+function lignesFeuille(ws){
+  var rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:'',blankrows:true});if(!ws['!ref'])return rows;
+  var R=XLSX.utils.decode_range(ws['!ref']),p=function(n){return (n<10?'0':'')+n;};
+  rows.forEach(function(row,i){var c=ws[XLSX.utils.encode_cell({r:R.s.r+i,c:R.s.c})],d=null;if(!c)return;
+    if(c.t==='d'&&c.v instanceof Date)d={y:c.v.getFullYear(),m:c.v.getMonth()+1,d:c.v.getDate()};
+    else if(c.t==='n'&&c.z&&XLSX.SSF.is_date(c.z))d=XLSX.SSF.parse_date_code(c.v);
+    if(d){row[0]=String(d.y)+p(d.m)+p(d.d);DATES_ID++;}});
+  return rows;}
+function noteDates(){var n=DATES_ID;DATES_ID=0;return n?' '+n+' identifiant'+(n>1?'s':'')+' en format de date Excel '+(n>1?'ont été rétablis':'a été rétabli')+' sous la forme AAAAMMJJ (ex. 6/1/15 → 20150601).':'';}
 function readFile(file){
   return new Promise(function(res,rej){
     var ext=(file.name.split('.').pop()||'').toLowerCase(),fr=new FileReader();
@@ -244,7 +259,7 @@ function readFile(file){
       fr.onerror=rej;fr.readAsText(file);
     }else{
       if(typeof XLSX==='undefined'){rej(new Error("lecture .xls indisponible (hors ligne). Enregistrez le fichier en .csv, ou utilisez la page en ligne."));return;}
-      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];res(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}));}catch(e){rej(e);}};
+      fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:'array',cellNF:true});var ws=wb.Sheets[wb.SheetNames[0]];res(lignesFeuille(ws));}catch(e){rej(e);}};
       fr.onerror=rej;fr.readAsArrayBuffer(file);
     }
   });
@@ -270,7 +285,7 @@ function nomDe(f){return f.name.replace(/\.[^.]+$/,'');}
     var R=[].slice.call($("upRef").files),T=[].slice.call($("upTest").files),Fm=$("upFem").files[0];
     if(!R.length&&!Fm){status("Choisissez au moins un fichier de groupe de référence, ou un fichier de femelles.",true);return;}
     if(!T.length){status("Choisissez au moins un fichier de groupe à tester.",true);return;}
-    status("Lecture en cours…");
+    status("Lecture en cours…");DATES_ID=0;
     Promise.all(R.concat(T).concat(Fm?[Fm]:[]).map(readFile)).then(function(all){
       var canon=null,d={references:[],testes:[],femellesConnues:[]};
       function prendre(rows,f,liste){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error("aucun juvénile lu dans « "+f.name+" ».");
@@ -281,7 +296,7 @@ function nomDe(f){return f.name.replace(/\.[^.]+$/,'');}
       if(Fm){var pf=parseFem(all[all.length-1]);if(!canon)canon=pf.loci;var idx=aligner(pf.loci,canon,Fm.name);
         d.femellesConnues=pf.femelles.map(function(x){return {nom:x.nom,geno:idx.map(function(k){return x.geno[k];})};});}
       d.loci=canon;show(d,'fichiers téléversés');
-      status(d.references.length+" groupe(s) de référence, "+d.testes.length+" testé(s), "+CUR.femelles.length+" femelle(s) — "+canon.length+" locus.");
+      status(d.references.length+" groupe(s) de référence, "+d.testes.length+" testé(s), "+CUR.femelles.length+" femelle(s) — "+canon.length+" locus."+noteDates());
     }).catch(function(e){status("Erreur : "+(e&&e.message?e.message:e),true);});
   });
   $("seuil").addEventListener('input',function(){renderPv();});

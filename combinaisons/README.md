@@ -40,6 +40,13 @@ pourraient provenir d'une même femelle.
   construites par `verifier.py` à partir de l'exemple).
 - Juvéniles très incomplets (P. Duchesne et N. Tessier) : écartés s'il leur manque plus de 5 locus
   (réglable ; champ vide : aucun écarté). Même réglage dans la reconstitution et les compatibilités.
+- Juvéniles incompatibles (N. Tessier et P. Duchesne, 13 octobre 2026) : en option, la liste des juvéniles
+  incompatibles de chaque génotype retenu et de chaque cas à deux génotypes (identifiant, fichier, locus,
+  génotypes du juvénile et de la femelle) ; dans le fichier CSV de la liste. Banque : locus différents de
+  la femelle la plus proche.
+- Fichiers : chaque choix s'ajoute à une liste (retrait un à un, « Vider la liste »). Identifiants qu'Excel
+  a transformés en dates : rétablis sous la forme AAAAMMJJ (aussi dans la reconstitution et les
+  compatibilités).
 - Paramètres : nombre maximal de fichiers par combinaison ; plafond d'incompatibles en %
   (20 % par défaut depuis le 12 octobre 2026, 10 % auparavant ; valeur arbitraire proposée par P. Duchesne, réglable). Au plus 20 000 combinaisons.
 - Exemple : les six fichiers de tortues de P. Duchesne (Blanche, Grise, Rose, Turquoise, Inconnue 1,

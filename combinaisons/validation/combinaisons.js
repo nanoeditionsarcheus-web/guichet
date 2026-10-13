@@ -29,6 +29,19 @@
     var inc = function (j) { return j.some(function (g, l) { return g && geno[l] && !Rec.compatible(g, geno[l]); }); };
     return comb.map(function (f) { return fichiers[f].juveniles.filter(inc).length; });
   }
+  // Détail (demande de N. Tessier et P. Duchesne, 13 octobre 2026) : pour chaque juvénile incompatible, son fichier
+  // (indice dans fichiers), son rang dans le fichier et les locus où il ne partage aucun allèle avec le génotype.
+  function detailIncompatibles(fichiers, comb, geno) {
+    var out = [];
+    comb.forEach(function (f) {
+      fichiers[f].juveniles.forEach(function (j, k) {
+        var loci = [];
+        j.forEach(function (g, l) { if (g && geno[l] && !Rec.compatible(g, geno[l])) loci.push(l); });
+        if (loci.length) out.push({ fichier: f, rang: k, loci: loci });
+      });
+    });
+    return out;
+  }
   function somme(t) { return t.reduce(function (a, b) { return a + b; }, 0); }
 
   function reconstituer(fichiers, comb, nLoci) {
@@ -113,9 +126,9 @@
    * proportion de locus différents parmi les locus comparés, puis le plus de locus comparés. banque : [{nom, source, geno}]. */
   function memeGeno(a, b) { return (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]); }
   function comparerFemelle(geno, f) {
-    var compares = 0, differents = 0;
-    geno.forEach(function (g, l) { var h = f.geno[l]; if (!g || !h) return; compares++; if (!memeGeno(g, h)) differents++; });
-    return { compares: compares, differents: differents };
+    var compares = 0, differents = 0, locus = [];   // locus : indices des locus différents
+    geno.forEach(function (g, l) { var h = f.geno[l]; if (!g || !h) return; compares++; if (!memeGeno(g, h)) { differents++; locus.push(l); } });
+    return { compares: compares, differents: differents, locus: locus };
   }
   function presenceBanque(geno, banque) {
     var presentes = [], proche = null;
@@ -140,6 +153,6 @@
     return out;
   }
 
-  var api = { nombre: nombre, comparerFemelle: comparerFemelle, presenceBanque: presenceBanque, listeBanque: listeBanque, lister: lister, reconstituer: reconstituer, incompatibles: incompatibles, numeroter: numeroter, distincts: distincts, groupes: groupes };
+  var api = { detailIncompatibles: detailIncompatibles, nombre: nombre, comparerFemelle: comparerFemelle, presenceBanque: presenceBanque, listeBanque: listeBanque, lister: lister, reconstituer: reconstituer, incompatibles: incompatibles, numeroter: numeroter, distincts: distincts, groupes: groupes };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Combinaisons = api;
 })(this);

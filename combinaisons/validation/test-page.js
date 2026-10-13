@@ -10,8 +10,8 @@ let mauvais=0;
 (async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1300,height:900}}),errs=[];pg.on('pageerror',e=>errs.push(e.message));
  await pg.route('**/*',r=>r.request().url().startsWith('file:')?r.continue():r.abort());
  await pg.goto('file://'+path.join(V,'..','index.html'));await pg.waitForFunction(()=>CUR&&CUR.res&&CUR.G);
- const R=await pg.evaluate(()=>CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,incParFichier:r.incParFichier,retenu:r.retenu,deux:r.deux?r.deux.map(x=>({geno:x.geno,incParFichier:x.incParFichier,sousPlafond:x.sousPlafond})):undefined})));
- let d=0;A.forEach((a,i)=>{const r=R[i];if(!r||JSON.stringify(r.comb)!==JSON.stringify(a.comb)||r.n!==a.n||r.nComplets!==a.nComplets||JSON.stringify(r.geno)!==JSON.stringify(a.geno)||(r.geno&&(r.incompatibles!==a.incompatibles||JSON.stringify(r.incParFichier)!==JSON.stringify(a.incParFichier)))||r.retenu!==a.retenu||JSON.stringify(r.deux)!==JSON.stringify(a.deux))d++;});
+ const R=await pg.evaluate(()=>{const det=(c,g)=>Combinaisons.detailIncompatibles(CUR.fichiers,c,g).map(x=>[CUR.fichiers[x.fichier].nom,CUR.fichiers[x.fichier].ids[x.rang],x.loci]);return CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,incParFichier:r.incParFichier,retenu:r.retenu,deux:r.deux?r.deux.map(x=>({geno:x.geno,incParFichier:x.incParFichier,sousPlafond:x.sousPlafond,detail:det(r.comb,x.geno)})):undefined,detail:r.geno?det(r.comb,r.geno):null}));});
+ let d=0;A.forEach((a,i)=>{const r=R[i];if(!r||JSON.stringify(r.comb)!==JSON.stringify(a.comb)||r.n!==a.n||r.nComplets!==a.nComplets||JSON.stringify(r.geno)!==JSON.stringify(a.geno)||(r.geno&&(r.incompatibles!==a.incompatibles||JSON.stringify(r.incParFichier)!==JSON.stringify(a.incParFichier)))||r.retenu!==a.retenu||JSON.stringify(r.deux)!==JSON.stringify(a.deux)||JSON.stringify(r.detail)!==JSON.stringify(a.detail))d++;});
  const nDeux=A.filter(a=>a.deux).length,lignesDeux=await pg.evaluate(()=>document.querySelectorAll('#deux tbody tr').length),jaunes=await pg.evaluate(()=>document.querySelectorAll('#res tr.deux').length);
  if(lignesDeux!==2*nDeux||jaunes!==nDeux)d++;console.log('cas de deux génotypes complets :',nDeux,'; lignes affichées',lignesDeux,'; surlignées en jaune',jaunes);
  await pg.check('#deuxSous');const nSous=A.filter(a=>a.deux&&a.deux.some(x=>x.sousPlafond)).length,lSous=await pg.evaluate(()=>document.querySelectorAll('#deux tbody tr').length);
@@ -27,7 +27,7 @@ let mauvais=0;
  const AB=JSON.parse(fs.readFileSync(path.join(V,'attendu-banque.json'),'utf8'));
  await pg.setInputFiles('#upB',[path.join(V,'banque-essai-1.csv'),path.join(V,'banque-essai-2.csv')]);await pg.click('#goB');
  await pg.waitForFunction(()=>CUR.banqueRes);
- const PB=await pg.evaluate(()=>CUR.banqueRes.liste.map(x=>({type:x.type,num:x.num,lettre:x.lettre,combs:x.combs,geno:x.geno,present:x.banque.present,presentes:x.banque.presentes.map(c=>[c.index,c.compares]),proche:x.banque.proche?[x.banque.proche.index,x.banque.proche.differents,x.banque.proche.compares]:null})));
+ const PB=await pg.evaluate(()=>CUR.banqueRes.liste.map(x=>({type:x.type,num:x.num,lettre:x.lettre,combs:x.combs,geno:x.geno,present:x.banque.present,presentes:x.banque.presentes.map(c=>[c.index,c.compares]),proche:x.banque.proche?[x.banque.proche.index,x.banque.proche.differents,x.banque.proche.compares,x.banque.proche.locus]:null})));
  let db=PB.length===AB.length?0:1;AB.forEach((a,i)=>{const b=PB[i];if(!b||b.type!==a.type||(a.num&&b.num!==a.num)||(a.lettre&&b.lettre!==a.lettre)||JSON.stringify(b.combs)!==JSON.stringify(a.combs)||JSON.stringify(b.geno)!==JSON.stringify(a.geno)||b.present!==a.banque.present||JSON.stringify(b.presentes)!==JSON.stringify(a.banque.presentes)||JSON.stringify(b.proche)!==JSON.stringify(a.banque.proche))db++;});
  const marques=await pg.evaluate(()=>[...document.querySelectorAll('#banque tbody tr')].map(t=>[...t.querySelectorAll('td.case')].map(c=>c.textContent).join('|')).join(' '));
  console.log('banque :',PB.length,'génotypes examinés ; écarts avec le calcul indépendant :',db,'; cases',marques);mauvais+=db;
@@ -36,7 +36,7 @@ let mauvais=0;
  const J=await pg.evaluate(()=>EXAMPLE.fichiers[1]);const dirM=fs.mkdtempSync(path.join(os.tmpdir(),'manq-'));
  const jm=J.juveniles.concat([J.juveniles[0].map((g,l)=>l<6?null:g)]);
  const pM=ecrire(dirM,await pg.evaluate(()=>EXAMPLE.loci),{nom:'Grise-plus-incomplet',juveniles:jm},9);
- await pg.setInputFiles('#upF',[pM]);await pg.click('#go');await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res);
+ await pg.click('#viderF');await pg.setInputFiles('#upF',[pM]);await pg.click('#go');await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.res);
  const m1=await pg.evaluate(()=>[CUR.res[0].n,document.getElementById('ecartes').textContent]);
  await pg.fill('#maxManq','');await pg.dispatchEvent('#maxManq','change');await pg.waitForFunction(n=>CUR.res&&CUR.res[0].n===n,jm.length);
  const m2=await pg.evaluate(()=>[CUR.res[0].n,document.getElementById('ecartes').textContent]);
@@ -45,7 +45,7 @@ let mauvais=0;
  await pg.fill('#plafond','10');await pg.dispatchEvent('#plafond','input');
  // essai : 11 fichiers téléversés
  const E=AG.essai,dir=fs.mkdtempSync(path.join(os.tmpdir(),'cb-'));
- await pg.fill('#kmax','11');await pg.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await pg.click('#go');
+ await pg.fill('#kmax','11');await pg.click('#viderF');await pg.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await pg.click('#go');
  await pg.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.fichiers.length===11&&CUR.res&&CUR.res.length===2047&&CUR.G,null,{timeout:120000});
  const ok=cle(await pg.evaluate(()=>CUR.G))===cleA(E.groupes);if(!ok)mauvais++;
  console.log('essai,',E.fichiers.length,'fichiers :',await pg.textContent('#info'),'groupes',ok?'identiques':'DIFFÉRENTS','au calcul indépendant');
@@ -53,7 +53,7 @@ let mauvais=0;
  if(process.argv[3])await pg.screenshot({path:process.argv[3],fullPage:false});
  // téléversement : 3 fichiers, au plus 2 par combinaison
  const ex=await pg.evaluate(()=>EXAMPLE);const files=ex.fichiers.slice(0,3).map((f,i)=>ecrire(dir,ex.loci,f,i));
- await pg.fill('#kmax','2');await pg.setInputFiles('#upF',files);await pg.click('#go');   // un seul clic : la valeur choisie (2) doit être respectée
+ await pg.fill('#kmax','2');await pg.click('#viderF');await pg.setInputFiles('#upF',files);await pg.click('#go');   // un seul clic : la valeur choisie (2) doit être respectée
  await pg.waitForFunction(()=>CUR.res&&CUR.fichiers.length===3);const nPremier=await pg.evaluate(()=>CUR.res.length);if(nPremier!==6){d++;console.log('ÉCHEC nombre maximal non respecté :',nPremier,'combinaisons');}
  mauvais+=d;
  console.log('téléversés :',await pg.textContent('#info'),'| lignes',await pg.evaluate(()=>CUR.res.length),'|',await pg.textContent('#grpNote'));

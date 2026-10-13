@@ -14,7 +14,7 @@ FICHIERS = [("Blanche", "jeux/Blanche/Blanche-FLOCK.csv"), ("Grise", "donnees/ex
             ("Inconnue 1", "jeux/Inc_1/Inc_1-FLOCK.csv"), ("Inconnue 2", "jeux/Inc_2/Inc_2-FLOCK.csv")]
 loci = lire(FICHIERS[0][1])[0]
 ex = {"label": "exemple de P. Duchesne — les six fichiers de tortues (un fichier par femelle), versions validées contre ses feuilles Maple",
-      "loci": loci, "fichiers": [{"nom": n, "juveniles": [g for _, g in lire(f)[1]]} for n, f in FICHIERS]}
+      "loci": loci, "fichiers": [{"nom": n, "ids": [i for i, _ in lire(f)[1]], "juveniles": [g for _, g in lire(f)[1]]} for n, f in FICHIERS]}
 html = (d / "gabarit.html").read_text(encoding="utf8")
 html = html.replace("/*__RECONSTITUTION__*/", rec).replace("/*__COMBINAISONS__*/", com).replace("/*__EXAMPLE__*/", json.dumps(ex, ensure_ascii=False, separators=(",", ":")))
 (d / "index.html").write_text(html, encoding="utf8")

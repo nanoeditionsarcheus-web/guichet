@@ -38,10 +38,13 @@ def combinaisons(F, plafond):
             par = lambda geno: [sum(1 for j in F[i]["juveniles"] if incompatible(j, geno)) for i in comb]
             sous = lambda inc: 100 * sum(inc) / len(juv) <= plafond + 1e-9 and all(100 * x / len(F[i]["juveniles"]) <= plafond + 1e-9 for x, i in zip(inc, comb))
             inc = None if g is None else par(g)
+            # détail : [nom du fichier, identifiant du juvénile, indices des locus incompatibles]
+            det = lambda geno: [[F[i]["nom"], F[i].get("ids", [None] * len(F[i]["juveniles"]))[k], [l for l, (x, gg) in enumerate(zip(j, geno)) if x and gg and not set(x) & set(gg)]]
+                                for i in comb for k, j in enumerate(F[i]["juveniles"]) if incompatible(j, geno)]
             o = {"comb": list(comb), "n": len(juv), "nComplets": n, "geno": g,
                  "incompatibles": None if inc is None else sum(inc), "incParFichier": inc,
-                 "retenu": g is not None and sous(inc)}
-            if n == 2: o["deux"] = [{"geno": t, "incParFichier": par(t), "sousPlafond": sous(par(t))} for t in tous]
+                 "retenu": g is not None and sous(inc), "detail": None if g is None else det(g)}
+            if n == 2: o["deux"] = [{"geno": t, "incParFichier": par(t), "sousPlafond": sous(par(t)), "detail": det(t)} for t in tous]
             out.append(o)
     return out
 def groupes(res, n):
@@ -99,8 +102,9 @@ def presence(g):
     for i, f in enumerate(banque):
         c = [(x, y) for x, y in zip(g, f["geno"]) if x and y]
         diff = sum(1 for x, y in c if sorted(x) != sorted(y))
+        loc = [l for l, (x, y) in enumerate(zip(g, f["geno"])) if x and y and sorted(x) != sorted(y)]
         if c and not diff: pres.append([i, len(c)])
-        if c and (proche is None or (Fraction(diff, len(c)), -len(c)) < (Fraction(proche[1], proche[2]), -proche[2])): proche = [i, diff, len(c)]
+        if c and (proche is None or (Fraction(diff, len(c)), -len(c)) < (Fraction(proche[1], proche[2]), -proche[2])): proche = [i, diff, len(c), loc]
     return {"present": bool(pres), "presentes": pres, "proche": proche}
 liste, vus = [], {}
 for o in res20:

@@ -32,8 +32,8 @@ code{font-family:var(--mono);font-size:12.5px}
 
 <div class="card">
 <p class="tag">Démarche</p>
-<p style="margin:0 0 8px">On part de trois nids qui, avec <b>tous</b> leurs juvéniles, donnent un seul génotype complet : Rose (78 juvéniles), Grise (41) et Turquoise (36). Pour chaque taille <i>n</i> (5, 10, 15…), on tire au hasard <i>n</i> juvéniles du nid, sans remise, et on reconstitue la femelle avec le calcul de l'outil (validé contre Maple), règle des génotypes complets comprise. On répète le tirage 1000 fois pour chaque taille.</p>
-<p style="margin:0">On mesure la proportion de tirages qui redonnent <b>exactement le génotype obtenu avec tout le nid</b> (un seul génotype complet, identique à celui du nid entier). La proportion de tirages qui donnent un seul génotype, qu'il soit identique ou non, figure dans le tableau.</p>
+<p style="margin:0 0 8px">On part de trois nids qui, avec <b>tous</b> leurs juvéniles, donnent un seul génotype candidat : Rose (78 juvéniles), Grise (41) et Turquoise (36). Pour chaque taille <i>n</i> (5, 10, 15…), on tire au hasard <i>n</i> juvéniles du nid, sans remise, et on reconstitue la femelle avec le calcul de l'outil (validé contre Maple), règle des génotypes candidats comprise. On répète le tirage 1000 fois pour chaque taille.</p>
+<p style="margin:0">On mesure la proportion de tirages qui redonnent <b>exactement le génotype obtenu avec tout le nid</b> (un seul génotype candidat, identique à celui du nid entier). La proportion de tirages qui donnent un seul génotype, qu'il soit identique ou non, figure dans le tableau.</p>
 </div>
 
 <div class="card">
@@ -49,7 +49,7 @@ code{font-family:var(--mono);font-size:12.5px}
 <ul>
 <li><b>Rose et Grise</b> : la reconstitution devient fiable vers 30 juvéniles (96 % et 99 % des tirages redonnent le génotype du nid) et quasi certaine à 35 (99 % et 100 %). Avec 20 juvéniles, environ trois tirages sur quatre y parviennent ; avec 10, moins d'un sur cinq.</li>
 <li><b>Turquoise</b> est nettement plus difficile : 18 % à 25 juvéniles, 52 % à 30. Deux locus en sont la cause, As18 et Tm6 (voir plus bas). Avec tous ses juvéniles, ce nid n'y départage le meilleur candidat du suivant que d'une seule compatibilité (écart de 1 dans l'outil).</li>
-<li><b>Un seul génotype n'est pas toujours le bon.</b> À 30 juvéniles, 66 % des tirages de Turquoise donnent un seul génotype complet, mais 52 % seulement donnent celui du nid entier : dans 14 % des tirages, la page proposerait un génotype unique qui diffère de celui du nid complet. Pour Rose et Grise, cet écart reste inférieur à 2 points dès 20 juvéniles.</li>
+<li><b>Un seul génotype n'est pas toujours le bon.</b> À 30 juvéniles, 66 % des tirages de Turquoise donnent un seul génotype candidat, mais 52 % seulement donnent celui du nid entier : dans 14 % des tirages, la page proposerait un génotype unique qui diffère de celui du nid complet. Pour Rose et Grise, cet écart reste inférieur à 2 points dès 20 juvéniles.</li>
 <li>Ces résultats rejoignent l'ordre de grandeur avancé par P. Duchesne : <b>35 à 40 juvéniles</b> pour ce jeu de locus, en gardant à l'esprit qu'un nid comme Turquoise peut en demander davantage. Un petit <b>écart</b> entre le NC maximal et la valeur suivante, dans l'outil, signale les locus fragiles.</li>
 </ul>
 </div>
@@ -57,7 +57,7 @@ code{font-family:var(--mono);font-size:12.5px}
 <div class="card">
 <p class="tag">Tableau des résultats</p>
 <div class="scroll"><table id="tab"></table></div>
-<p class="note" style="margin:8px 0 0">« Génotype du nid » : % de tirages redonnant exactement le génotype obtenu avec tout le nid. « Un seul génotype » : % de tirages donnant un seul génotype complet, identique ou non. « Médiane » et « 90 % » : nombre de génotypes complets obtenus (la moitié et 90 % des tirages en donnent au plus ce nombre).</p>
+<p class="note" style="margin:8px 0 0">« Génotype du nid » : % de tirages redonnant exactement le génotype obtenu avec tout le nid. « Un seul génotype » : % de tirages donnant un seul génotype candidat, identique ou non. « Médiane » et « 90 % » : nombre de génotypes candidats obtenus (la moitié et 90 % des tirages en donnent au plus ce nombre).</p>
 </div>
 
 <div class="card">

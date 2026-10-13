@@ -1,9 +1,9 @@
 // Étude de rééchantillonnage : à partir d'un nid, on tire au hasard (sans remise) n juvéniles,
 // R fois pour chaque n, et on reconstitue le génotype de la femelle avec le code validé
 // (../../validation/js/reconstitution.js). On compte :
-//  - la proportion de tirages qui donnent un seul génotype complet ;
+//  - la proportion de tirages qui donnent un seul génotype candidat ;
 //  - la proportion de tirages dont le génotype unique est identique à celui obtenu avec tout le nid ;
-//  - le nombre médian de génotypes complets.
+//  - le nombre médian de génotypes candidats.
 // Usage : node reechantillonnage.js [R]   (graine fixe : résultats reproductibles)
 const R = require("../../validation/js/reconstitution.js"), fs = require("fs"), path = require("path");
 const V = path.join(__dirname, "../../validation");

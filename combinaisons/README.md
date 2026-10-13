@@ -10,10 +10,10 @@ pourraient provenir d'une même femelle.
 
 - Sortie : une ligne par combinaison, avec le nombre de juvéniles et le nombre (et le pourcentage) de
   juvéniles incompatibles avec le génotype reconstitué, puis :
-  - « génotype reconstitué » : un seul génotype complet et un pourcentage d'incompatibles au plus égal
+  - « génotype reconstitué » : un seul génotype candidat et un pourcentage d'incompatibles au plus égal
     au plafond ; le génotype est affiché avec un numéro commun aux combinaisons qui le donnent ;
-  - « rejeté » : un seul génotype complet, mais trop d'incompatibles (femelle probablement factice) ;
-  - « non » : plusieurs génotypes complets, ou aucun.
+  - « rejeté » : un seul génotype candidat, mais trop d'incompatibles (femelle probablement factice) ;
+  - « non » : plusieurs génotypes candidats, ou aucun.
   Un tableau récapitule les génotypes retenus. La liste se télécharge en CSV.
 - Groupes de fichiers (demande de P. Duchesne, 4 octobre 2026) : pour chaque fichier, la plus grande
   combinaison retenue qui le contient (toutes, en cas d'égalité de taille). Chaque groupe n'est présenté
@@ -27,14 +27,14 @@ pourraient provenir d'une même femelle.
 - Plafond par fichier (P. Duchesne, 9 octobre 2026) : le plafond s'applique aussi au pourcentage
   d'incompatibles de chaque fichier de la combinaison ; les pourcentages sont affichés en vecteur
   (fichier par fichier, dans l'ordre de la combinaison, puis global).
-- Cas de deux génotypes complets : surlignés en jaune dans la liste et détaillés dans une section
+- Cas de deux génotypes candidats : surlignés en jaune dans la liste et détaillés dans une section
   (les deux génotypes, leurs incompatibles, locus où ils diffèrent), téléchargeable ; une case permet de
   n'afficher que les cas dont au moins un génotype est sous le plafond.
 - Le nombre maximal de fichiers par combinaison choisi est respecté au chargement de nouveaux fichiers
   (il n'est réduit que si la limite de 20 000 combinaisons l'exige).
 - Présence dans la banque de femelles (P. Duchesne, 9 octobre 2026) : un ou plusieurs fichiers de banque
   (disposition FLOCK, une femelle par ligne). Pour chaque génotype retenu, puis chaque génotype d'un cas
-  à deux génotypes complets sous le plafond : présent si identique à une femelle de la banque à chaque
+  à deux génotypes candidats sous le plafond : présent si identique à une femelle de la banque à chaque
   locus où les deux sont connus ; sinon, femelle la plus proche (plus faible proportion de locus
   différents). Vérifié contre `validation/attendu-banque.json` (banques d'essai `banque-essai-*.csv`,
   construites par `verifier.py` à partir de l'exemple).

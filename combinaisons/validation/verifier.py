@@ -1,12 +1,12 @@
 """Vérification indépendante (Python, sans le code JS).
-1) Les 63 combinaisons de l'exemple (six fichiers, un par femelle) : nombre de génotypes complets, génotype
+1) Les 63 combinaisons de l'exemple (six fichiers, un par femelle) : nombre de génotypes candidats, génotype
    s'il est unique, incompatibles, et décision « retenu » avec le plafond par défaut de 20 % (depuis le 12 octobre 2026).
 2) Les groupes de fichiers (plus grande combinaison retenue contenant chaque fichier) : exemple aux plafonds
    de 10 % et de 20 %, et essai à 11 fichiers, un par nid de Grise, Rose et Turquoise (identifiants AAAANN…),
    au plafond de 10 %. Cet essai découpe des fichiers en nids pour la seule vérification.
 Règle (P. Duchesne, 9 octobre 2026) : un génotype unique est retenu si le pourcentage d'incompatibles ne
 dépasse le plafond ni au total ni dans aucun fichier de la combinaison. Les combinaisons à exactement deux
-génotypes complets donnent leurs deux génotypes, avec leurs incompatibles fichier par fichier."""
+génotypes candidats donnent leurs deux génotypes, avec leurs incompatibles fichier par fichier."""
 import json, pathlib, itertools, re
 from fractions import Fraction
 d = pathlib.Path(__file__).resolve().parents[1]
@@ -82,7 +82,7 @@ print("   sans :", [essai[i]["nom"] for i in G["essai"]["groupes"][-1]["sans"]])
 # 3) Présence dans la banque de femelles (P. Duchesne, 9 octobre 2026), exemple au plafond de 20 %.
 # Deux fichiers de banque d'essai, construits ici à partir des génotypes de l'exemple :
 #  - banque-essai-1.csv : Grise identique mais deux locus manquants ; Rose avec un allèle changé à tm64 ;
-#  - banque-essai-2.csv : génotype A de Blanche (cas de deux génotypes complets).
+#  - banque-essai-2.csv : génotype A de Blanche (cas de deux génotypes candidats).
 # Règle : présent si identique à une femelle à chaque locus où les deux sont connus (au moins un locus) ;
 # sinon, femelle la plus proche : la plus faible proportion de locus différents, puis le plus de locus comparés.
 res20 = combinaisons(F, 20)

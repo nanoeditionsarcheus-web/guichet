@@ -80,7 +80,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 
 <div class="card">
   <p class="tag">Données</p>
-  <p class="note" style="margin:-2px 0 12px">Chaque fichier contient un <b>groupe de juvéniles</b> issus d'une même femelle (disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv). Pour chaque groupe de référence, la page reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> ; seuls les groupes qui donnent un seul génotype complet fournissent une femelle. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
+  <p class="note" style="margin:-2px 0 12px">Chaque fichier contient un <b>groupe de juvéniles</b> issus d'une même femelle (disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv). Pour chaque groupe de référence, la page reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> ; seuls les groupes qui donnent un seul génotype candidat fournissent une femelle. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
   <div class="upl">
     <span>Groupes de référence (J) :</span><input type="file" id="upRef" multiple accept=".xls,.xlsx,.csv,.txt">
     <span>Groupe(s) à tester :</span><input type="file" id="upTest" multiple accept=".xls,.xlsx,.csv,.txt">
@@ -123,7 +123,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Un juvénile est <b>compatible</b> avec une femelle s'il partage au moins un allèle avec elle à chacun des locus où les deux sont génotypés ; un vrai rejeton l'est toujours, sauf erreur de génotypage. Les femelles de référence sont reconstituées par la méthode du nombre de compatibilités (règle des génotypes complets comprise), validée contre le programme Maple de l'auteur. Le calcul du tableau a été vérifié par une programmation indépendante sur l'exemple (20 cellules identiques, rangée « Aucune » comprise). Comparaisons : test exact de Fisher (1922) pour une table à plusieurs rangées et deux colonnes (extension de Freeman et Halton, 1951), vérifié contre la fonction fisher.test de R 4.3.3 sur les 10 paires de l'exemple et 300 tables aléatoires (écart relatif inférieur à 10<sup>−6</sup>).</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. Un juvénile est <b>compatible</b> avec une femelle s'il partage au moins un allèle avec elle à chacun des locus où les deux sont génotypés ; un vrai rejeton l'est toujours, sauf erreur de génotypage. Les femelles de référence sont reconstituées par la méthode du nombre de compatibilités (règle des génotypes candidats comprise), validée contre le programme Maple de l'auteur. Le calcul du tableau a été vérifié par une programmation indépendante sur l'exemple (20 cellules identiques, rangée « Aucune » comprise). Comparaisons : test exact de Fisher (1922) pour une table à plusieurs rangées et deux colonnes (extension de Freeman et Halton, 1951), vérifié contre la fonction fisher.test de R 4.3.3 sur les 10 paires de l'exemple et 300 tables aléatoires (écart relatif inférieur à 10<sup>−6</sup>).</p>
 </div>
 
 <footer id="foot"></footer>
@@ -402,7 +402,7 @@ function preparer(d){
 function render(){
   var d=CUR,groupes=d.references.concat(d.testes),t=Compatibilites.tableau(d.femelles,groupes),nRef=d.references.length;
   var dt=new Date();$("stamp").textContent='Exécuté le '+dt.toLocaleDateString('fr-CA')+' à '+dt.toLocaleTimeString('fr-CA');
-  if(!d.femelles.length){$("tc").innerHTML='<tbody><tr><td class="note">Aucune femelle : aucun groupe de référence ne donne un seul génotype complet, et aucun fichier de femelles n\'a été fourni.</td></tr></tbody>';}
+  if(!d.femelles.length){$("tc").innerHTML='<tbody><tr><td class="note">Aucune femelle : aucun groupe de référence ne donne un seul génotype candidat, et aucun fichier de femelles n\'a été fourni.</td></tr></tbody>';}
   else{
   var h='<thead><tr><th></th>'+groupes.map(function(g,j){return '<th class="'+(j>=nRef?'teste':'')+'">'+esc(g.nom)+(j>=nRef?'<br><span class="note" style="font-weight:400">testé</span>':'')+'</th>';}).join('')+'</tr></thead><tbody>';
   d.femelles.forEach(function(f,i){
@@ -443,7 +443,7 @@ function renderNoms(){
   var d=CUR,h='<thead><tr><th>Groupe</th><th>Rôle</th><th class="num">Juvéniles</th><th>Femelle reconstituée</th></tr></thead><tbody>';
   d.references.concat(d.testes).forEach(function(g,j){var ref=j<d.references.length;
     h+='<tr><td><input type="text" data-g="'+j+'" value="'+esc(g.nom)+'"></td><td>'+(ref?'référence':'testé')+'</td><td class="num">'+g.juveniles.length+'</td><td>'+
-      (!ref?'<span class="note">—</span>':g.femelle!=null?'<input type="text" data-f="'+g.femelle+'" value="'+esc(d.femelles[g.femelle].nom)+'">':'<span class="note">aucune : '+g.nComplets+' génotypes complets</span>')+'</td></tr>';});
+      (!ref?'<span class="note">—</span>':g.femelle!=null?'<input type="text" data-f="'+g.femelle+'" value="'+esc(d.femelles[g.femelle].nom)+'">':'<span class="note">aucune : '+g.nComplets+' génotypes candidats</span>')+'</td></tr>';});
   (d.femellesConnues||[]).forEach(function(f,k){var i=d.femelles.length-d.femellesConnues.length+k;
     h+='<tr><td class="note">fichier des femelles</td><td>femelle connue</td><td class="num">—</td><td><input type="text" data-f="'+i+'" value="'+esc(d.femelles[i].nom)+'"></td></tr>';});
   $("noms").innerHTML=h+'</tbody>';

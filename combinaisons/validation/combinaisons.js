@@ -23,7 +23,7 @@
     return out;
   }
 
-  // Incompatibles avec un génotype complet, fichier par fichier (dans l'ordre de la combinaison) : juvéniles
+  // Incompatibles avec un génotype candidat, fichier par fichier (dans l'ordre de la combinaison) : juvéniles
   // qui ne partagent aucun allèle avec le génotype à au moins un locus génotypé chez les deux.
   function incompatibles(fichiers, comb, geno) {
     var inc = function (j) { return j.some(function (g, l) { return g && geno[l] && !Rec.compatible(g, geno[l]); }); };
@@ -51,7 +51,7 @@
     var geno = nc === 1 ? Rec.genotypesComplets(ret)[0] : null, parFichier = geno ? incompatibles(fichiers, comb, geno) : null;
     var r = { comb: comb, n: juv.length, nParFichier: comb.map(function (f) { return fichiers[f].juveniles.length; }), nComplets: nc,
               geno: geno, incompatibles: parFichier ? somme(parFichier) : null, incParFichier: parFichier };
-    // Cas de deux génotypes complets (demande de P. Duchesne, 9 octobre 2026) : les deux, avec leurs incompatibles.
+    // Cas de deux génotypes candidats (demande de P. Duchesne, 9 octobre 2026) : les deux, avec leurs incompatibles.
     if (nc === 2) r.deux = Rec.genotypesComplets(ret).map(function (g) {
       var p = incompatibles(fichiers, comb, g); return { geno: g, incParFichier: p, incompatibles: somme(p) };
     });

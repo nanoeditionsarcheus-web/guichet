@@ -1,6 +1,6 @@
 // Test des fichiers CSV de génotypes (Chromium/Playwright), dans les trois formats offerts :
 // allèles collés (268268), deux colonnes (disposition FLOCK), barre oblique (268/268).
-// 1) Reconstitution : génotypes complets. 2) Agréger : génotypes distincts, rechargés dans le tableau des
+// 1) Reconstitution : génotypes candidats. 2) Agréger : génotypes distincts, rechargés dans le tableau des
 // compatibilités comme « femelles déjà connues » (mêmes comptes que les femelles reconstituées par le tableau).
 // 3) Compatibilités : génotypes des femelles, rechargés de même (tableau identique).
 const {chromium}=require(process.env.PW||'playwright');const fs=require('fs'),path=require('path'),os=require('os');

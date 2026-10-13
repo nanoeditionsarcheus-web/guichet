@@ -1,6 +1,6 @@
 // Test de la section « Rééchantillonnage aléatoire » de la page (Chromium/Playwright) :
-// - Rose (un seul génotype complet) : section offerte, tailles 10, 20, …, 70 ; résultats proches de l'étude publiée ;
-// - Inconnue 2 (16 génotypes complets) : section non offerte.
+// - Rose (un seul génotype candidat) : section offerte, tailles 10, 20, …, 70 ; résultats proches de l'étude publiée ;
+// - Inconnue 2 (16 génotypes candidats) : section non offerte.
 const {chromium}=require(process.env.PW||'playwright');const fs=require('fs'),path=require('path');
 const V=path.join(__dirname,'..');const etude=JSON.parse(fs.readFileSync(path.join(V,'../etudes/reechantillonnage/resultats.json'),'utf8'));
 (async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1000,height:900}}),errs=[];pg.on('pageerror',e=>errs.push(e.message));

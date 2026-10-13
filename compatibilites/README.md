@@ -6,7 +6,7 @@ femelle inconnue proviennent-ils d'une des femelles déjà reconstituées (la «
 - Entrées : des groupes de juvéniles de référence (fichiers FLOCK), un ou plusieurs groupes à
   tester et, facultativement, un fichier de femelles déjà connues. La femelle de chaque groupe de
   référence est reconstituée avec le code validé de `../reconstitution-femelle`, mais seulement
-  quand il n'y a qu'un seul génotype complet.
+  quand il n'y a qu'un seul génotype candidat.
 - Sortie : pour chaque femelle (rangée) et chaque groupe (colonne), le nombre de juvéniles
   compatibles avec la femelle à tous les locus, avec l'effectif et le pourcentage. Les noms sont
   modifiables et le tableau peut être téléchargé en CSV. Une dernière rangée, « Aucune », compte

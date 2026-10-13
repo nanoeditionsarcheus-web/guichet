@@ -1,6 +1,6 @@
 """Vérification indépendante (Python, sans le code JS) du tableau des compatibilités sur l'exemple
 de P. Duchesne : F = Grise, Rose, Turquoise ; J = Grise, Rose, Turquoise, Blanche ; testé = Inconnue 1.
-Les femelles sont reprises de la reconstitution validée (un seul génotype complet par nid)."""
+Les femelles sont reprises de la reconstitution validée (un seul génotype candidat par nid)."""
 import json, pathlib, sys
 V = pathlib.Path(__file__).resolve().parents[2] / "reconstitution-femelle/validation"
 F = {"Grise": "maple/donnees_maple.json", "Rose": "jeux/Rose/donnees_maple.json", "Turquoise": "jeux/Turquoise/donnees_maple.json",

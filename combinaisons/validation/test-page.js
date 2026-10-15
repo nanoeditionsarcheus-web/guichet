@@ -7,7 +7,7 @@ const cle=G=>JSON.stringify({g:G.groupes.map(g=>({comb:g.comb,choisiPar:g.choisi
 const cleA=L=>JSON.stringify({g:L.slice(0,-1).map(g=>({comb:g.comb,choisiPar:g.choisiPar,coherent:g.coherent})).sort((a,b)=>a.comb.join()<b.comb.join()?-1:1).map(JSON.stringify),sans:L[L.length-1].sans});
 function ecrire(dir,loci,f,i){const p=path.join(dir,f.nom.replace(/ /g,'-')+'.csv');fs.writeFileSync(p,['ID;'+loci.map(l=>l+';').join(';')+';'].concat(f.juveniles.map((j,k)=>['J'+i+'_'+k].concat(j.map(g=>g?g.join(';'):'0;0')).join(';'))).join('\n'));return p;}
 let mauvais=0;
-(async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1300,height:900}}),errs=[];pg.on('pageerror',e=>errs.push(e.message));
+(async()=>{const br=await chromium.launch(),pg=await br.newPage({viewport:{width:1300,height:900},acceptDownloads:true}),errs=[];pg.on('pageerror',e=>errs.push(e.message));
  await pg.route('**/*',r=>r.request().url().startsWith('file:')?r.continue():r.abort());
  await pg.goto('file://'+path.join(V,'..','index.html'));await pg.waitForFunction(()=>CUR&&CUR.res&&CUR.G);
  const R=await pg.evaluate(()=>{const det=(c,g)=>Combinaisons.detailIncompatibles(CUR.fichiers,c,g).map(x=>[CUR.fichiers[x.fichier].nom,CUR.fichiers[x.fichier].ids[x.rang],x.loci]);return CUR.res.map(r=>({comb:r.comb,n:r.n,nComplets:r.nComplets,geno:r.geno,incompatibles:r.incompatibles,incParFichier:r.incParFichier,retenu:r.retenu,deux:r.deux?r.deux.map(x=>({geno:x.geno,incParFichier:x.incParFichier,sousPlafond:x.sousPlafond,detail:det(r.comb,x.geno)})):undefined,detail:r.geno?det(r.comb,r.geno):null}));});
@@ -17,6 +17,12 @@ let mauvais=0;
  await pg.check('#deuxSous');const nSous=A.filter(a=>a.deux&&a.deux.some(x=>x.sousPlafond)).length,lSous=await pg.evaluate(()=>document.querySelectorAll('#deux tbody tr').length);
  await pg.uncheck('#deuxSous');const lTous=await pg.evaluate(()=>document.querySelectorAll('#deux tbody tr').length);
  if(lSous!==2*nSous||lTous!==2*nDeux)d++;console.log('case « sous le plafond » :',nSous,'cas ; lignes',lSous,'(toutes :',lTous+')');
+ // téléchargements = ce qui est affiché (P. Duchesne, 16 octobre 2026) : vrai clic sur les boutons, cases cochées ou non
+ const lignesCsv=async b=>{const [dl]=await Promise.all([pg.waitForEvent('download'),pg.click(b)]);const t=fs.readFileSync(await dl.path(),'utf8');return t.trim().split(/\r\n/).length-3;};
+ await pg.check('#deuxSous');const t1=await lignesCsv('#dlDeux');await pg.uncheck('#deuxSous');const t2=await lignesCsv('#dlDeux');
+ await pg.check('#seulOui');const t3=await lignesCsv('#dl');await pg.uncheck('#seulOui');const t4=await lignesCsv('#dl');const nRet=A.filter(a=>a.retenu).length;
+ if(t1!==2*nSous||t2!==2*nDeux||t3!==nRet||t4!==A.length){d++;console.log('ÉCHEC téléchargements',t1,t2,t3,t4);}
+ console.log('téléchargements : deux génotypes',t1,'lignes (case cochée) /',t2,'; liste',t3,'(case cochée) /',t4);
  const ent=await pg.evaluate(()=>document.querySelector('#dist thead th:nth-child(2)').textContent);if(ent!=='# combinaisons')d++;
  const pdef=await pg.evaluate(()=>plafond());if(pdef!==20)d++;console.log('plafond par défaut :',pdef,'% ; en-tête :',ent);
  console.log('exemple :',R.length,'combinaisons ; écarts avec le calcul indépendant :',d,'(attendu',A.length,')');mauvais+=d;

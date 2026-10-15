@@ -51,6 +51,14 @@ let mauvais=0;
  console.log('essai,',E.fichiers.length,'fichiers :',await pg.textContent('#info'),'groupes',ok?'identiques':'DIFFÉRENTS','au calcul indépendant');
  console.log(await pg.evaluate(()=>[...document.querySelectorAll('#grp tbody tr')].map(t=>t.innerText.replace(/\s+/g,' ')).join('\n')));
  if(process.argv[3])await pg.screenshot({path:process.argv[3],fullPage:false});
+ // nombre maximal choisi respecté (P. Duchesne, 16 octobre 2026) : page neuve (exemple de 6 fichiers), valeur choisie,
+ // puis les 11 fichiers de l'essai. Auparavant, une valeur ≥ 6 était remplacée par 11.
+ for(const [k,attendu] of [[7,1815],[3,231],[10,2046]]){const p2=await br.newPage();p2.on('pageerror',e=>errs.push(e.message));
+  await p2.route('**/*',r=>r.request().url().startsWith('file:')?r.continue():r.abort());await p2.goto('file://'+path.join(V,'..','index.html'));await p2.waitForFunction(()=>CUR&&CUR.res);
+  await p2.fill('#kmax',String(k));await p2.setInputFiles('#upF',E.fichiers.map((f,i)=>ecrire(dir,E.loci,f,i)));await p2.click('#go');
+  await p2.waitForFunction(()=>CUR.label==='fichiers téléversés'&&CUR.fichiers.length===11&&CUR.res&&!/en cours/.test(document.getElementById('upStatus').textContent),null,{timeout:60000});
+  const v=await p2.evaluate(()=>[+document.getElementById('kmax').value,CUR.res.length]);await p2.close();
+  if(v[0]!==k||v[1]!==attendu){mauvais++;console.log('ÉCHEC nombre maximal',k,v);}else console.log('nombre maximal',k,'respecté avec 11 fichiers :',v[1],'combinaisons');}
  // téléversement : 3 fichiers, au plus 2 par combinaison
  const ex=await pg.evaluate(()=>EXAMPLE);const files=ex.fichiers.slice(0,3).map((f,i)=>ecrire(dir,ex.loci,f,i));
  await pg.fill('#kmax','2');await pg.click('#viderF');await pg.setInputFiles('#upF',files);await pg.click('#go');   // un seul clic : la valeur choisie (2) doit être respectée

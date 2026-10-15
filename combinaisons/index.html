@@ -480,10 +480,11 @@ function majInfo(){if(!CUR)return;var n=CUR.fichiers.length,k=Math.max(1,Math.mi
 // Nombre maximal de fichiers par combinaison : la valeur choisie est respectée (bogue signalé par P. Duchesne,
 // 9 octobre 2026 : elle était remplacée par le nombre de fichiers au chargement). Elle n'est réduite que si
 // le nombre de combinaisons dépasse la limite.
-// Jamais plus que le nombre de fichiers (P. Duchesne, 13 octobre 2026). Si la valeur était au maximum (le nombre de
-// fichiers précédent), elle suit le nouveau nombre de fichiers ; sinon, la valeur choisie est respectée.
-var N_PREC=null;
-function ajusterK(n){var v=Math.round(+$("kmax").value);if(!(v>=1)||(N_PREC!=null&&v>=N_PREC))v=n;var k=Math.min(v,n);N_PREC=n;$("kmax").max=n;$("kmax").value=k;
+// Nombre maximal de fichiers par combinaison (P. Duchesne, 9, 13 et 16 octobre 2026) : la page retient la valeur tapée
+// par l'usager (K_CHOISI) et affiche cette valeur, plafonnée au nombre de fichiers et à la limite de combinaisons.
+// Elle ne l'augmente jamais d'elle-même.
+var K_CHOISI=6;
+function ajusterK(n){var k=Math.min(K_CHOISI,n);$("kmax").max=n;$("kmax").value=k;
   if(Combinaisons.nombre(n,k)>LIMITE){while(k>1&&Combinaisons.nombre(n,k)>LIMITE)k--;$("kmax").value=k;
     status('Nombre maximal de fichiers par combinaison ramené à '+k+' (au plus '+LIMITE+' combinaisons).');}}
 // Juvéniles très incomplets (décision de P. Duchesne et N. Tessier, octobre 2026) : un juvénile auquel il manque
@@ -680,7 +681,7 @@ function aligner(loci,canon,nom){
 
 (function init(){
   $("upReset").addEventListener('click',function(){LISTE=[];afficherListe();charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);status("Exemple rétabli.");});
-  $("kmax").addEventListener('input',majInfo);
+  $("kmax").addEventListener('input',function(){var v=Math.round(+$("kmax").value);if(v>=1)K_CHOISI=v;majInfo();});
   $("ajoutF").addEventListener('click',function(){$("upF").click();});
   $("upF").addEventListener('change',function(){[].slice.call($("upF").files).forEach(function(f){
       if(!LISTE.some(function(g){return g.name===f.name&&g.size===f.size;}))LISTE.push(f);});$("upF").value='';afficherListe();

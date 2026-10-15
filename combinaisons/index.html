@@ -537,8 +537,10 @@ function afficherDeux(){
         (det?'<tr class="detail"><td></td><td></td><td colspan="'+(3+d.loci.length)+'"><span class="note">Juvéniles incompatibles avec '+(i===0?'A':'B')+' :</span> '+detailIncomp(r.comb,x.geno)+'</td></tr>':'');}).join('');}).join('')+'</tbody>'
     :'<tbody><tr><td class="note">'+(sous?'Aucun cas de deux génotypes candidats sous le plafond.':'Aucune combinaison ne donne exactement deux génotypes candidats.')+'</td></tr></tbody>';
 }
-function csvDeux(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Génotype','Incompatibles','% incompatibles (fichier par fichier ; global)','Sous le plafond'].concat(genoEntete(d.loci))];
-  d.res.forEach(function(r){if(r.nComplets!==2)return;r.deux.forEach(function(x,i){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,i===0?'A':'B',x.incompatibles,vecteurTexte(x,r),x.sousPlafond?'oui':'non'].concat(genoLigne(x.geno)));});});return rows;}
+// Le fichier contient ce qui est affiché (P. Duchesne, 16 octobre 2026) : si la case « sous le plafond » est cochée,
+// seulement les combinaisons dont au moins un des deux génotypes a tous ses pourcentages sous le plafond.
+function csvDeux(){var d=CUR,sous=$("deuxSous").checked,rows=[['Plafond d\'incompatibles (%)',plafond()],['Sélection',sous?'combinaisons dont au moins un génotype est sous le plafond':'toutes les combinaisons à deux génotypes candidats'],['Combinaison','Juvéniles','Génotype','Incompatibles','% incompatibles (fichier par fichier ; global)','Sous le plafond'].concat(genoEntete(d.loci))];
+  d.res.forEach(function(r){if(r.nComplets!==2||(sous&&!r.deux.some(function(x){return x.sousPlafond;})))return;r.deux.forEach(function(x,i){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,i===0?'A':'B',x.incompatibles,vecteurTexte(x,r),x.sousPlafond?'oui':'non'].concat(genoLigne(x.geno)));});});return rows;}
 // ---------- présence dans la banque de femelles (demande de P. Duchesne, 9 octobre 2026) ----------
 var BANQUE=null;   // {fichiers:[{nom, loci, femelles:[{id, genos}]}]} ; conservée d'un calcul à l'autre
 function banqueAlignee(){
@@ -632,8 +634,8 @@ function download(name,rows){
   var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   var text='\ufeff'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}
-function csv(){var d=CUR,rows=[['Plafond d\'incompatibles (%)',plafond()],['Combinaison','Juvéniles','Incompatibles','% incompatibles (global)','% incompatibles (fichier par fichier ; global)','Femelle reconstituée','N° du génotype','Juvéniles incompatibles (identifiant : locus et génotype du juvénile)'].concat(genoEntete(d.loci))];
-  d.res.forEach(function(r){rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?r.pctIncompat.toFixed(1):'',r.geno?vecteurTexte(r,r):'',r.retenu?'oui':r.geno?'rejeté':'non ('+(r.nComplets?r.nComplets+' génotypes candidats':'aucun')+')',r.geno?r.num:'',r.geno?detailTexte(r.comb,r.geno):''].concat(r.geno?genoLigne(r.geno):genoVides(d.loci.length)));});return rows;}
+function csv(){var d=CUR,seul=$("seulOui").checked,rows=[['Plafond d\'incompatibles (%)',plafond()],['Sélection',seul?'combinaisons dont le génotype reconstitué est retenu':'toutes les combinaisons'],['Combinaison','Juvéniles','Incompatibles','% incompatibles (global)','% incompatibles (fichier par fichier ; global)','Femelle reconstituée','N° du génotype','Juvéniles incompatibles (identifiant : locus et génotype du juvénile)'].concat(genoEntete(d.loci))];
+  d.res.forEach(function(r){if(seul&&!r.retenu)return;rows.push([r.comb.map(function(j){return d.fichiers[j].nom;}).join(' + '),r.n,r.geno?r.incompatibles:'',r.geno?r.pctIncompat.toFixed(1):'',r.geno?vecteurTexte(r,r):'',r.retenu?'oui':r.geno?'rejeté':'non ('+(r.nComplets?r.nComplets+' génotypes candidats':'aucun')+')',r.geno?r.num:'',r.geno?detailTexte(r.comb,r.geno):''].concat(r.geno?genoLigne(r.geno):genoVides(d.loci.length)));});return rows;}
 // génotypes retenus distincts, un par ligne : identifiant « femelle<n°>_<première combinaison qui le donne> »
 function csvDistincts(){var d=CUR;return [['Femelle'].concat(genoEntete(d.loci))].concat(Combinaisons.distincts(d.res).map(function(x){
   return ['femelle'+x.num+'_'+x.combs[0].map(function(j){return d.fichiers[j].nom;}).join('+')].concat(genoLigne(x.geno));}));}

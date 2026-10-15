@@ -78,6 +78,10 @@ tr.taille td{border-top:2px solid var(--axis)}
 table.res tr.deux td{background:color-mix(in srgb,var(--jaune) 22%,transparent)}
 table.res td.dif,.g.dif{background:color-mix(in srgb,var(--jaune) 40%,transparent)}
 table.res td.num b{font-weight:700}
+.cache{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.liste-f{margin:8px 0 0;padding:8px 12px;border:1px dashed var(--rule);border-radius:3px;font-size:13.5px;line-height:1.9}
+.puce{display:inline-block;font-family:var(--mono);font-size:12.5px;background:color-mix(in srgb,var(--A) 9%,transparent);border-radius:3px;padding:0 7px;margin:2px 8px 2px 0}
+.puce a{text-decoration:none;font-weight:700;margin-left:3px}
 table.res tr.detail td{white-space:normal;font-size:12.5px;padding:2px 0 8px 18px;border-bottom:1px solid var(--grid)}
 table.res tr.detail td b{font-family:var(--mono)}
 table.res th.case,table.res td.case{text-align:center;width:34px;padding-right:6px}
@@ -110,10 +114,10 @@ table.res td.coh{white-space:normal;min-width:180px}
   <p class="tag">Données</p>
   <p class="note" style="margin:-2px 0 12px">Téléversez plusieurs <b>fichiers de juvéniles</b>, <b>un fichier par femelle</b> (tous les juvéniles d'un fichier proviennent d'une même femelle, qu'ils viennent d'un ou de plusieurs nids), en disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv. Pour chaque combinaison de fichiers (1 fichier, puis 2, puis 3…), la page fusionne les fichiers en un seul groupe et reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a>. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
   <div class="upl">
-    <span>Fichiers de juvéniles :</span><span><input type="file" id="upF" multiple accept=".xls,.xlsx,.csv,.txt"> <button class="ghost" id="viderF" type="button">Vider la liste</button></span>
+    <span>Fichiers de juvéniles :</span><span><input type="file" id="upF" multiple accept=".xls,.xlsx,.csv,.txt" class="cache"><button id="ajoutF" type="button">Choisir des fichiers…</button> <button class="ghost" id="viderF" type="button">Vider la liste</button></span>
   </div>
-  <p class="note" style="margin:6px 0 0">Choisissez plusieurs fichiers d'un coup (Ctrl + clic, ou Maj + clic pour une suite, dans la fenêtre de choix), ou ajoutez-les un à un : chaque choix s'ajoute à la liste ci-dessous. Puis cliquez sur « Calculer ».</p>
-  <div id="listeF" class="note" style="margin:6px 0 0"></div>
+  <p class="note" style="margin:6px 0 0">Dans la fenêtre de choix, on peut prendre plusieurs fichiers d'un coup (Ctrl + clic, ou Maj + clic pour une suite). On peut aussi revenir au bouton pour en ajouter d'autres : chaque choix s'ajoute à la liste ci-dessous. Puis cliquez sur « Calculer ».</p>
+  <div id="listeF" class="liste-f"></div>
   <div class="controls" style="margin-top:12px">
     <label>Nombre maximal de fichiers par combinaison : <input autocomplete="off" type="number" id="kmax" min="1" step="1" value="6"></label>
     <label>Plafond d'incompatibles (%) : <input autocomplete="off" type="number" id="plafond" min="0" max="100" step="1" value="20"></label>
@@ -217,7 +221,7 @@ function filtrerFichiers(){var m=maxManquants(),ec=[];
     if(out.length)ec.push(esc(f.nom)+' : '+out.length+' ('+out.map(esc).join(', ')+')');return {nom:f.nom,ids:ids.filter(function(x,k){return ok[k];}),juveniles:garde};});
   $("ecartes").innerHTML=m===Infinity?'Aucun juvénile écarté (champ vide).':ec.length?'Juvéniles écartés (plus de '+m+' locus manquants) — '+ec.join(' ; ')+'.':'Aucun juvénile n\'a plus de '+m+' locus manquants.';}
 var LISTE=[];   // fichiers choisis, cumulés d'un choix à l'autre
-function afficherListe(){$("listeF").innerHTML=LISTE.length?'Liste ('+LISTE.length+' fichier'+(LISTE.length>1?'s':'')+') : '+LISTE.map(function(f,i){return esc(f.name)+' <a href="#" data-retirer="'+i+'" title="retirer de la liste" onclick="return false">×</a>';}).join(' · '):'Aucun fichier dans la liste.';}
+function afficherListe(){$("listeF").innerHTML=LISTE.length?'<b>Fichiers choisis ('+LISTE.length+')</b> — cliquez sur « Calculer » pour les analyser :<br>'+LISTE.map(function(f,i){return '<span class="puce">'+esc(f.name)+' <a href="#" data-retirer="'+i+'" title="retirer de la liste" onclick="return false">×</a></span>';}).join(''):'<span class="note">Aucun fichier choisi : la page montre l\'exemple.</span>';}
 function charger(d,label){CUR={bruts:d.fichiers,fichiers:d.fichiers,loci:d.loci,label:label,res:null};ajusterK(d.fichiers.length);majInfo();calculer();}
 function calculer(){
   var n=CUR.fichiers.length,k=Math.max(1,Math.min(n,Math.round(+$("kmax").value)||n));
@@ -403,8 +407,10 @@ function aligner(loci,canon,nom){
 (function init(){
   $("upReset").addEventListener('click',function(){LISTE=[];afficherListe();charger(JSON.parse(JSON.stringify(EXAMPLE)),EXAMPLE.label);status("Exemple rétabli.");});
   $("kmax").addEventListener('input',majInfo);
+  $("ajoutF").addEventListener('click',function(){$("upF").click();});
   $("upF").addEventListener('change',function(){[].slice.call($("upF").files).forEach(function(f){
-      if(!LISTE.some(function(g){return g.name===f.name&&g.size===f.size;}))LISTE.push(f);});$("upF").value='';afficherListe();});
+      if(!LISTE.some(function(g){return g.name===f.name&&g.size===f.size;}))LISTE.push(f);});$("upF").value='';afficherListe();
+    status(LISTE.length+' fichier'+(LISTE.length>1?'s':'')+' dans la liste. Cliquez sur « Calculer ».');});
   $("viderF").addEventListener('click',function(){LISTE=[];afficherListe();});
   $("listeF").addEventListener('click',function(e){var i=e.target.getAttribute('data-retirer');if(i!=null){LISTE.splice(+i,1);afficherListe();}});
   $("go").addEventListener('click',function(){

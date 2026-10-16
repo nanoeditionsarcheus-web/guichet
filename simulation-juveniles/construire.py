@@ -34,6 +34,7 @@ agr = (d.parent / "combinaisons/gabarit.html").read_text(encoding="utf8")
 css = agr[agr.index("<style>") + 7:agr.index("</style>")]
 lecture = agr[agr.index("function normA(v)"):agr.index("(function init(){")]
 html = html.replace("/*__CSS__*/", css).replace("/*__LECTURE__*/", lecture)
-html = html.replace("/*__SIMULATION__*/", lib).replace("/*__EXAMPLE__*/", json.dumps({k: v for k, v in ex.items() if k != "tableau"}, ensure_ascii=False, separators=(",", ":")))
+rec = (d.parent / "reconstitution-femelle/validation/js/reconstitution.js").read_text(encoding="utf8")
+html = html.replace("/*__RECONSTITUTION__*/", rec).replace("/*__SIMULATION__*/", lib).replace("/*__EXAMPLE__*/", json.dumps({k: v for k, v in ex.items() if k != "tableau"}, ensure_ascii=False, separators=(",", ":")))
 (d / "index.html").write_text(html, encoding="utf8")
 print({p["nom"]: len(p["genotypes"]) for p in ex["pool"]}, "|", [(c["femelle"], sum(x["n"] for x in c["croisements"])) for c in t])

@@ -80,7 +80,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
 
 <div class="card">
   <p class="tag">Données</p>
-  <p class="note" style="margin:-2px 0 12px">Chaque fichier contient un <b>groupe de juvéniles</b> issus d'une même femelle (disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv). Pour chaque groupe de référence, la page reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> ; seuls les groupes qui donnent un seul génotype candidat fournissent une femelle. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
+  <p class="note" style="margin:-2px 0 12px">Chaque fichier contient un <b>groupe de juvéniles</b> issus d'une même femelle (disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; ou allèles collés : 1 colonne par locus, ex. 268272 ; .xls, .xlsx ou .csv). Pour chaque groupe de référence, la page reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> ; seuls les groupes qui donnent un seul génotype candidat fournissent une femelle. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
   <div class="upl">
     <span>Groupes de référence (J) :</span><input type="file" id="upRef" multiple accept=".xls,.xlsx,.csv,.txt">
     <span>Groupe(s) à tester :</span><input type="file" id="upTest" multiple accept=".xls,.xlsx,.csv,.txt">
@@ -107,7 +107,7 @@ table.noms input[type=text]{font-family:var(--sans);font-size:13.5px;padding:4px
   <div class="scroll"><table class="tc" id="tc"></table></div>
   <div class="reading">Chaque cellule donne le <b>nombre de juvéniles</b> du groupe (colonne) dont le génotype est compatible avec celui de la femelle (rangée) <b>à tous les locus</b>, c'est-à-dire qui partagent au moins un allèle avec elle à chaque locus génotypé chez les deux. Sous le nombre : l'effectif du groupe et le pourcentage. La dernière rangée, <b>Aucune</b>, compte les juvéniles compatibles avec <b>aucune</b> des femelles ; comme un juvénile peut être compatible avec plusieurs femelles, les rangées ne s'additionnent pas forcément à l'effectif. Souligné : la femelle reconstituée à partir de ce groupe. Sur fond teinté : le ou les groupes testés. La page n'émet aucun verdict ; la comparaison des colonnes revient à l'usagère.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlCsv">Télécharger le tableau (CSV)</button><button class="ghost" id="dlFem">Télécharger les génotypes des femelles (CSV)</button><label style="font-size:13.5px">Génotypes dans les fichiers CSV : <select autocomplete="off" id="fmtGeno"><option value="colles">allèles collés (268268)</option><option value="flock">deux colonnes par locus (disposition FLOCK)</option><option value="barre">avec barre oblique (268/268)</option></select></label></div>
-  <p class="note" style="margin:8px 0 0">Le fichier des génotypes des femelles (reconstituées et déjà connues) donne une femelle par ligne. En disposition FLOCK, il se recharge tel quel comme fichier de « femelles déjà connues » : c'est une façon de tenir la banque.</p>
+  <p class="note" style="margin:8px 0 0">Le fichier des génotypes des femelles (reconstituées et déjà connues) donne une femelle par ligne. Dans les trois formats offerts sauf la barre oblique, il se recharge tel quel comme fichier de « femelles déjà connues » : c'est une façon de tenir la banque.</p>
 </div>
 
 <div class="card fisher">
@@ -266,7 +266,20 @@ function readFile(file){
 }
 function nLoci(rows){var h=rows[0]||[],cnt=0;for(var i=1;i<h.length;i+=2)if(h[i]!=null&&String(h[i]).trim()!=='')cnt++;if(cnt>0)return cnt;var m=0;for(var r=0;r<rows.length;r++)if(rows[r].length>m)m=rows[r].length;return Math.floor((m-1)/2);}
 function lociNames(header,nloc){var out=[];for(var k=0;k<nloc;k++){var nm=(header&&header[1+2*k]!=null)?String(header[1+2*k]).trim():'';out.push(nm||('Locus'+(k+1)));}return out;}
-function parseJuv(rows){var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),juv=[];
+// Deux dispositions acceptées (P. Duchesne, 16 octobre 2026) : FLOCK (deux colonnes par locus, un allèle par case) ou
+// allèles collés (une colonne par locus, ex. 268272 ; 0 ou 000000 si manquant). Une case collée a 4 à 6 chiffres, une
+// case FLOCK au plus 3 : la page reconnaît la disposition d'après les données.
+function estColle(rows){var c=0,f=0;for(var r=1;r<Math.min(rows.length,60);r++){var row=rows[r];if(!row||row[0]===''||row[0]==null)continue;
+  for(var k=1;k<row.length;k++){var s=String(row[k]==null?'':row[k]).trim();if(!/^\d+$/.test(s)||/^0+$/.test(s))continue;if(s.length>=4)c++;else f++;}}
+  return c>f;}
+function parseColle(rows){var h=rows[0]||[],n=h.length;while(n>1&&String(h[n-1]==null?'':h[n-1]).trim()==='')n--;
+  var loci=[],juv=[];for(var k=1;k<n;k++){var nm=h[k]!=null?String(h[k]).trim():'';loci.push(nm||('Locus'+k));}
+  for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;var g=[];
+    for(var k=0;k<loci.length;k++){var v=row[1+k],s=v==null?'':(typeof v==='number'?String(Math.round(v)):String(v).trim());if(/^\d{5}$/.test(s))s='0'+s;
+      var a=/^\d{6}$/.test(s)?parseInt(s.slice(0,3),10):0,b=/^\d{6}$/.test(s)?parseInt(s.slice(3),10):0;g.push(a&&b?[a,b]:null);}
+    juv.push({id:String(row[0]).trim(),genos:g});}
+  return {loci:loci,juveniles:juv,colle:true};}
+function parseJuv(rows){if(estColle(rows))return parseColle(rows);var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),juv=[];
   for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;
     var g=[];for(var k=0;k<nloc;k++){var a=normA(row[1+2*k]),b=normA(row[2+2*k]);g.push((a==null||b==null)?null:[a,b]);}juv.push({id:String(row[0]).trim(),genos:g});}
   return {loci:loci,juveniles:juv};}

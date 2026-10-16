@@ -78,6 +78,7 @@ tr.taille td{border-top:2px solid var(--axis)}
 table.res tr.deux td{background:color-mix(in srgb,var(--jaune) 22%,transparent)}
 table.res td.dif,.g.dif{background:color-mix(in srgb,var(--jaune) 40%,transparent)}
 table.res td.num b{font-weight:700}
+table.res th.ecart{padding-left:28px}
 .cache{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 .liste-f{margin:8px 0 0;padding:8px 12px;border:1px dashed var(--rule);border-radius:3px;font-size:13.5px;line-height:1.9}
 .puce{display:inline-block;font-family:var(--mono);font-size:12.5px;background:color-mix(in srgb,var(--A) 9%,transparent);border-radius:3px;padding:0 7px;margin:2px 8px 2px 0}
@@ -112,7 +113,7 @@ table.res td.coh{white-space:normal;min-width:180px}
 
 <div class="card cb">
   <p class="tag">Données</p>
-  <p class="note" style="margin:-2px 0 12px">Téléversez plusieurs <b>fichiers de juvéniles</b>, <b>un fichier par femelle</b> (tous les juvéniles d'un fichier proviennent d'une même femelle, qu'ils viennent d'un ou de plusieurs nids), en disposition FLOCK : identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première ; .xls, .xlsx ou .csv. Pour chaque combinaison de fichiers (1 fichier, puis 2, puis 3…), la page fusionne les fichiers en un seul groupe et reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a>. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
+  <p class="note" style="margin:-2px 0 12px">Téléversez plusieurs <b>fichiers de juvéniles</b>, <b>un fichier par femelle</b> (tous les juvéniles d'un fichier proviennent d'une même femelle, qu'ils viennent d'un ou de plusieurs nids), en disposition FLOCK (identifiant, puis 2 colonnes par locus, avec le nom du locus au-dessus de la première) ou à allèles collés (1 colonne par locus, ex. 268272) ; .xls, .xlsx ou .csv. Pour chaque combinaison de fichiers (1 fichier, puis 2, puis 3…), la page fusionne les fichiers en un seul groupe et reconstitue la femelle avec la méthode de l'outil <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a>. Tous les fichiers doivent partager le même panel de locus. À l'ouverture, la page montre un <b>exemple</b> (voir le pied de page).</p>
   <div class="upl">
     <span>Fichiers de juvéniles :</span><span><input type="file" id="upF" multiple accept=".xls,.xlsx,.csv,.txt" class="cache"><button id="ajoutF" type="button">Choisir des fichiers…</button> <button class="ghost" id="viderF" type="button">Vider la liste</button></span>
   </div>
@@ -157,7 +158,7 @@ table.res td.coh{white-space:normal;min-width:180px}
   <p class="tag">Génotypes reconstitués distincts</p>
   <div class="scroll"><table class="res" id="dist"></table></div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlD">Télécharger ces génotypes (CSV)</button></div>
-  <p class="note" style="margin:8px 0 0">Un génotype par ligne. En disposition FLOCK, le fichier se recharge tel quel dans le tableau des compatibilités, comme fichier de « femelles déjà connues ».</p>
+  <p class="note" style="margin:8px 0 0">Un génotype par ligne. En allèles collés ou en disposition FLOCK, le fichier se recharge tel quel comme banque, ci-dessous, ou dans le tableau des compatibilités, comme fichier de « femelles déjà connues ».</p>
 </div>
 
 <div class="card" id="cas-deux">
@@ -176,7 +177,7 @@ table.res td.coh{white-space:normal;min-width:180px}
   <div class="controls" style="margin-top:10px"><button id="goB">Charger la banque</button><button class="ghost" id="resetB">Retirer la banque</button></div>
   <p class="note" id="banqueInfo" style="margin:8px 0 10px"></p>
   <div class="scroll"><table class="res" id="banque"></table></div>
-  <div class="reading">La banque contient une femelle par ligne : identifiant, puis son génotype, en disposition FLOCK (2 colonnes par locus, mêmes noms de locus que les juvéniles) ; on peut charger plusieurs fichiers, par exemple les génotypes obtenus en laboratoire et les génotypes reconstitués, et la page indique de quel fichier vient chaque femelle. La liste examinée comprend d'abord les <b>génotypes reconstitués</b> retenus (<span class="oui">en vert</span>), puis, pour les combinaisons à deux génotypes candidats, ceux qui respectent le plafond (<span style="background:color-mix(in srgb,var(--jaune) 30%,transparent);padding:0 3px">en jaune</span>). Un génotype est <b>présent dans la banque</b> s'il est identique à celui d'une femelle de la banque à chaque locus où les deux sont connus ; le nombre de locus comparés est indiqué, car une femelle de la banque dont plusieurs locus manquent est comparée sur moins de locus. Sinon, la page donne la femelle la plus proche : la plus faible proportion de locus différents parmi les locus comparés (à égalité, celle qui est comparée sur le plus de locus). Il revient à l'usagère d'ajouter à la banque les génotypes jugés sûrs qui en sont absents : le fichier des génotypes distincts, plus haut, en disposition FLOCK, s'y prête. La banque complète la reconstitution sans la remplacer : elle peut être incomplète.</div>
+  <div class="reading">La banque contient une femelle par ligne : identifiant, puis son génotype, en disposition FLOCK (2 colonnes par locus) ou à allèles collés (1 colonne par locus, ex. 268272), avec les mêmes noms de locus que les juvéniles ; on peut charger plusieurs fichiers, par exemple les génotypes obtenus en laboratoire et les génotypes reconstitués, et la page indique de quel fichier vient chaque femelle. La liste examinée comprend d'abord les <b>génotypes reconstitués</b> retenus (<span class="oui">en vert</span>), puis, pour les combinaisons à deux génotypes candidats, ceux qui respectent le plafond (<span style="background:color-mix(in srgb,var(--jaune) 30%,transparent);padding:0 3px">en jaune</span>). Un génotype est <b>présent dans la banque</b> s'il est identique à celui d'une femelle de la banque à chaque locus où les deux sont connus ; le nombre de locus comparés est indiqué, car une femelle de la banque dont plusieurs locus manquent est comparée sur moins de locus. Sinon, la page donne la femelle la plus proche : la plus faible proportion de locus différents parmi les locus comparés (à égalité, celle qui est comparée sur le plus de locus). Il revient à l'usagère d'ajouter à la banque les génotypes jugés sûrs qui en sont absents : le fichier des génotypes distincts, plus haut, en disposition FLOCK, s'y prête. La banque complète la reconstitution sans la remplacer : elle peut être incomplète.</div>
   <div class="controls" style="margin-top:12px"><button class="ghost" id="dlB">Télécharger cette liste (CSV)</button></div>
 </div>
 
@@ -255,7 +256,7 @@ function renumeroter(){if(!CUR||!CUR.brut)return;CUR.res=Combinaisons.numeroter(
 // ---------- cas de deux génotypes candidats (demande de P. Duchesne, 9 octobre 2026) ----------
 function afficherDeux(){
   var d=CUR,sous=$("deuxSous").checked,det=$("detDeux").checked,C=d.res.filter(function(r){return r.nComplets===2&&(!sous||r.deux.some(function(x){return x.sousPlafond;}));});
-  $("deux").innerHTML=C.length?'<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th></th><th class="num">Incompatibles</th><th>Sous le plafond</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>'+
+  $("deux").innerHTML=C.length?'<thead><tr><th>Combinaison</th><th class="num"># juvéniles</th><th></th><th class="num ecart"># incompatibles</th><th>Sous le plafond</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>'+
     C.map(function(r){var A=r.deux[0].geno,B=r.deux[1].geno;
       return r.deux.map(function(x,i){return '<tr'+(i===0?' class="taille"':'')+'>'+(i===0?'<td rowspan="2">'+noms(r.comb)+'</td><td class="num" rowspan="2">'+r.n+'</td>':'')+
         '<td><b>'+(i===0?'A':'B')+'</b></td><td class="num">'+x.incompatibles+' '+vecteur(x,r)+'</td><td>'+(x.sousPlafond?'<span class="oui">oui</span>':'non')+'</td>'+
@@ -296,7 +297,7 @@ function nomG(i){return 'G'+(i+1);}
 function noms(c){return c.map(function(j){return esc(CUR.fichiers[j].nom);}).join(' + ');}
 function afficherGroupes(){
   var d=CUR,G=Combinaisons.groupes(d.res,d.fichiers.length);CUR.G=G;
-  $("grp").innerHTML=G.groupes.length?'<thead><tr><th>Groupe</th><th>Fichiers (incompatibles / juvéniles)</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>N° du génotype</th><th>Cohérence</th></tr></thead><tbody>'+
+  $("grp").innerHTML=G.groupes.length?'<thead><tr><th>Groupe</th><th>Fichiers (incompatibles / juvéniles)</th><th class="num"># juvéniles</th><th class="num ecart"># incompatibles</th><th>N° du génotype</th><th>Cohérence</th></tr></thead><tbody>'+
     G.groupes.map(function(g,i){
       var pb=g.comb.filter(function(f){return !(G.parFichier[f].length===1&&G.parFichier[f][0]===i);});
       return '<tr><td style="white-space:nowrap"><span class="sw" style="background:'+couleur(i)+'"></span><b>'+nomG(i)+'</b><br><span class="note">'+g.comb.length+' fichier'+(g.comb.length>1?'s':'')+'</span></td><td>'+g.comb.map(function(f,k){var n=d.fichiers[f].juveniles.length,x=g.incParFichier[k];return esc(d.fichiers[f].nom)+' : <span style="font-family:var(--mono)">'+x+' / '+n+' ('+nb(100*x/n)+' %)</span>';}).join('<br>')+'</td>'+
@@ -330,7 +331,7 @@ function csvGroupes(){var d=CUR,G=CUR.G,rows=[['Plafond d\'incompatibles (%)',pl
   G.sans.forEach(function(f){rows.push(['aucun',d.fichiers[f].nom]);});return rows;}
 function afficher(){
   var d=CUR,seul=$("seulOui").checked,det=$("detInc").checked,dt=new Date();$("stamp").textContent='Exécuté le '+dt.toLocaleDateString('fr-CA')+' à '+dt.toLocaleTimeString('fr-CA');
-  var h='<thead><tr><th>Combinaison</th><th class="num">Juvéniles</th><th class="num">Incompatibles</th><th>Femelle reconstituée</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
+  var h='<thead><tr><th>Combinaison</th><th class="num"># juvéniles</th><th class="num ecart"># incompatibles</th><th>Femelle reconstituée</th><th>N°</th>'+d.loci.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>',prev=0;
   d.res.forEach(function(r){if(seul&&!r.retenu)return;var t=r.comb.length;
     var cl=[];if(t!==prev&&prev)cl.push('taille');if(r.nComplets===2)cl.push('deux');
     h+='<tr'+(cl.length?' class="'+cl.join(' ')+'"':'')+'><td>'+r.comb.map(function(j){return esc(d.fichiers[j].nom);}).join(' + ')+'</td><td class="num">'+r.n+'</td><td class="num">'+(r.geno?r.incompatibles+' '+vecteur(r,r):'')+'</td>'+
@@ -397,7 +398,20 @@ function readFile(file){
 }
 function nLoci(rows){var h=rows[0]||[],cnt=0;for(var i=1;i<h.length;i+=2)if(h[i]!=null&&String(h[i]).trim()!=='')cnt++;if(cnt>0)return cnt;var m=0;for(var r=0;r<rows.length;r++)if(rows[r].length>m)m=rows[r].length;return Math.floor((m-1)/2);}
 function lociNames(header,nloc){var out=[];for(var k=0;k<nloc;k++){var nm=(header&&header[1+2*k]!=null)?String(header[1+2*k]).trim():'';out.push(nm||('Locus'+(k+1)));}return out;}
-function parseJuv(rows){var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),juv=[];
+// Deux dispositions acceptées (P. Duchesne, 16 octobre 2026) : FLOCK (deux colonnes par locus, un allèle par case) ou
+// allèles collés (une colonne par locus, ex. 268272 ; 0 ou 000000 si manquant). Une case collée a 4 à 6 chiffres, une
+// case FLOCK au plus 3 : la page reconnaît la disposition d'après les données.
+function estColle(rows){var c=0,f=0;for(var r=1;r<Math.min(rows.length,60);r++){var row=rows[r];if(!row||row[0]===''||row[0]==null)continue;
+  for(var k=1;k<row.length;k++){var s=String(row[k]==null?'':row[k]).trim();if(!/^\d+$/.test(s)||/^0+$/.test(s))continue;if(s.length>=4)c++;else f++;}}
+  return c>f;}
+function parseColle(rows){var h=rows[0]||[],n=h.length;while(n>1&&String(h[n-1]==null?'':h[n-1]).trim()==='')n--;
+  var loci=[],juv=[];for(var k=1;k<n;k++){var nm=h[k]!=null?String(h[k]).trim():'';loci.push(nm||('Locus'+k));}
+  for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;var g=[];
+    for(var k=0;k<loci.length;k++){var v=row[1+k],s=v==null?'':(typeof v==='number'?String(Math.round(v)):String(v).trim());if(/^\d{5}$/.test(s))s='0'+s;
+      var a=/^\d{6}$/.test(s)?parseInt(s.slice(0,3),10):0,b=/^\d{6}$/.test(s)?parseInt(s.slice(3),10):0;g.push(a&&b?[a,b]:null);}
+    juv.push({id:String(row[0]).trim(),genos:g});}
+  return {loci:loci,juveniles:juv,colle:true};}
+function parseJuv(rows){if(estColle(rows))return parseColle(rows);var nloc=nLoci(rows),loci=lociNames(rows[0],nloc),juv=[];
   for(var r=1;r<rows.length;r++){var row=rows[r];if(row[0]===''||row[0]==null)continue;
     var g=[];for(var k=0;k<nloc;k++){var a=normA(row[1+2*k]),b=normA(row[2+2*k]);g.push((a==null||b==null)?null:[a,b]);}juv.push({id:String(row[0]).trim(),genos:g});}
   return {loci:loci,juveniles:juv};}
@@ -442,10 +456,10 @@ function aligner(loci,canon,nom){
     var F=[].slice.call($("upB").files);if(!F.length){$("banqueInfo").textContent='Choisissez le ou les fichiers de la banque.';return;}
     $("banqueInfo").textContent='Lecture en cours…';
     Promise.all(F.map(readFile)).then(function(all){
-      var fichiers=all.map(function(rows,i){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error("aucune femelle lue dans « "+F[i].name+" ».");return {nom:F[i].name,loci:p.loci,femelles:p.juveniles};});
+      var fichiers=all.map(function(rows,i){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error("aucune femelle lue dans « "+F[i].name+" ».");return {nom:F[i].name,loci:p.loci,femelles:p.juveniles,colle:!!p.colle};});
       if(CUR)fichiers.forEach(function(b){aligner(b.loci,CUR.loci,b.nom);});
       BANQUE={fichiers:fichiers};$("upB").value='';
-      $("banqueInfo").textContent='Banque chargée : '+fichiers.map(function(b){return b.nom+' ('+b.femelles.length+' femelle'+(b.femelles.length>1?'s':'')+')';}).join(', ')+'.';
+      $("banqueInfo").textContent='Banque chargée : '+fichiers.map(function(b){return b.nom+' ('+b.femelles.length+' femelle'+(b.femelles.length>1?'s':'')+(b.colle?', allèles collés':'')+')';}).join(', ')+'.';
       if(CUR&&CUR.res)afficherBanque();
     }).catch(function(e){$("banqueInfo").textContent='Erreur : '+(e&&e.message?e.message:e);});
   });

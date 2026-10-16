@@ -18,8 +18,7 @@ table.freq td.al{font-family:var(--mono);font-size:12px;white-space:normal}
 <div class="wrap">
 <header>
   <h1>Génération de juvéniles artificiels</h1>
-  <p class="sub">Parents tirés selon les fréquences alléliques d'un pool de génotypes, juvéniles produits selon les lois de Mendel, d'après un tableau de croisements</p>
-  <p class="sub outils">Outils : <a href="https://nanoeditionsarcheus-web.github.io/flock-convert/">Mise en forme pour FLOCK</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/combinaisons/">Agréger les juvéniles d'une même femelle</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/compatibilites/">Tableau des compatibilités</a> · <b>Génération de juvéniles artificiels</b> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/">Guichet (tous les outils)</a></p>
+  <p class="sub">Parents tirés selon les fréquences alléliques d'un pool de génotypes, juvéniles produits selon les lois de Mendel, d'après un tableau de croisements ; bilan de la reconstitution des femelles sur de nombreuses itérations</p>
   <p class="sub" id="stamp"></p>
 </header>
 
@@ -34,7 +33,7 @@ table.freq td.al{font-family:var(--mono);font-size:12px;white-space:normal}
 
 <div class="card">
   <p class="tag">2. Tableau des croisements</p>
-  <p class="note" style="margin:-2px 0 12px">Classeur Excel (.xls, .xlsx) ou .csv. Les colonnes vont par paires, une paire par fichier de juvéniles à produire : en tête, le nom de la femelle, puis « # juvéniles » ; en dessous, une ligne par mâle : son nom, puis le nombre de juvéniles de ce croisement. Une même femelle peut occuper plusieurs paires (plusieurs nids) ; un même mâle peut féconder plusieurs femelles. Le même nom désigne toujours le même individu.</p>
+  <p class="note" style="margin:-2px 0 12px">Classeur Excel (.xls, .xlsx) ou .csv. Les colonnes vont par paires, une paire par fichier (nid) de juvéniles : en tête, le nom de la femelle, puis « # juvéniles » ; en dessous, une ligne par mâle : son nom, puis le nombre de juvéniles de ce croisement. Une même femelle peut occuper plusieurs paires (plusieurs nids) ; un même mâle peut féconder plusieurs femelles. Le même nom désigne toujours le même individu.</p>
   <div class="upl"><span>Tableau :</span><span><input type="file" id="upT" accept=".xls,.xlsx,.csv,.txt" class="cache"><button id="ajoutT" type="button">Choisir le tableau…</button></span></div>
   <p class="note" id="tabInfo" style="margin:8px 0 0"></p>
   <div class="scroll"><table class="res" id="tab"></table></div>
@@ -43,9 +42,10 @@ table.freq td.al{font-family:var(--mono);font-size:12px;white-space:normal}
 <div class="card">
   <p class="tag">3. Simulation</p>
   <div class="controls">
+    <label>Nombre d'itérations : <input autocomplete="off" type="number" id="iter" min="1" max="1000000" step="1" value="1000" style="width:110px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"></label>
     <label>Graine du générateur : <input autocomplete="off" type="text" id="graine" placeholder="nouvelle à chaque simulation" style="width:230px;font-family:var(--mono);font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"></label>
-    <label>Format des fichiers : <select autocomplete="off" id="format" style="font-family:var(--sans);font-size:13.5px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:var(--card);color:var(--ink)"><option value="xls">Excel 97-2003 (.xls), disposition FLOCK</option><option value="xlsx">Excel (.xlsx), disposition FLOCK</option><option value="csv">CSV, disposition FLOCK</option></select></label>
-    <button id="go">Générer</button>
+    <button id="go">Lancer</button>
+    <button class="ghost" id="stop" type="button" disabled>Arrêter</button>
   </div>
   <p class="note" id="upStatus" style="margin:8px 0 0"></p>
   <div id="res"></div>
@@ -53,11 +53,14 @@ table.freq td.al{font-family:var(--mono);font-size:12px;white-space:normal}
 
 <div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. <b>Fréquences alléliques</b> : à chaque locus, comptées sur tous les génotypes non manquants du pool. <b>Parents</b> : à chaque locus, deux allèles tirés indépendamment selon ces fréquences (équilibre de Hardy-Weinberg, sans liaison entre locus) ; chaque femelle et chaque mâle du tableau est tiré une seule fois. <b>Juvéniles</b> : à chaque locus, un des deux allèles de la mère (probabilité 1/2 chacun) et un des deux allèles du père (1/2 chacun), selon les lois de Mendel ; aucune donnée manquante, aucune erreur de génotypage. <b>Générateur pseudo-aléatoire</b> : xoshiro128** (Blackman et Vigna, 2018), initialisé à partir d'une graine de 32 bits ; une nouvelle graine est tirée pour chaque simulation, sauf si l'on en impose une, et elle est indiquée avec les résultats : la même graine, le même pool et le même tableau redonnent exactement les mêmes juvéniles. <b>Validation</b> : le générateur est identique au code C de référence des auteurs (2,3 millions de valeurs comparées) ; une programmation indépendante redonne les mêmes simulations, juvénile par juvénile ; sur de grands échantillons, les fréquences des parents et les proportions de Mendel sont conformes (tests du khi-deux). <b>Fichiers produits</b> : un fichier de juvéniles par paire de colonnes du tableau, plus les génotypes des femelles et des mâles, la généalogie réelle (mère et père de chaque juvénile), les fréquences et une notice, réunis dans un fichier .zip ; le navigateur l'enregistre dans le dossier des téléchargements.</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. <b>Fréquences alléliques</b> : à chaque locus, comptées sur tous les génotypes non manquants du pool. <b>Parents</b> : à chaque locus, deux allèles tirés indépendamment selon ces fréquences (équilibre de Hardy-Weinberg, sans liaison entre locus) ; chaque femelle et chaque mâle du tableau est tiré une seule fois par itération. <b>Juvéniles</b> : à chaque locus, un des deux allèles de la mère (probabilité 1/2 chacun) et un des deux allèles du père (1/2 chacun), selon les lois de Mendel ; aucune donnée manquante, aucune erreur de génotypage. <b>Itération</b> : nouveaux parents et nouveaux juvéniles pour tout le tableau ; puis, pour chaque fichier, et pour chaque femelle qui a plusieurs fichiers (ses fichiers réunis), reconstitution de la femelle par la méthode du nombre de compatibilités, règle de l'homozygote comprise (le code de l'outil de reconstitution, validé contre le programme Maple de P. Duchesne), et comparaison avec la vraie mère. <b>Bilan</b> : un génotype candidat juste ou faux ; deux génotypes candidats, dont un juste ou aucun ; trois ou plus : non résolu. Pour les génotypes faux, répartition selon le nombre de locus erronés. <b>Générateur pseudo-aléatoire</b> : xoshiro128** (Blackman et Vigna, 2018), initialisé à partir d'une graine de 32 bits, nouvelle à chaque simulation sauf si l'on en impose une ; elle est indiquée avec le bilan : la même graine, le même pool, le même tableau et le même nombre d'itérations redonnent exactement le même bilan. <b>Validation</b> : le générateur est identique au code C de référence des auteurs (2,3 millions de valeurs comparées) ; une programmation indépendante redonne les mêmes juvéniles et le même bilan ; sur 200 répétitions, les fréquences des parents et les proportions de Mendel sont conformes (khi-deux, p-valeurs uniformes).</p>
 </div>
 
 <footer id="foot"></footer>
 </div>
+<script>
+/*__RECONSTITUTION__*/
+</script>
 <script>
 /*__SIMULATION__*/
 </script>
@@ -93,80 +96,40 @@ function poserTableau(rows,label){
   try{var t=Simulation.lireTableau(rows);}catch(e){TAB=null;$("tab").innerHTML='';$("tabInfo").textContent='Erreur dans '+label+' : '+e.message;$("tabInfo").className='note err';return;}
   TAB={label:label,tableau:t};RES=null;$("res").innerHTML='';status('');$("tabInfo").className='note';
   var fem={},mal={};t.forEach(function(c){fem[c.femelle]=1;c.croisements.forEach(function(x){mal[x.male]=1;});});
-  $("tabInfo").textContent='Tableau : '+label+' — '+t.length+' fichier'+(t.length>1?'s':'')+' à produire, '+Object.keys(fem).length+' femelle'+(Object.keys(fem).length>1?'s':'')+', '+Object.keys(mal).length+' mâle'+(Object.keys(mal).length>1?'s':'')+', '+t.reduce(function(a,c){return a+c.croisements.reduce(function(b,x){return b+x.n;},0);},0)+' juvéniles.';
+  $("tabInfo").textContent='Tableau : '+label+' — '+t.length+' fichier'+(t.length>1?'s':'')+', '+Object.keys(fem).length+' femelle'+(Object.keys(fem).length>1?'s':'')+', '+Object.keys(mal).length+' mâle'+(Object.keys(mal).length>1?'s':'')+', '+t.reduce(function(a,c){return a+c.croisements.reduce(function(b,x){return b+x.n;},0);},0)+' juvéniles.';
   $("tab").innerHTML='<thead><tr><th class="num">Fichier</th><th>Femelle</th><th>Croisements (mâle × nombre de juvéniles)</th><th class="num"># juvéniles</th></tr></thead><tbody>'+t.map(function(c){
     return '<tr><td class="num">'+c.colonne+'</td><td><b>'+esc(c.femelle)+'</b></td><td class="sim-cr">'+c.croisements.map(function(x){return esc(x.male)+' × '+x.n;}).join(' ; ')+'</td><td class="num">'+c.croisements.reduce(function(b,x){return b+x.n;},0)+'</td></tr>';}).join('')+'</tbody>';
   verifierCompat();}
 function verifierCompat(){}
 
-// ---------- simulation ----------
+// ---------- bilan de nombreuses itérations ----------
+var ARRET=false;
 function nouvelleGraine(){var a=new Uint32Array(1);(window.crypto||window.msCrypto).getRandomValues(a);return a[0];}
-function generer(){
+function lancer(){
   if(!POOL){status('Le pool n\'est pas encore prêt.',true);return;}if(!TAB){status('Chargez d\'abord un tableau de croisements valide.',true);return;}
+  var N=+$("iter").value;if(!($("iter").value.trim()!==''&&Number.isInteger(N)&&N>=1&&N<=1000000)){status('Le nombre d\'itérations doit être un entier de 1 à 1 000 000.',true);return;}
   var v=$("graine").value.trim(),g;
   if(v===''){g=nouvelleGraine();}else if(/^\d+$/.test(v)&&+v<=4294967295){g=+v;}else{status('La graine doit être un entier de 0 à 4 294 967 295, ou rester vide.',true);return;}
   var vides=POOL.freqs.map(function(f,l){return f.total?null:POOL.loci[l];}).filter(function(x){return x;});
   if(vides.length){status('Aucun allèle dans le pool au locus '+vides.join(', ')+' : impossible de tirer des parents.',true);return;}
-  RES=Simulation.simuler(POOL.freqs,TAB.tableau,g);RES.loci=POOL.loci;RES.date=new Date();RES.pool=POOL;RES.tab=TAB;
-  afficherRes();status('Simulation faite avec la graine '+RES.graine+'.');}
-function nomFichier(f){return 'C'+f.colonne+'_'+f.femelle.replace(/[^\w\-]+/g,'_');}
-function afficherRes(){
-  var r=RES,L=r.loci,d=r.date;$("stamp").textContent='Exécuté le '+d.toLocaleDateString('fr-CA')+' à '+d.toLocaleTimeString('fr-CA');
-  var ext=$("format").value,h='<p style="margin:12px 0 8px">Graine : <span class="graine">'+r.graine+'</span> <span class="note">— pour refaire exactement cette simulation, inscrivez cette graine ci-dessus, avec le même pool et le même tableau.</span></p>';
-  h+='<div class="controls" style="margin:4px 0 10px"><button id="zip">Tout télécharger (.zip)</button></div>';
-  h+='<div class="scroll"><table class="res"><thead><tr><th>Fichier</th><th>Femelle</th><th>Croisements</th><th class="num"># juvéniles</th><th></th></tr></thead><tbody>'+r.fichiers.map(function(f,i){
-    return '<tr><td style="font-family:var(--mono)">'+esc(nomFichier(f))+'.'+ext+'</td><td><b>'+esc(f.femelle)+'</b></td><td class="sim-cr">'+f.croisements.map(function(x){return esc(x.male)+' × '+x.n;}).join(' ; ')+'</td><td class="num">'+f.juveniles.length+'</td><td><a href="#" data-fichier="'+i+'" onclick="return false">télécharger</a></td></tr>';}).join('')+'</tbody></table></div>';
-  h+='<p class="tag" style="margin:16px 0 6px">Génotypes des parents artificiels</p><div class="scroll"><table class="res"><thead><tr><th>Parent</th><th>Sexe</th>'+L.map(function(l){return '<th>'+esc(l)+'</th>';}).join('')+'</tr></thead><tbody>'+
-    r.parents.map(function(p){return '<tr><td><b>'+esc(p.nom)+'</b></td><td>'+(p.sexe==='F'?'femelle':'mâle')+'</td>'+p.geno.map(function(g){return '<td class="g">'+gs(g)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';
+  var B=Simulation.creerBilan(POOL.freqs,TAB.tableau,g);B.N=N;B.date=new Date();B.pool=POOL;B.tab=TAB;RES=B;ARRET=false;
+  $("go").disabled=true;$("stop").disabled=false;
+  (function lot(){var k=Math.min(200,B.N-B.fait);Simulation.avancerBilan(B,k);status('Itérations : '+B.fait+' sur '+B.N+'…');
+    if(B.fait<B.N&&!ARRET){setTimeout(lot,0);return;}
+    $("go").disabled=false;$("stop").disabled=true;afficherBilan();
+    status(ARRET?'Arrêté après '+B.fait+' itérations (graine '+B.graine+').':B.fait+' itérations faites avec la graine '+B.graine+'.');})();}
+function afficherBilan(){
+  var B=RES,L=B.pool.loci.length,d=B.date,n=B.fait;$("stamp").textContent='Exécuté le '+d.toLocaleDateString('fr-CA')+' à '+d.toLocaleTimeString('fr-CA');
+  var h='<p style="margin:12px 0 8px">Graine : <span class="graine">'+B.graine+'</span> ; itérations : <b>'+n+'</b> <span class="note">— pour refaire exactement ce bilan, inscrivez cette graine ci-dessus, avec le même pool, le même tableau et le même nombre d\'itérations.</span></p>';
+  h+='<p class="tag" style="margin:14px 0 6px">Bilan des reconstitutions (nombre d\'itérations)</p><div class="scroll"><table class="res"><thead><tr><th>Fichier(s)</th><th class="num">un génot. juste</th><th class="num">un génot. faux</th><th class="num">2 génot., 1 juste</th><th class="num">2 génot., 0 juste</th><th class="num">autre, non résolu</th></tr></thead><tbody>'+
+    B.lignes.map(function(l){return '<tr><td><b>'+esc(l.nom)+'</b> <span class="note">('+esc(l.colonnes.map(function(i){var c=B.tab.tableau[i];return c.croisements.map(function(x){return x.male+' × '+x.n;}).join(', ');}).join(' + '))+')</span></td>'+
+      ['juste','faux','deuxUnJuste','deuxZeroJuste','nonResolu'].map(function(k){return '<td class="num">'+l[k]+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';
+  var tete='';for(var k=1;k<=L;k++)tete+='<th class="num">'+k+' loc.</th>';
+  h+='<p class="tag" style="margin:18px 0 6px">Génotypes faux : répartition selon le nombre de locus erronés (%)</p><div class="scroll"><table class="res"><thead><tr><th>Fichier(s)</th><th class="num">génot. faux</th>'+tete+'</tr></thead><tbody>'+
+    B.lignes.map(function(l){var c='';for(var k=1;k<=L;k++)c+='<td class="num">'+(l.faux?(100*l.fauxLocus[k]/l.faux).toFixed(1).replace('.',','):'—')+'</td>';return '<tr><td><b>'+esc(l.nom)+'</b></td><td class="num">'+l.faux+'</td>'+c+'</tr>';}).join('')+'</tbody></table></div>';
+  h+='<p class="note" style="margin:10px 0 0">Chaque ligne compte les itérations ; la somme des cinq catégories est le nombre d\'itérations. Les fichiers réunis d\'une même femelle forment une ligne de plus. Les pourcentages du second tableau portent sur les génotypes faux de la ligne.</p>';
   $("res").innerHTML=h;
-  $("zip").addEventListener('click',telechargerZip);
-  [].forEach.call(document.querySelectorAll('#res [data-fichier]'),function(a){a.addEventListener('click',function(){var f=r.fichiers[+a.getAttribute('data-fichier')];enregistrer(nomFichier(f)+'.'+$("format").value,contenu(feuilleJuv(f),$("format").value));});});
-  $("foot").innerHTML='Pool : '+esc(r.pool.label)+' ; tableau : '+esc(r.tab.label)+'. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';
-}
-
-// ---------- fichiers produits ----------
-function feuilleJuv(f){var L=RES.loci,h=['SPEC ID'];L.forEach(function(l){h.push(l,'');});return [h].concat(f.juveniles.map(function(j){var r=[j.id];j.geno.forEach(function(g){r.push(g[0],g[1]);});return r;}));}
-function feuilleParents(sexe){var L=RES.loci,h=['SPEC ID'];L.forEach(function(l){h.push(l,'');});return [h].concat(RES.parents.filter(function(p){return p.sexe===sexe;}).map(function(p){var r=[p.nom];p.geno.forEach(function(g){r.push(g[0],g[1]);});return r;}));}
-function texteCsv(rows){var q=function(s){s=String(s);return /[";,\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};return '﻿'+rows.map(function(r){return r.map(q).join(';');}).join('\r\n')+'\r\n';}
-function enOctets(t){return new TextEncoder().encode(t);}
-// Contenu d'un fichier : .xls / .xlsx (identifiant en texte, allèles en nombres) ou .csv.
-function contenu(rows,ext){
-  if(ext==='csv')return enOctets(texteCsv(rows));
-  if(typeof XLSX==='undefined')throw new Error("l'enregistrement en Excel n'est pas disponible hors ligne ; choisissez le format CSV.");
-  var ws=XLSX.utils.aoa_to_sheet(rows);for(var i=1;i<rows.length;i++)ws[XLSX.utils.encode_cell({r:i,c:0})]={t:'s',v:String(rows[i][0])};
-  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'FLOCK');return new Uint8Array(XLSX.write(wb,{bookType:ext==='xls'?'biff8':'xlsx',type:'array'}));}
-function enregistrer(nom,octets,type){try{var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([octets],{type:type||'application/octet-stream'}));a.download=nom;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);}catch(e){status('Erreur : '+e.message,true);}}
-// Archive .zip sans compression (méthode « stored »), noms en UTF-8.
-var CRC=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
-function crc32(b){var c=0xFFFFFFFF;for(var i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
-function zip(fichiers){var parts=[],central=[],off=0;
-  var u16=function(v){return [v&255,(v>>>8)&255];},u32=function(v){return [v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255];};
-  fichiers.forEach(function(f){var nom=enOctets(f.nom),c=crc32(f.octets),n=f.octets.length;
-    var loc=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(c),u32(n),u32(n),u16(nom.length),u16(0));
-    parts.push(new Uint8Array(loc),nom,f.octets);
-    central.push([].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(c),u32(n),u32(n),u16(nom.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off)),nom);
-    off+=loc.length+nom.length+n;});
-  var tailleC=0;central.forEach(function(x,i){if(i%2===0){parts.push(new Uint8Array(x));tailleC+=x.length;}else{parts.push(x);tailleC+=x.length;}});
-  parts.push(new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(fichiers.length),u16(fichiers.length),u32(tailleC),u32(off),u16(0))));
-  return new Blob(parts,{type:'application/zip'});}
-function notice(){var r=RES,d=r.date,t=r.tab.tableau;
-  return ['Juvéniles artificiels — guichet, page « Génération de juvéniles artificiels »','',
-    'Date : '+d.toLocaleDateString('fr-CA')+' '+d.toLocaleTimeString('fr-CA'),'Graine du générateur : '+r.graine+' (la même graine, le même pool et le même tableau redonnent exactement les mêmes juvéniles)',
-    'Pool : '+r.pool.label+' — '+r.pool.fichiers.map(function(f){return f.nom+' ('+f.n+')';}).join(', ')+' ; '+r.pool.genotypes.length+' génotypes ; '+r.loci.length+' locus','Tableau des croisements : '+r.tab.label,'',
-    'Fichiers de juvéniles (un par paire de colonnes du tableau) :'].concat(r.fichiers.map(function(f){return '  '+nomFichier(f)+' : femelle '+f.femelle+' ; '+f.croisements.map(function(x){return x.male+' × '+x.n;}).join(', ')+' ; '+f.juveniles.length+' juvéniles';}))
-    .concat(['','Autres fichiers :','  femelles et males : génotypes des parents artificiels (disposition FLOCK) ; le fichier des femelles peut servir de banque dans la page « Agréger » ;',
-    '  genealogie.csv : mère et père réels de chaque juvénile ;','  frequences.csv : fréquences alléliques du pool.','',
-    'Méthode : parents tirés selon les fréquences alléliques du pool (deux allèles indépendants par locus) ; juvéniles selon Mendel',
-    '(un allèle de la mère et un du père, probabilité 1/2 chacun) ; aucune donnée manquante. Générateur : xoshiro128** (Blackman et Vigna, 2018).']).join('\r\n')+'\r\n';}
-function telechargerZip(){var ext=$("format").value,r=RES,dos='juveniles-artificiels-'+r.graine+'/',F=[];
-  try{r.fichiers.forEach(function(f){F.push({nom:dos+nomFichier(f)+'.'+ext,octets:contenu(feuilleJuv(f),ext)});});
-    F.push({nom:dos+'femelles.'+ext,octets:contenu(feuilleParents('F'),ext)},{nom:dos+'males.'+ext,octets:contenu(feuilleParents('M'),ext)});
-    var gen=[['Juvénile','Fichier','Mère','Père']];r.fichiers.forEach(function(f){f.juveniles.forEach(function(j){gen.push([j.id,nomFichier(f)+'.'+ext,j.mere,j.pere]);});});
-    F.push({nom:dos+'genealogie.csv',octets:enOctets(texteCsv(gen))});
-    var fr=[['Locus','Allèle','Compte','Fréquence']];r.pool.freqs.forEach(function(f,l){f.alleles.forEach(function(a,i){fr.push([r.loci[l],a,f.comptes[i],(f.comptes[i]/f.total).toFixed(5)]);});});
-    F.push({nom:dos+'frequences.csv',octets:enOctets(texteCsv(fr))},{nom:dos+'LISEZ-MOI.txt',octets:enOctets('﻿'+notice())});
-    var b=zip(F),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='juveniles-artificiels-'+r.graine+'.zip';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},0);
-  }catch(e){status('Erreur : '+(e&&e.message?e.message:e),true);}}
+  $("foot").innerHTML='Pool : '+esc(B.pool.label)+' ; tableau : '+esc(B.tab.label)+'. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';}
 
 (function init(){
   $("ajoutP").addEventListener('click',function(){$("upP").click();});
@@ -177,8 +140,8 @@ function telechargerZip(){var ext=$("format").value,r=RES,dos='juveniles-artific
   $("ajoutT").addEventListener('click',function(){$("upT").click();});
   $("upT").addEventListener('change',function(){var f=$("upT").files[0];if(!f)return;$("tabInfo").textContent='Lecture en cours…';DATES_ID=0;
     readFile(f).then(function(rows){poserTableau(rows,'« '+f.name+' »');}).catch(function(e){$("tabInfo").textContent='Erreur : '+(e&&e.message?e.message:e);$("tabInfo").className='note err';});$("upT").value='';});
-  $("go").addEventListener('click',generer);
-  $("format").addEventListener('change',function(){if(RES)afficherRes();});
+  $("go").addEventListener('click',lancer);
+  $("stop").addEventListener('click',function(){ARRET=true;});
   afficherListe();poolExemple();poserTableau(EXAMPLE.lignesTableau,'exemple de P. Duchesne');
 })();
 </script>

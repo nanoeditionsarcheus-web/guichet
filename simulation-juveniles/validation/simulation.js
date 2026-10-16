@@ -17,6 +17,7 @@
  */
 (function (root) {
   "use strict";
+  var Rec = (typeof module !== "undefined" && module.exports) ? require("../../reconstitution-femelle/validation/js/reconstitution.js") : root.Reconstitution;
 
   // ---------- générateur ----------
   function rotl(x, k) { return ((x << k) | (x >>> (32 - k))) >>> 0; }
@@ -89,8 +90,9 @@
   }
 
   // ---------- simulation ----------
+  // graine : entier de 32 bits, ou générateur déjà créé (les itérations d'une série partagent un même générateur).
   function simuler(freqs, tableau, graine) {
-    var u = generateur(graine), L = freqs.length, parents = {}, ordre = [];
+    var u = typeof graine === "function" ? graine : generateur(graine), L = freqs.length, parents = {}, ordre = [];
     function parent(sexe, nom) {
       var cle = sexe + ":" + nom;
       if (!(cle in parents)) {
@@ -113,10 +115,55 @@
       });
       return { colonne: c.colonne, femelle: c.femelle, croisements: c.croisements, juveniles: juv };
     });
-    return { graine: graine >>> 0, parents: ordre.map(function (k) { return parents[k]; }), fichiers: fichiers };
+    return { graine: typeof graine === "function" ? null : graine >>> 0, parents: ordre.map(function (k) { return parents[k]; }), fichiers: fichiers };
+  }
+
+  /* Bilan de nombreuses itérations d'une même simulation (demande de P. Duchesne, 17 octobre 2026).
+   * Lignes : chaque fichier du tableau, puis chaque femelle qui a plusieurs fichiers, ses fichiers réunis.
+   * À chaque itération, la femelle de chaque ligne est reconstituée par la méthode du nombre de compatibilités
+   * (code validé contre le programme Maple de P. Duchesne, règle de l'homozygote comprise) et comparée à la vraie :
+   *   juste / faux : un seul génotype candidat, égal ou non à celui de la vraie mère ;
+   *   deuxUnJuste / deuxZeroJuste : deux génotypes candidats, dont l'un est celui de la vraie mère, ou aucun ;
+   *   nonResolu : trois génotypes candidats ou plus.
+   * Pour les génotypes faux, on compte le nombre de locus erronés (1 à L).
+   * Une série utilise un seul générateur, initialisé par la graine : la même graine redonne le même bilan. */
+  function lignesBilan(tableau) {
+    var out = tableau.map(function (c, i) { return { nom: "C" + c.colonne + "_" + c.femelle, femelle: c.femelle, colonnes: [i] }; }), vues = {};
+    tableau.forEach(function (c, i) { (vues[c.femelle] = vues[c.femelle] || []).push(i); });
+    Object.keys(vues).forEach(function (f) { if (vues[f].length > 1) out.push({ nom: f + " : " + vues[f].map(function (i) { return "C" + tableau[i].colonne; }).join(" + "), femelle: f, colonnes: vues[f] }); });
+    return out;
+  }
+  function creerBilan(freqs, tableau, graine) {
+    var L = freqs.length;
+    return { freqs: freqs, tableau: tableau, graine: graine >>> 0, u: generateur(graine), fait: 0,
+             lignes: lignesBilan(tableau).map(function (l) { var z = []; for (var k = 0; k <= L; k++) z.push(0);
+               return { nom: l.nom, femelle: l.femelle, colonnes: l.colonnes, juste: 0, faux: 0, deuxUnJuste: 0, deuxZeroJuste: 0, nonResolu: 0, fauxLocus: z }; }) };
+  }
+  function egal(a, b) { return a.every(function (g, l) { return g[0] === b[l][0] && g[1] === b[l][1]; }); }
+  function avancerBilan(B, n) {
+    var L = B.freqs.length;
+    for (var it = 0; it < n; it++) {
+      var r = simuler(B.freqs, B.tableau, B.u), meres = {};
+      r.parents.forEach(function (p) { if (p.sexe === "F") meres[p.nom] = p.geno; });
+      B.lignes.forEach(function (ligne) {
+        var J = [];
+        ligne.colonnes.forEach(function (i) { r.fichiers[i].juveniles.forEach(function (j) { J.push(j.geno); }); });
+        var ret = Rec.retenusParLocus(Rec.analyse(J, L)), nc = Rec.nombreComplets(ret), vraie = meres[ligne.femelle];
+        if (nc === 1) {
+          var g = Rec.genotypesComplets(ret)[0];
+          if (egal(g, vraie)) ligne.juste++;
+          else { ligne.faux++; ligne.fauxLocus[g.filter(function (x, l) { return x[0] !== vraie[l][0] || x[1] !== vraie[l][1]; }).length]++; }
+        } else if (nc === 2) {
+          if (Rec.genotypesComplets(ret).some(function (g) { return egal(g, vraie); })) ligne.deuxUnJuste++; else ligne.deuxZeroJuste++;
+        } else ligne.nonResolu++;
+      });
+      B.fait++;
+    }
+    return B;
   }
 
   var api = { splitmix32: splitmix32, xoshiro128ss: xoshiro128ss, generateur: generateur, frequences: frequences,
-              tirerAllele: tirerAllele, lireTableau: lireTableau, simuler: simuler };
+              tirerAllele: tirerAllele, lireTableau: lireTableau, simuler: simuler,
+              lignesBilan: lignesBilan, creerBilan: creerBilan, avancerBilan: avancerBilan };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Simulation = api;
 })(this);

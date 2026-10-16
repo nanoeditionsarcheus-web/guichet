@@ -20,5 +20,9 @@ if(process.env.XOSHIRO_REF){const {execFileSync}=require('child_process');let b=
   let nx;if(g==='e')nx=S.xoshiro128ss([1,2,3,4]);else{const sm=S.splitmix32(+g);nx=S.xoshiro128ss([sm(),sm(),sm(),sm()]);}
   for(let i=0;i<n;i++)if(nx()!==ref[i])b++;t+=n;}
  if(b)ko++;console.log('générateur contre le code C de référence :',t,'valeurs, écarts',b);}
+// Bilan : 300 itérations, graine 12345, identique au calcul Python indépendant (attendu-bilan.json)
+const AB=JSON.parse(fs.readFileSync(path.join(__dirname,'attendu-bilan.json'),'utf8'));const B=S.avancerBilan(S.creerBilan(F,T,AB.graine),AB.iterations);
+const champs=['nom','femelle','colonnes','juste','faux','deuxUnJuste','deuxZeroJuste','nonResolu','fauxLocus'],okB=JSON.stringify(B.lignes.map(l=>champs.map(c=>l[c])))===JSON.stringify(AB.lignes.map(l=>champs.map(c=>l[c])));
+if(!okB)ko++;console.log('bilan de',AB.iterations,'itérations :',okB?'identique au calcul Python':'DIFFÉRENT');
 const r2=S.simuler(F,T,12345),r3=S.simuler(F,T,12346);console.log('même graine → même simulation :',JSON.stringify(r2)===JSON.stringify(S.simuler(F,T,12345)),'; graine voisine → différente :',JSON.stringify(r2)!==JSON.stringify(r3));
 process.exit(ko?1:0);

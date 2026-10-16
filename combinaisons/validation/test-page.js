@@ -37,6 +37,14 @@ let mauvais=0;
  let db=PB.length===AB.length?0:1;AB.forEach((a,i)=>{const b=PB[i];if(!b||b.type!==a.type||(a.num&&b.num!==a.num)||(a.lettre&&b.lettre!==a.lettre)||JSON.stringify(b.combs)!==JSON.stringify(a.combs)||JSON.stringify(b.geno)!==JSON.stringify(a.geno)||b.present!==a.banque.present||JSON.stringify(b.presentes)!==JSON.stringify(a.banque.presentes)||JSON.stringify(b.proche)!==JSON.stringify(a.banque.proche))db++;});
  const marques=await pg.evaluate(()=>[...document.querySelectorAll('#banque tbody tr')].map(t=>[...t.querySelectorAll('td.case')].map(c=>c.textContent).join('|')).join(' '));
  console.log('banque :',PB.length,'génotypes examinés ; écarts avec le calcul indépendant :',db,'; cases',marques);mauvais+=db;
+ // mêmes banques en allèles collés (1 colonne par locus, ex. 268272) : résultat identique (P. Duchesne, 16 octobre 2026)
+ const enColle=f=>{const L=fs.readFileSync(f,'utf8').trim().split(/\r?\n/).map(l=>l.split(';'));const nl=(L[0].length-1)>>1;const q=path.join(os.tmpdir(),'colle-'+path.basename(f));
+  fs.writeFileSync(q,[[L[0][0]].concat(Array.from({length:nl},(_,k)=>L[0][1+2*k]))].concat(L.slice(1).map(r=>[r[0]].concat(Array.from({length:nl},(_,k)=>{const x=+r[1+2*k],y=+r[2+2*k];return x&&y?String(x).padStart(3,'0')+String(y).padStart(3,'0'):'000000';})))).map(r=>r.join(';')).join('\n'));return q;};
+ await pg.setInputFiles('#upB',[enColle(path.join(V,'banque-essai-1.csv')),enColle(path.join(V,'banque-essai-2.csv'))]);await pg.click('#goB');
+ await pg.waitForFunction(()=>/allèles collés/.test(document.getElementById('banqueInfo').textContent)&&CUR.banqueRes);
+ const PC=await pg.evaluate(()=>CUR.banqueRes.liste.map(x=>[x.banque.present,x.banque.presentes.map(c=>[c.index,c.compares]),x.banque.proche?[x.banque.proche.index,x.banque.proche.differents,x.banque.proche.compares]:null]));
+ const egal=JSON.stringify(PC)===JSON.stringify(PB.map(x=>[x.present,x.presentes,x.proche?x.proche.slice(0,3):null]));if(!egal)mauvais++;
+ console.log('banque en allèles collés :',egal?'résultat identique':'DIFFÉRENT');
  if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
  // juvéniles très incomplets : un juvénile à 6 locus manquants est écarté (seuil 5), gardé si le champ est vide
  const J=await pg.evaluate(()=>EXAMPLE.fichiers[1]);const dirM=fs.mkdtempSync(path.join(os.tmpdir(),'manq-'));

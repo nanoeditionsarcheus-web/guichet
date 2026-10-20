@@ -123,7 +123,7 @@ function majJuv(){if(!NID)return;var x=retenus(),m=maxManquants();
     (m===Infinity?'Aucun juvénile écarté (champ vide).':x.e.length?'Écarté'+(x.e.length>1?'s':'')+' (plus de '+m+' locus manquants) : '+x.e.map(function(j){return j.id;}).join(', ')+' ; '+x.r.length+' juvéniles retenus.':'Aucun juvénile n\'a plus de '+m+' locus manquants.')+(NID.dates||'');
   verifier();}
 function poserNid(n){NID=n;effacer();majJuv();}
-function nidExemple(){poserNid({label:EXAMPLE.label,loci:EXAMPLE.loci,juveniles:EXAMPLE.ids.map(function(id,i){return {id:id,genos:EXAMPLE.juveniles[i]};})});}
+function nidExemple(){poserNid({exemple:true,label:EXAMPLE.label,loci:EXAMPLE.loci,juveniles:EXAMPLE.ids.map(function(id,i){return {id:id,genos:EXAMPLE.juveniles[i]};})});}
 
 // ---------- femelle ----------
 function femelle(){if(!FEM)return null;var j=FEM.liste[+$("choixF").value||0];if(!j)return null;
@@ -139,8 +139,10 @@ function poserFem(F){FEM=F;var s=$("choixF");s.innerHTML=F.liste.map(function(j,
 function femExemple(){poserFem({label:'exemple',loci:EXAMPLE.loci,liste:[{id:EXAMPLE.nomFemelle,genos:EXAMPLE.femelle}]});}
 
 // ---------- fichiers de référence ----------
-function afficherListe(){$("listeR").innerHTML=LISTE.length?'<b>Fichiers choisis ('+LISTE.length+')</b> :<br>'+LISTE.map(function(f,i){return '<span class="puce">'+esc(f.name)+' <a href="#" data-retirer="'+i+'" title="retirer de la liste" onclick="return false">×</a></span>';}).join(''):'<span class="note">Aucun fichier de référence : les fréquences sont estimées sur les juvéniles du nid.</span>';}
-function chargerRef(){effacer();var F=LISTE.slice();if(!F.length){REF=null;$("refInfo").textContent='';verifier();return;}
+function afficherListe(){$("listeR").innerHTML=LISTE.length?'<b>Fichiers choisis ('+LISTE.length+')</b> :<br>'+LISTE.map(function(f,i){return '<span class="puce">'+esc(f.name)+' <a href="#" data-retirer="'+i+'" title="retirer de la liste" onclick="return false">×</a></span>';}).join(''):'<span class="note">'+(NID&&NID.exemple?'Aucun fichier choisi : l\'exemple utilise comme référence les '+esc(EXAMPLE.reference.label)+'.':'Aucun fichier de référence : les fréquences sont estimées sur les juvéniles du nid.')+'</span>';}
+// Référence de l'exemple : comptes d'allèles seulement, changés en génotypes fictifs aux mêmes comptes.
+function refExemple(){return {label:'exemple — '+EXAMPLE.reference.label,loci:EXAMPLE.reference.loci,genotypes:Males.genotypesDeComptes(EXAMPLE.reference.comptes)};}
+function chargerRef(){effacer();var F=LISTE.slice();afficherListe();if(!F.length){REF=NID&&NID.exemple?refExemple():null;$("refInfo").className='note';$("refInfo").textContent='';verifier();return;}
   $("refInfo").className='note';$("refInfo").textContent='Lecture en cours…';
   Promise.all(F.map(readFile)).then(function(all){var canon=null,g=[],fs=[];
     all.forEach(function(rows,i){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error("aucun génotype lu dans « "+F[i].name+" ».");
@@ -231,7 +233,7 @@ function afficherSim(){var V=SIM,o=V.opts,par={};V.nids.forEach(function(x){(par
 (function init(){
   $("ajoutJ").addEventListener('click',function(){$("upJ").click();});
   $("upJ").addEventListener('change',function(){var f=$("upJ").files[0];if(!f)return;$("juvInfo").className='note';$("juvInfo").textContent='Lecture en cours…';DATES_ID=0;
-    readFile(f).then(function(rows){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error('aucun génotype lu.');poserNid({label:'« '+f.name+' »',loci:p.loci,juveniles:p.juveniles,dates:noteDates()});majFem();})
+    readFile(f).then(function(rows){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error('aucun génotype lu.');poserNid({label:'« '+f.name+' »',loci:p.loci,juveniles:p.juveniles,dates:noteDates()});majFem();if(!LISTE.length)chargerRef();})
       .catch(function(e){$("juvInfo").textContent='Erreur dans « '+f.name+' » : '+(e&&e.message?e.message:e);$("juvInfo").className='note err';});$("upJ").value='';});
   $("ajoutF").addEventListener('click',function(){$("upF").click();});
   $("upF").addEventListener('change',function(){var f=$("upF").files[0];if(!f)return;$("femInfo").className='note';$("femInfo").textContent='Lecture en cours…';DATES_ID=0;
@@ -243,12 +245,12 @@ function afficherSim(){var V=SIM,o=V.opts,par={};V.nids.forEach(function(x){(par
   $("upR").addEventListener('change',function(){[].slice.call($("upR").files).forEach(function(f){if(!LISTE.some(function(g){return g.name===f.name&&g.size===f.size;}))LISTE.push(f);});$("upR").value='';afficherListe();chargerRef();});
   $("listeR").addEventListener('click',function(e){var i=e.target.getAttribute('data-retirer');if(i!=null){LISTE.splice(+i,1);afficherListe();chargerRef();}});
   $("viderR").addEventListener('click',function(){LISTE=[];afficherListe();chargerRef();});
-  $("exemple").addEventListener('click',function(){LISTE=[];afficherListe();REF=null;$("refInfo").textContent='';nidExemple();femExemple();status('Exemple rétabli.');});
+  $("exemple").addEventListener('click',function(){LISTE=[];nidExemple();femExemple();chargerRef();status('Exemple rétabli.');});
   $("go").addEventListener('click',lancer);
   $("stop").addEventListener('click',function(){ARRET=true;});
   $("goSim").addEventListener('click',lancerSim);
   $("stopSim").addEventListener('click',function(){ARRETSIM=true;});
-  afficherListe();nidExemple();femExemple();
+  nidExemple();femExemple();chargerRef();
 })();
 </script>
 </body>

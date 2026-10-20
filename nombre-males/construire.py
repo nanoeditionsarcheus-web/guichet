@@ -12,6 +12,10 @@ nid = [r for r in rows[1:] if r[0].startswith("202105")]   # un seul nid : 2021-
 ex = {"label": "exemple : nid 2021-05 du fichier Grise de P. Duchesne (21 juvéniles)",
       "loci": [rows[0][1+2*k] for k in range(L)], "ids": [r[0] for r in nid],
       "juveniles": [[g(r, k) for k in range(L)] for r in nid], "nomFemelle": "Grise, reconstituée à partir des 41 juvéniles du fichier", "femelle": FEMELLE}
+# Référence de l'exemple (demande de P. Duchesne, 20 octobre 2026) : les fréquences alléliques des 23 nids de
+# N. Tessier, publiées sous forme de comptes d'allèles seulement (aucun génotype individuel).
+ex["reference"] = json.loads((d / "validation/reference-exemple.json").read_text(encoding="utf8"))
+assert ex["reference"]["loci"] == ex["loci"]
 (d / "validation/exemple.json").write_text(json.dumps(ex, ensure_ascii=False), encoding="utf8")
 html = (d / "gabarit.html").read_text(encoding="utf8")
 # Styles et lecture des fichiers (FLOCK ou allèles collés, classeurs Excel, dates) repris tels quels de la page « Agréger »

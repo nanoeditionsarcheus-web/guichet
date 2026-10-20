@@ -15,7 +15,11 @@ ok(JSON.stringify(P[10].slice(1,11))==='[1,5,8,9,7,5,3,2,1,1]'&&P[20][2]===10&&P
 const R=path.join(__dirname,'../../reconstitution-femelle/validation/jeux');
 const lire=f=>{const rows=fs.readFileSync(f,'utf8').replace(/^﻿/,'').trim().split(/\r?\n/).map(l=>l.split(';'));const L=(rows[0].length-1)/2|0;
   return rows.slice(1).map(r=>{const g=[];for(let k=0;k<L;k++){const a=+r[1+2*k],b=+r[2+2*k];g.push(a&&b?[a,b]:null);}return g;});};
-for(const c of A.cas){const juv=c.juv||ex.juveniles,fem=c.femelle||ex.femelle,ref=c.reference?[].concat(...c.reference.map(n=>lire(path.join(R,n,n+'-FLOCK.csv')))):undefined;
+// Référence de l'exemple (comptes d'allèles des 23 nids) : les génotypes fictifs ont exactement ces comptes
+const refNids=M.genotypesDeComptes(ex.reference.comptes);
+{let d=0;ex.reference.comptes.forEach((c,l)=>{const m={};refNids.forEach(g=>{if(g[l])g[l].forEach(a=>{m[a]=(m[a]||0)+1;});});if(JSON.stringify(Object.keys(m).sort())!==JSON.stringify(Object.keys(c).sort())||Object.keys(c).some(a=>m[a]!==c[a]))d++;});
+ ok(d===0,'référence de l\'exemple : génotypes fictifs aux mêmes comptes d\'allèles que les 23 nids ('+refNids.length+' lignes)');}
+for(const c of A.cas){const juv=c.juv||ex.juveniles,fem=c.femelle||ex.femelle,ref=c.nom==='exemple-nids'?refNids:c.reference?[].concat(...c.reference.map(n=>lire(path.join(R,n,n+'-FLOCK.csv')))):undefined;
   const T=M.avancerAnalyse(M.creerAnalyse(juv,fem,{N:c.N,seuil:c.seuil,kmax:c.kmax,graine:c.graine,ref:ref}),1e12);
   const js=T.hyp.map(h=>{const d={};h.dist.forEach((v,t)=>{if(v)d[t]=v;});return {k:h.k,dist:d,ge:h.ge,le:h.le};});
   const py=c.hyp.map(h=>({k:h.k,dist:h.dist,ge:h.ge,le:h.le}));

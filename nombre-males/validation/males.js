@@ -2,8 +2,8 @@
 // Statistique MD : à chaque locus, l'allèle mâle de chaque juvénile est déduit du génotype de la femelle ; MD est la
 // moyenne, sur les locus, du nombre d'allèles mâles distincts. Sous l'hypothèse de k mâles, des échantillons
 // artificiels (même femelle, mâles tirés selon les fréquences alléliques des juvéniles, partition des juvéniles
-// entre les mâles tirée uniformément parmi les partitions de n en k parts) donnent la distribution de MD ; on retient
-// la première hypothèse (k = 1, 2, …) dont la proportion de valeurs simulées ≥ MD observée est ≥ au seuil (0,05).
+// entre les mâles tirée uniformément parmi les partitions de n en k parts) donnent la distribution de MD ; l'estimation
+// est l'intervalle des hypothèses que ni la p-valeur à droite ni celle à gauche ne rejettent (voir creerAnalyse).
 // Générateur pseudo-aléatoire et tirage des allèles : ceux de la page « Génération de juvéniles artificiels ».
 (function(root){
 "use strict";
@@ -60,22 +60,60 @@ function simulerUne(O,femelle,k,P,u){
     var am=alleleMale(g,f,function(z){return O.comptes[l][z]||0;});if(vus[a].indexOf(am)<0)vus[a].push(am);}
   return vus.reduce(function(s,v){return s+v.length;},0);}
 
-// Série complète : hypothèses k = 1, 2, … jusqu'à kmax (≤ n) ; arrêt à la première acceptée (proportion ≥ seuil).
-// Chaque hypothèse : N simulations ; distribution des sommes (index = somme), proportion ≥ observé.
+// Série complète (P. Duchesne, 20 octobre 2026) : hypothèses k = 1, 2, … jusqu'à kmax (≤ n). Pour chacune, N simulations,
+// la p-valeur à droite (proportion des valeurs simulées ≥ observée) et à gauche (≤ observée). Borne inférieure : la
+// première hypothèse dont la p-valeur à droite atteint le seuil ; on continue tant que la p-valeur à gauche reste
+// supérieure au seuil ; borne supérieure : la dernière hypothèse dans ce cas. Si kmax est atteint avant, l'intervalle
+// reste ouvert (« kmax ou plus »), sauf si kmax est le nombre de juvéniles : il ne peut y avoir plus de mâles.
 function creerAnalyse(juv,femelle,opts){
   var O=observer(juv,femelle,opts.ref),kmax=Math.min(opts.kmax,O.n);
   return {O:O,femelle:femelle,N:opts.N,seuil:opts.seuil,kmax:kmax,graine:opts.graine,u:Sim.generateur(opts.graine),
-    P:tablePartitions(O.n,kmax),hyp:[],k:0,fait:0,fini:!O.analyses.length,retenue:null};}
+    P:tablePartitions(O.n,kmax),hyp:[],k:0,fait:0,fini:!O.analyses.length,basse:null,haute:null,ouvert:false};}
 function avancerAnalyse(S,lot){var O=S.O,LA=O.analyses.length;
   while(lot>0&&!S.fini){
-    if(!S.hyp.length||S.fait===S.N){S.k++;S.fait=0;var d=[];for(var i=0;i<=O.locus.length*O.n;i++)d.push(0);S.hyp.push({k:S.k,dist:d,ge:0,somme:0});}
+    if(!S.hyp.length||S.fait===S.N){S.k++;S.fait=0;var d=[];for(var i=0;i<=O.locus.length*O.n;i++)d.push(0);S.hyp.push({k:S.k,dist:d,ge:0,le:0,somme:0});}
     var H=S.hyp[S.hyp.length-1],m=Math.min(lot,S.N-S.fait);
-    for(var r=0;r<m;r++){var t=simulerUne(O,S.femelle,S.k,S.P,S.u);H.dist[t]++;H.somme+=t;if(t>=O.total)H.ge++;}
+    for(var r=0;r<m;r++){var t=simulerUne(O,S.femelle,S.k,S.P,S.u);H.dist[t]++;H.somme+=t;if(t>=O.total)H.ge++;if(t<=O.total)H.le++;}
     S.fait+=m;lot-=m;
-    if(S.fait===S.N){H.p=H.ge/S.N;H.moyenne=H.somme/S.N/LA;H.acceptee=H.p>=S.seuil;
-      if(H.acceptee){S.retenue=H.k;S.fini=true;}else if(S.k>=S.kmax)S.fini=true;}}
+    if(S.fait===S.N){H.p=H.ge/S.N;H.pg=H.le/S.N;H.moyenne=H.somme/S.N/LA;H.droite=H.p>=S.seuil;H.gauche=H.pg>S.seuil;
+      H.dans=H.droite&&H.gauche;
+      if(H.droite&&S.basse===null)S.basse=H.k;
+      if(S.basse!==null&&!H.gauche)S.fini=true;
+      else{if(H.dans)S.haute=H.k;if(S.k>=S.kmax){S.fini=true;S.ouvert=S.basse!==null&&H.dans&&S.kmax<O.n;}}}}
   return S;}
+// Texte de l'intervalle : « 2 à 4 », « 3 », « 4 à 10 ou plus » (kmax atteint), « plus de 10 », « entre 1 et 2 » (observé entre deux hypothèses),
+// « aucune hypothèse compatible » (observé trop petit même pour 1 mâle).
+function intervalle(S){if(S.basse===null)return 'plus de '+S.kmax;if(S.haute===null)return S.basse===1?'aucune hypothèse compatible':'entre '+(S.basse-1)+' et '+S.basse;
+  if(S.ouvert)return (S.basse===S.haute?S.basse:S.basse+' à '+S.haute)+' ou plus';return S.basse===S.haute?String(S.basse):S.basse+' à '+S.haute;}
 
-var api={alleleMale:alleleMale,observer:observer,tablePartitions:tablePartitions,tirerPartition:tirerPartition,simulerUne:simulerUne,creerAnalyse:creerAnalyse,avancerAnalyse:avancerAnalyse};
+// Simulateur de validation (P. Duchesne, 20 octobre 2026) : même femelle, mêmes fréquences (référence, sinon juvéniles
+// du nid), même nombre de juvéniles et mêmes données manquantes que le nid naturel ; pour k = 1 … kmaxSim mâles vrais,
+// R nids artificiels, chacun analysé par la méthode ci-dessus. Ordre des tirages, nid par nid (k, puis répétition) :
+// génotypes des k mâles (locus où la femelle est connue, 2 tirages chacun) ; partition ; permutation des juvéniles ;
+// juvéniles (case par case, aux cases non manquantes du nid naturel : allèle de la femelle, allèle du mâle) ; graine de
+// l'analyse (un tirage × 2^32).
+function nidArtificiel(juvNat,femelle,freqs,k,P,u){
+  var n=juvNat.length,L=femelle.length,males=[];
+  for(var m=0;m<k;m++){var g=[];for(var l=0;l<L;l++)g.push(femelle[l]?[Sim.tirerAllele(freqs[l],u()),Sim.tirerAllele(freqs[l],u())]:null);males.push(g);}
+  var parts=tirerPartition(n,k,P,u),perm=[];for(var i=0;i<n;i++)perm.push(i);
+  for(i=n-1;i>0;i--){var j=Math.floor(u()*(i+1)),x=perm[i];perm[i]=perm[j];perm[j]=x;}
+  var pere=new Array(n),c=0;parts.forEach(function(p,m){for(var r=0;r<p;r++)pere[perm[c++]]=m;});
+  var J=[];for(i=0;i<n;i++){var g2=[];for(l=0;l<L;l++){if(!juvNat[i][l]||!femelle[l]){g2.push(null);continue;}
+    var a=u()<0.5?femelle[l][0]:femelle[l][1],mg=males[pere[i]][l],b=u()<0.5?mg[0]:mg[1];g2.push(a<b?[a,b]:[b,a]);}J.push(g2);}
+  return J;}
+function creerValidation(juvNat,femelle,opts){var K=Math.min(opts.kmaxSim,juvNat.length),file=[];
+  for(var k=1;k<=K;k++)for(var r=0;r<opts.R;r++)file.push({k:k,r:r});
+  return {juv:juvNat,femelle:femelle,opts:opts,freqs:Sim.frequences(opts.ref||juvNat,femelle.length),u:Sim.generateur(opts.graine),
+    P:tablePartitions(juvNat.length,K),file:file,i:0,cour:null,nids:[],fini:!file.length};}
+function avancerValidation(V,lot){var o=V.opts;
+  while(lot>0&&!V.fini){
+    if(!V.cour){var e=V.file[V.i],J=nidArtificiel(V.juv,V.femelle,V.freqs,e.k,V.P,V.u),g=Math.floor(V.u()*4294967296);
+      V.cour={k:e.k,r:e.r,graine:g,S:creerAnalyse(J,V.femelle,{N:o.N,seuil:o.seuil,kmax:o.kmax,graine:g,ref:o.ref})};}
+    var S=V.cour.S,m=Math.min(lot,S.N);avancerAnalyse(S,m);lot-=m;
+    if(S.fini){V.nids.push({k:V.cour.k,r:V.cour.r,graine:V.cour.graine,basse:S.basse,haute:S.haute,ouvert:S.ouvert,kmax:S.kmax,texte:intervalle(S),
+      hyp:S.hyp.map(function(h){return {k:h.k,ge:h.ge,le:h.le};})});V.cour=null;V.i++;if(V.i>=V.file.length)V.fini=true;}}
+  return V;}
+
+var api={alleleMale:alleleMale,observer:observer,tablePartitions:tablePartitions,tirerPartition:tirerPartition,simulerUne:simulerUne,creerAnalyse:creerAnalyse,avancerAnalyse:avancerAnalyse,intervalle:intervalle,nidArtificiel:nidArtificiel,creerValidation:creerValidation,avancerValidation:avancerValidation};
 if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.Males=api;
 })(this);

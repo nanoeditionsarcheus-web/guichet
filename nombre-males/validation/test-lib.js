@@ -17,13 +17,19 @@ const lire=f=>{const rows=fs.readFileSync(f,'utf8').replace(/^﻿/,'').trim().sp
   return rows.slice(1).map(r=>{const g=[];for(let k=0;k<L;k++){const a=+r[1+2*k],b=+r[2+2*k];g.push(a&&b?[a,b]:null);}return g;});};
 for(const c of A.cas){const juv=c.juv||ex.juveniles,fem=c.femelle||ex.femelle,ref=c.reference?[].concat(...c.reference.map(n=>lire(path.join(R,n,n+'-FLOCK.csv')))):undefined;
   const T=M.avancerAnalyse(M.creerAnalyse(juv,fem,{N:c.N,seuil:c.seuil,kmax:c.kmax,graine:c.graine,ref:ref}),1e12);
-  const js=T.hyp.map(h=>{const d={};h.dist.forEach((v,t)=>{if(v)d[t]=v;});return {k:h.k,dist:d,ge:h.ge};});
-  const py=c.hyp.map(h=>({k:h.k,dist:h.dist,ge:h.ge}));
-  ok(T.O.total===c.total&&JSON.stringify(T.O.analyses)===JSON.stringify(c.analyses)&&JSON.stringify(js)===JSON.stringify(py)&&T.retenue===c.retenue,
-    c.nom+', graine '+c.graine+' : '+c.hyp.length+' hypothèse(s) × '+c.N+' simulations, distributions identiques ; retenue '+T.retenue+' (Python '+c.retenue+')');}
+  const js=T.hyp.map(h=>{const d={};h.dist.forEach((v,t)=>{if(v)d[t]=v;});return {k:h.k,dist:d,ge:h.ge,le:h.le};});
+  const py=c.hyp.map(h=>({k:h.k,dist:h.dist,ge:h.ge,le:h.le}));
+  ok(T.O.total===c.total&&JSON.stringify(T.O.analyses)===JSON.stringify(c.analyses)&&JSON.stringify(js)===JSON.stringify(py)&&T.basse===c.basse&&T.haute===c.haute&&T.ouvert===c.ouvert,
+    c.nom+', graine '+c.graine+' : '+c.hyp.length+' hypothèse(s) × '+c.N+' simulations, distributions et p-valeurs (droite, gauche) identiques ; intervalle « '+M.intervalle(T)+' » (Python '+c.basse+'–'+c.haute+(c.ouvert?' ouvert':'')+')');}
+// 3 bis) Simulateur de validation : nids artificiels et intervalles identiques à Python
+for(const v of A.validation){const juv=v.nom==='synthetique'?A.cas.find(c=>c.nom==='synthetique').juv:ex.juveniles,fem=v.nom==='synthetique'?A.cas.find(c=>c.nom==='synthetique').femelle:ex.femelle;
+  const ref=v.reference?[].concat(...v.reference.map(n=>lire(path.join(R,n,n+'-FLOCK.csv')))):undefined;
+  const W=M.creerValidation(juv,fem,{N:v.N,seuil:v.seuil,kmax:v.kmax,kmaxSim:v.kmaxSim,R:v.R,graine:v.graine,ref:ref});while(!W.fini)M.avancerValidation(W,250);
+  const js=W.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,hyp:x.hyp}));
+  ok(JSON.stringify(js)===JSON.stringify(v.nids),'simulateur de validation, '+v.nom+' : '+v.nids.length+' nids artificiels, intervalles identiques — '+W.nids.map(x=>x.k+' → '+x.texte).join(' ; '));}
 // 4) Lots : le résultat ne dépend pas du découpage du calcul
 {const o={N:700,seuil:0.05,kmax:6,graine:31};const a=M.avancerAnalyse(M.creerAnalyse(ex.juveniles,ex.femelle,o),1e12),b=M.creerAnalyse(ex.juveniles,ex.femelle,o);while(!b.fini)M.avancerAnalyse(b,137);
- ok(JSON.stringify(a.hyp)===JSON.stringify(b.hyp),'calcul par lots de 137 = calcul d\'un trait');}
+ ok(JSON.stringify(a.hyp)===JSON.stringify(b.hyp)&&a.basse===b.basse&&a.haute===b.haute,'calcul par lots de 137 = calcul d\'un trait');}
 // 5) Cas particuliers de l'allèle mâle
 {const c=x=>({1:5,2:3,5:2,6:2})[x]||0;
  ok(M.alleleMale([1,3],[1,2],c)===3&&M.alleleMale([1,2],[1,2],c)===1&&M.alleleMale([5,6],[5,6],c)===5&&M.alleleMale([3,4],[1,2],c)===null&&M.alleleMale(null,[1,2],c)===null&&M.alleleMale([1,1],[1,1],c)===1&&M.alleleMale([1,7],[1,1],c)===7&&M.alleleMale([2,2],[1,2],c)===2,

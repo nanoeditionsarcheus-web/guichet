@@ -19,6 +19,7 @@ select.champ{width:auto;font-family:var(--sans)}
 .histo text{fill:var(--muted);font-family:var(--mono);font-size:10.5px}
 .histo line.ax{stroke:var(--axis);stroke-width:1}
 .histo circle.obs{fill:var(--warn);stroke:var(--card);stroke-width:2}
+.avert{border-left-color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent)}
 .legende{font-size:12.5px;color:var(--muted);margin:4px 0 0}.legende i{display:inline-block;width:10px;height:10px;border-radius:5px;background:var(--warn);vertical-align:-1px;margin-right:4px}
 .legende s{display:inline-block;width:12px;height:10px;background:color-mix(in srgb,var(--A) 45%,var(--card));vertical-align:-1px;margin:0 4px 0 12px;text-decoration:none}
 </style>
@@ -28,14 +29,14 @@ select.champ{width:auto;font-family:var(--sans)}
 <div class="wrap">
 <header>
   <h1>Nombre de mâles géniteurs</h1>
-  <p class="sub">Estimation du nombre de mâles qui ont contribué aux juvéniles d'un nid, à partir du génotype de la femelle (génotypé ou reconstitué) et des génotypes des juvéniles</p>
+  <p class="sub">Estimation du nombre de mâles qui ont contribué aux juvéniles d'un nid ou de plusieurs nids d'une même femelle, à partir du génotype de la femelle (génotypé ou reconstitué) et des génotypes des juvéniles</p>
   <p class="sub outils">Outils : <a href="https://nanoeditionsarcheus-web.github.io/flock-convert/">Mise en forme pour FLOCK</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/reconstitution-femelle/">Reconstitution d'une femelle</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/combinaisons/">Agréger les juvéniles d'une même femelle</a> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/compatibilites/">Tableau des compatibilités</a> · <b>Nombre de mâles géniteurs</b> · <a href="https://nanoeditionsarcheus-web.github.io/guichet/">Guichet (tous les outils)</a></p>
   <p class="sub" id="stamp"></p>
 </header>
 
 <div class="card">
   <p class="tag">1. Juvéniles du nid</p>
-  <p class="note" style="margin:-2px 0 12px">Un fichier : les juvéniles d'un nid, en disposition FLOCK (identifiant, puis 2 colonnes par locus) ou à allèles collés (1 colonne par locus, ex. 268272) ; .xls, .xlsx ou .csv. Tout le fichier est traité comme un seul échantillon.</p>
+  <p class="note" style="margin:-2px 0 12px">Un fichier : les juvéniles d'un nid ou d'une collection de nids provenant de la même femelle, en disposition FLOCK (identifiant, puis 2 colonnes par locus) ou à allèles collés (1 colonne par locus, ex. 268272) ; .xls, .xlsx ou .csv. Tout le fichier est traité comme un seul échantillon. Rien n'empêche de traiter plusieurs nids ensemble, et cela peut renseigner sur les mâles : si, par exemple, l'estimation est de 3 mâles pour chacun de deux nids et de 3 aussi pour les deux réunis, il s'agit vraisemblablement des trois mêmes mâles.</p>
   <div class="upl"><span>Juvéniles :</span><span><input type="file" id="upJ" accept=".xls,.xlsx,.csv,.txt" class="cache"><button id="ajoutJ" type="button">Choisir le fichier…</button> <button class="ghost" id="exemple" type="button">Revenir à l'exemple</button></span></div>
   <div class="controls" style="margin-top:10px"><label>Écarter les juvéniles auxquels il manque plus de <input autocomplete="off" class="champ" style="width:60px" type="number" id="maxManq" min="0" step="1" value="5"> locus</label></div>
   <p class="note" id="juvInfo" style="margin:8px 0 0"></p>
@@ -50,6 +51,7 @@ select.champ{width:auto;font-family:var(--sans)}
 
 <div class="card">
   <p class="tag">3. Fréquences alléliques</p>
+  <div class="reading avert" style="margin:0 0 12px"><b>Important.</b> Utilisez de préférence un fichier de référence contenant un échantillon plus large de génotypes de la même population (les juvéniles et/ou les adultes de nombreux nids). Si les fréquences alléliques sont estimées sur les seuls juvéniles analysés, le nombre de mâles tend à être surestimé, souvent nettement (voir la section Méthode).</div>
   <p class="note" style="margin:-2px 0 12px">Elles servent à tirer les mâles artificiels et à choisir l'allèle mâle quand un juvénile a le même génotype que la femelle hétérozygote. Sans fichier de référence, elles sont estimées sur les juvéniles du nid. Des fichiers de référence (les juvéniles et/ou adultes de nombreux nids de la même population ; mêmes noms de locus) les estiment sur un échantillon plus large : voir la section Méthode.</p>
   <div class="upl"><span>Fichiers de référence :</span><span><input type="file" id="upR" multiple accept=".xls,.xlsx,.csv,.txt" class="cache"><button id="ajoutR" type="button">Choisir des fichiers…</button> <button class="ghost" id="viderR" type="button">Vider la liste</button></span></div>
   <div id="listeR" class="liste-f"></div>
@@ -61,7 +63,7 @@ select.champ{width:auto;font-family:var(--sans)}
   <div class="controls">
     <label>Simulations par hypothèse : <input autocomplete="off" class="champ" type="number" id="nsim" min="100" max="1000000" step="1" value="10000"></label>
     <label>Seuil : <input autocomplete="off" class="champ" style="width:80px" type="text" id="seuil" value="0,05"></label>
-    <label>Nombre maximal de mâles : <input autocomplete="off" class="champ" style="width:70px" type="number" id="kmax" min="1" max="100" step="1" value="10"></label>
+    <label>Nombre maximal de mâles examinés : <input autocomplete="off" class="champ" style="width:70px" type="number" id="kmax" min="1" max="100" step="1" value="10"></label>
     <label>Graine du générateur : <input autocomplete="off" class="champ" style="width:230px" type="text" id="graine" placeholder="nouvelle à chaque estimation"></label>
     <button id="go">Lancer</button>
     <button class="ghost" id="stop" type="button" disabled>Arrêter</button>
@@ -71,8 +73,22 @@ select.champ{width:auto;font-family:var(--sans)}
 </div>
 
 <div class="card">
+  <p class="tag">5. Simulateur : la méthode retrouve-t-elle le vrai nombre de mâles ?</p>
+  <p class="note" style="margin:-2px 0 12px">Avec la même femelle, les mêmes fréquences alléliques (fichiers de référence, sinon juvéniles du nid) et le même nombre de juvéniles que le nid (avec les mêmes données manquantes), la page produit des nids artificiels de 1, 2, 3… mâles, puis estime le nombre de mâles de chacun par la méthode ci-dessus, avec les réglages de la section 4 (simulations par hypothèse, seuil, nombre maximal de mâles examinés).</p>
+  <div class="controls">
+    <label>Nombre maximal de mâles simulés : <input autocomplete="off" class="champ" style="width:70px" type="number" id="kmaxSim" min="1" max="50" step="1" value="5"></label>
+    <label>Nids artificiels par nombre de mâles : <input autocomplete="off" class="champ" style="width:70px" type="number" id="repSim" min="1" max="100" step="1" value="1"></label>
+    <label>Graine : <input autocomplete="off" class="champ" style="width:230px" type="text" id="graineSim" placeholder="nouvelle à chaque simulation"></label>
+    <button id="goSim">Lancer le simulateur</button>
+    <button class="ghost" id="stopSim" type="button" disabled>Arrêter</button>
+  </div>
+  <p class="note" id="simStatus" style="margin:8px 0 0"></p>
+  <div id="resSim"></div>
+</div>
+
+<div class="card">
   <p class="tag">Méthode</p>
-  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. <b>Allèle mâle</b> : à chaque locus, pour chaque juvénile, l'allèle transmis par un mâle se déduit du génotype de la femelle : c'est l'allèle du juvénile qui ne vient pas d'elle. Si le juvénile a le génotype de la femelle hétérozygote, l'allèle mâle est le plus fréquent de ses deux allèles (à fréquence égale, le plus petit). S'il ne porte aucun allèle de la femelle (erreur de génotypage, ou juvénile d'une autre femelle), ou si son génotype manque, il n'a pas d'allèle mâle à ce locus (« aucun »). <b>Statistique MD</b> : à chaque locus, le nombre d'allèles mâles distincts ; MD est leur moyenne sur les locus analysés (femelle connue et au moins un allèle mâle). Elle augmente avec le nombre de mâles. <b>Hypothèses</b> : pour k = 1, 2, 3… mâles, de nombreux échantillons artificiels donnent la distribution de MD. Chaque échantillon : k mâles dont les deux allèles, à chaque locus, sont tirés selon les fréquences alléliques ; une répartition des juvéniles entre les k mâles, tirée au hasard parmi toutes les partitions possibles (par exemple, pour 20 juvéniles et 2 mâles : 10 + 10, 9 + 11… 1 + 19, chacune avec la même probabilité), les juvéniles étant attribués au hasard aux mâles ; puis chaque juvénile reçoit un allèle de la femelle et un de son père, chacun avec probabilité 1/2 (Mendel). L'échantillon artificiel a le même nombre de juvéniles que le nid ; une case sans allèle mâle dans le nid (génotype manquant ou incompatible) reste vide dans l'échantillon artificiel. MD y est calculée exactement comme pour le nid. <b>Décision</b> : on calcule la proportion des valeurs simulées égales ou supérieures à la MD observée ; si elle atteint le seuil (0,05), l'hypothèse est retenue et les suivantes ne sont pas examinées ; sinon elle est rejetée et l'on passe à k + 1. <b>Fréquences alléliques</b> : comptées sur tous les génotypes non manquants des fichiers de référence, ou, à défaut, des juvéniles du nid. Estimées sur le seul nid, elles surreprésentent les allèles de la femelle et des mâles du nid : les mâles artificiels se ressemblent alors trop, et le nombre de mâles tend à être surestimé. Les estimer sur de nombreux nids de la population corrige ce biais. <b>Générateur pseudo-aléatoire</b> : xoshiro128** (Blackman et Vigna, 2018), celui de la page « Génération de juvéniles artificiels », initialisé à partir d'une graine de 32 bits, nouvelle à chaque estimation sauf si l'on en impose une ; la même graine et les mêmes réglages redonnent exactement les mêmes résultats. <b>Partitions</b> : tirage uniforme par la récurrence p(n, k) = p(n − 1, k − 1) + p(n − k, k) du nombre de partitions de n en k parts (suite A008284 de l'OEIS). <b>Validation</b> : une programmation indépendante redonne les mêmes distributions et les mêmes décisions ; le dénombrement des partitions est conforme à l'OEIS et leur tirage, uniforme.</p>
+  <p class="note" style="margin:0">Proposition de <b>Pierre Duchesne</b>. <b>Allèle mâle</b> : à chaque locus, pour chaque juvénile, l'allèle transmis par un mâle se déduit du génotype de la femelle : c'est l'allèle du juvénile qui ne vient pas d'elle. Si le juvénile a le génotype de la femelle hétérozygote, l'allèle mâle est le plus fréquent de ses deux allèles (à fréquence égale, le plus petit). S'il ne porte aucun allèle de la femelle (erreur de génotypage, ou juvénile d'une autre femelle), ou si son génotype manque, il n'a pas d'allèle mâle à ce locus (« aucun »). <b>Statistique MD</b> : à chaque locus, le nombre d'allèles mâles distincts ; MD est leur moyenne sur les locus analysés (femelle connue et au moins un allèle mâle). Elle augmente avec le nombre de mâles. <b>Hypothèses</b> : pour k = 1, 2, 3… mâles, de nombreux échantillons artificiels donnent la distribution de MD. Chaque échantillon : k mâles dont les deux allèles, à chaque locus, sont tirés selon les fréquences alléliques ; une répartition des juvéniles entre les k mâles, tirée au hasard parmi toutes les partitions possibles (par exemple, pour 20 juvéniles et 2 mâles : 10 + 10, 9 + 11… 1 + 19, chacune avec la même probabilité), les juvéniles étant attribués au hasard aux mâles ; puis chaque juvénile reçoit un allèle de la femelle et un de son père, chacun avec probabilité 1/2 (Mendel). L'échantillon artificiel a le même nombre de juvéniles que le nid ; une case sans allèle mâle dans le nid (génotype manquant ou incompatible) reste vide dans l'échantillon artificiel. MD y est calculée exactement comme pour le nid. <b>Estimation</b> (un intervalle) : pour chaque hypothèse, la p-valeur à droite est la proportion des valeurs simulées égales ou supérieures à la MD observée, la p-valeur à gauche, la proportion des valeurs égales ou inférieures. La borne inférieure est la première hypothèse dont la p-valeur à droite atteint le seuil (0,05) : les hypothèses précédentes donnent trop peu d'allèles mâles distincts. On poursuit tant que la p-valeur à gauche reste supérieure au seuil ; la borne supérieure est la dernière hypothèse dans ce cas : les suivantes donnent trop d'allèles mâles distincts. Si le nombre maximal de mâles examinés est atteint avant, l'intervalle est indiqué « ou plus ». <b>Fréquences alléliques</b> : comptées sur tous les génotypes non manquants des fichiers de référence, ou, à défaut, des juvéniles du nid. Estimées sur le seul nid, elles surreprésentent les allèles de la femelle et des mâles du nid : les mâles artificiels se ressemblent alors trop, et le nombre de mâles tend à être surestimé. Les estimer sur de nombreux nids de la population corrige ce biais. <b>Générateur pseudo-aléatoire</b> : xoshiro128** (Blackman et Vigna, 2018), celui de la page « Génération de juvéniles artificiels », initialisé à partir d'une graine de 32 bits, nouvelle à chaque estimation sauf si l'on en impose une ; la même graine et les mêmes réglages redonnent exactement les mêmes résultats. <b>Partitions</b> : tirage uniforme par la récurrence p(n, k) = p(n − 1, k − 1) + p(n − k, k) du nombre de partitions de n en k parts (suite A008284 de l'OEIS). <b>Simulateur</b> : nids artificiels de 1, 2, 3… mâles, construits comme les échantillons artificiels ci-dessus (partition tirée uniformément), puis analysés comme le nid. <b>Validation</b> : une programmation indépendante redonne les mêmes distributions, les mêmes intervalles et les mêmes nids artificiels ; le dénombrement des partitions est conforme à l'OEIS et leur tirage, uniforme.</p>
 </div>
 
 <footer id="foot"></footer>
@@ -97,7 +113,7 @@ function nf(x,d){return x.toFixed(d).replace('.',',');}
 /*__LECTURE__*/
 // NID : {label, loci, juveniles:[{id, genos}]} ; FEM : {label, loci, liste:[{id, genos}]} ; REF : {label, loci, genotypes} ou null
 var NID=null,FEM=null,REF=null,LISTE=[],RES=null,ARRET=false;
-function effacer(){RES=null;$("res").innerHTML='';status('');}
+function effacer(){RES=null;$("res").innerHTML='';status('');if(typeof SIM!=='undefined'){SIM=null;$("resSim").innerHTML='';statusSim('');}}
 
 // ---------- juvéniles ----------
 function maxManquants(){var v=$("maxManq").value.trim();if(v==='')return Infinity;var n=Math.round(+v);return isFinite(n)&&n>=0?n:5;}
@@ -138,19 +154,22 @@ function verifier(){if(!NID)return;
 
 // ---------- estimation ----------
 function nouvelleGraine(){var a=new Uint32Array(1);(window.crypto||window.msCrypto).getRandomValues(a);return a[0];}
-function lancer(){
-  if(!NID){status('Chargez d\'abord les juvéniles du nid.',true);return;}if(!FEM){status('Chargez d\'abord le génotype de la femelle.',true);return;}
-  try{var f=femelle(),ref=refAlignee();}catch(e){status('Erreur : '+e.message,true);return;}
-  var N=+$("nsim").value;if(!($("nsim").value.trim()!==''&&Number.isInteger(N)&&N>=100&&N<=1000000)){status('Le nombre de simulations doit être un entier de 100 à 1 000 000.',true);return;}
-  var s=+$("seuil").value.trim().replace(',','.');if(!($("seuil").value.trim()!==''&&s>0&&s<1)){status('Le seuil doit être un nombre entre 0 et 1 (par exemple 0,05).',true);return;}
-  var K=+$("kmax").value;if(!(Number.isInteger(K)&&K>=1&&K<=100)){status('Le nombre maximal de mâles doit être un entier de 1 à 100.',true);return;}
-  var v=$("graine").value.trim(),g;
-  if(v===''){g=nouvelleGraine();}else if(/^\d+$/.test(v)&&+v<=4294967295){g=+v;}else{status('La graine doit être un entier de 0 à 4 294 967 295, ou rester vide.',true);return;}
-  var J=retenus().r;if(!J.length){status('Aucun juvénile retenu.',true);return;}
-  var S=Males.creerAnalyse(J.map(function(j){return j.genos;}),f.genos,{N:N,seuil:s,kmax:K,graine:g,ref:ref});
-  var vides=S.O.analyses.filter(function(l){return !S.O.freqs[l].total;});
-  if(vides.length){status('Aucun allèle dans les fichiers de référence au locus '+vides.map(function(l){return NID.loci[l];}).join(', ')+'.',true);return;}
-  if(!S.O.analyses.length){status('Aucun locus analysable : la femelle est inconnue à tous les locus, ou aucun juvénile ne porte un de ses allèles.',true);return;}
+// Réglages communs à l'estimation et au simulateur ; message d'erreur dans la zone indiquée, ou null.
+function lireGraine(id,err){var v=$(id).value.trim();if(v==='')return nouvelleGraine();if(/^\d+$/.test(v)&&+v<=4294967295)return +v;err('La graine doit être un entier de 0 à 4 294 967 295, ou rester vide.');return null;}
+function reglages(err){
+  if(!NID){err('Chargez d\'abord les juvéniles du nid.');return null;}if(!FEM){err('Chargez d\'abord le génotype de la femelle.');return null;}
+  try{var f=femelle(),ref=refAlignee();}catch(e){err('Erreur : '+e.message);return null;}
+  var N=+$("nsim").value;if(!($("nsim").value.trim()!==''&&Number.isInteger(N)&&N>=100&&N<=1000000)){err('Le nombre de simulations doit être un entier de 100 à 1 000 000.');return null;}
+  var s=+$("seuil").value.trim().replace(',','.');if(!($("seuil").value.trim()!==''&&s>0&&s<1)){err('Le seuil doit être un nombre entre 0 et 1 (par exemple 0,05).');return null;}
+  var K=+$("kmax").value;if(!(Number.isInteger(K)&&K>=1&&K<=100)){err('Le nombre maximal de mâles examinés doit être un entier de 1 à 100.');return null;}
+  var J=retenus().r;if(!J.length){err('Aucun juvénile retenu.');return null;}
+  var O=Males.observer(J.map(function(j){return j.genos;}),f.genos,ref);
+  var vides=O.analyses.filter(function(l){return !O.freqs[l].total;});
+  if(vides.length){err('Aucun allèle dans les fichiers de référence au locus '+vides.map(function(l){return NID.loci[l];}).join(', ')+'.');return null;}
+  if(!O.analyses.length){err('Aucun locus analysable : la femelle est inconnue à tous les locus, ou aucun juvénile ne porte un de ses allèles.');return null;}
+  return {f:f,ref:ref,N:N,seuil:s,kmax:K,J:J};}
+function lancer(){var err=function(m){status(m,true);},r=reglages(err);if(!r)return;var g=lireGraine("graine",err);if(g===null)return;
+  var f=r.f,J=r.J,S=Males.creerAnalyse(J.map(function(j){return j.genos;}),f.genos,{N:r.N,seuil:r.seuil,kmax:r.kmax,graine:g,ref:r.ref});
   S.date=new Date();S.juv=J.map(function(j){return j.genos;});S.ids=J.map(function(j){return j.id;});S.nomFemelle=f.id;S.loci=NID.loci;S.refLabel=REF?REF.label:null;S.nidLabel=NID.label;RES=S;ARRET=false;
   $("go").disabled=true;$("stop").disabled=false;
   (function lot(){Males.avancerAnalyse(S,1000);status('Hypothèse de '+S.k+' mâle'+(S.k>1?'s':'')+' : '+S.fait+' simulations sur '+S.N+'…');
@@ -167,18 +186,21 @@ function histogrammes(S){var O=S.O,LA=O.analyses.length,H=S.hyp.filter(function(
     var ax='<line class="ax" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph)+'"/>';
     for(var t=lo;t<=hi;t+=pas)ax+='<text x="'+X(t).toFixed(1)+'" y="'+(Hh-8)+'" text-anchor="middle">'+nf(t/LA,2)+'</text>';
     ty.forEach(function(p){ax+='<text x="'+(ml-6)+'" y="'+(Y(p)+3.5).toFixed(1)+'" text-anchor="end">'+nf(100*p,1)+' %</text>';});
-    return '<div class="histo"><p class="t">'+h.k+' mâle'+(h.k>1?'s':'')+' — proportion ≥ observée : '+nf(h.p,4)+(h.acceptee?' <span class="ok">retenue</span>':' <span class="non">rejetée</span>')+'</p>'+
+    return '<div class="histo"><p class="t">'+h.k+' mâle'+(h.k>1?'s':'')+' — p-valeur à droite : '+nf(h.p,4)+' ; à gauche : '+nf(h.pg,4)+' — '+decision(h)+'</p>'+
       '<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Distribution de MD simulée sous l\'hypothèse de '+h.k+' mâle(s)">'+ax+b+
       '<circle class="obs" cx="'+X(O.total).toFixed(1)+'" cy="'+(mt+ph)+'" r="5.5"><title>MD observée : '+nf(O.md,3)+'</title></circle></svg></div>';}).join('')+
     '<p class="legende"><i></i>MD observée<s></s>valeurs simulées égales ou supérieures à l\'observée</p>';}
 
+function decision(h){return h.dans?'<span class="ok">dans l\'intervalle</span>':'<span class="non">rejetée '+(h.droite?'(à gauche : trop de mâles)':'(à droite : trop peu de mâles)')+'</span>';}
 function afficher(){
   var S=RES,O=S.O,d=S.date,L=S.loci,LA=O.analyses.length;$("stamp").textContent='Exécuté le '+d.toLocaleDateString('fr-CA')+' à '+d.toLocaleTimeString('fr-CA');
   var fin=S.hyp.filter(function(h){return h.p!==undefined;});
-  var h='<p class="verdict">'+(S.retenue?'Nombre estimé de mâles géniteurs : <b>'+S.retenue+'</b>':fin.length&&S.fini?'Toutes les hypothèses de 1 à '+S.kmax+' mâle'+(S.kmax>1?'s':'')+' sont rejetées : <b>plus de '+S.kmax+'</b>':'Estimation interrompue')+'</p>';
+  var h='<p class="verdict">'+(S.fini?'Nombre estimé de mâles géniteurs : <b>'+Males.intervalle(S)+'</b>':'Estimation interrompue')+'</p>';
+  if(S.fini&&S.basse!==null&&S.haute===null)h+='<p class="note" style="margin:0 0 6px">'+(S.basse===1?'La MD observée est trop petite même pour un seul mâle (p-valeur à gauche sous le seuil) : vérifiez le génotype de la femelle et les données.':'La MD observée est trop grande pour '+(S.basse-1)+' mâle'+(S.basse>2?'s':'')+' et trop petite pour '+S.basse+' : aucune hypothèse n\'est compatible des deux côtés.')+'</p>';
+  if(S.fini&&S.ouvert)h+='<p class="note" style="margin:0 0 6px">Le nombre maximal de mâles examinés ('+S.kmax+') est atteint sans que la p-valeur à gauche tombe au seuil : la borne supérieure pourrait être plus grande.</p>';
   h+='<p style="margin:4px 0 8px">MD observée : <b>'+nf(O.md,3)+'</b> <span class="note">('+O.total+' allèles mâles distincts sur '+LA+' locus ; '+O.n+' juvéniles)</span> — graine : <span class="graine">'+S.graine+'</span> ; '+S.N+' simulations par hypothèse ; seuil '+nf(S.seuil,3).replace(/0+$/,'')+'.</p>';
-  h+='<p class="tag" style="margin:14px 0 6px">Hypothèses</p><div class="scroll"><table class="res" style="width:auto;min-width:60%"><thead><tr><th class="num">Mâles</th><th class="num">MD moyenne simulée</th><th class="num">Proportion ≥ observée</th><th>Décision</th></tr></thead><tbody>'+
-    fin.map(function(x){return '<tr><td class="num">'+x.k+'</td><td class="num">'+nf(x.moyenne,3)+'</td><td class="num">'+nf(x.p,4)+'</td><td>'+(x.acceptee?'<span class="ok">retenue</span>':'<span class="non">rejetée</span>')+'</td></tr>';}).join('')+'</tbody></table></div>';
+  h+='<p class="tag" style="margin:14px 0 6px">Hypothèses</p><div class="scroll"><table class="res" style="width:auto;min-width:60%"><thead><tr><th class="num">Mâles</th><th class="num">MD moyenne simulée</th><th class="num">p-valeur à droite (≥ observée)</th><th class="num">p-valeur à gauche (≤ observée)</th><th>Décision</th></tr></thead><tbody>'+
+    fin.map(function(x){return '<tr><td class="num">'+x.k+'</td><td class="num">'+nf(x.moyenne,3)+'</td><td class="num">'+nf(x.p,4)+'</td><td class="num">'+nf(x.pg,4)+'</td><td>'+decision(x)+'</td></tr>';}).join('')+'</tbody></table></div>';
   h+=histogrammes(S);
   h+='<p class="tag" style="margin:18px 0 6px">Allèles mâles du nid, locus par locus</p><div class="scroll"><table class="res"><thead><tr><th>Locus</th><th>Femelle</th><th class="num">Juvéniles avec allèle mâle</th><th class="num">Manquants</th><th class="num">Incompatibles</th><th class="num">Allèles mâles distincts</th><th>Allèles mâles</th></tr></thead><tbody>'+
     O.locus.map(function(x){return '<tr><td>'+esc(L[x.locus])+'</td><td class="males">'+gs(x.femelle)+'</td>'+(x.analyse?'<td class="num">'+x.utilises+'</td><td class="num">'+x.manquants+'</td><td class="num">'+x.incompatibles+'</td><td class="num"><b>'+x.distincts.length+'</b></td><td class="males">'+x.distincts.join(' · ')+'</td>':'<td colspan="5" class="note">exclu ('+(x.femelle?'aucun allèle mâle déterminé':'femelle inconnue')+')</td>')+'</tr>';}).join('')+'</tbody></table></div>';
@@ -186,6 +208,25 @@ function afficher(){
   if(incs.length)h+='<p class="note" style="margin:8px 0 0">Juvéniles incompatibles avec la femelle (aucun de ses allèles), non comptés à ces locus : '+esc(incs.join(', '))+'.</p>';
   $("res").innerHTML=h;
   $("foot").innerHTML='Nid : '+esc(S.nidLabel)+' ; femelle : '+esc(S.nomFemelle)+' ; fréquences alléliques : '+(S.refLabel?'fichiers de référence ('+esc(S.refLabel)+')':'juvéniles du nid')+'. Calcul entièrement dans le navigateur : aucun fichier n\'est envoyé sur un serveur.';}
+
+// ---------- simulateur ----------
+var SIM=null,ARRETSIM=false;
+function statusSim(msg,err){var el=$("simStatus");el.textContent=msg;el.className='note'+(err?' err':'');}
+function lancerSim(){var err=function(m){statusSim(m,true);},r=reglages(err);if(!r)return;
+  var K=+$("kmaxSim").value;if(!(Number.isInteger(K)&&K>=1&&K<=50)){err('Le nombre maximal de mâles simulés doit être un entier de 1 à 50.');return;}
+  var R=+$("repSim").value;if(!(Number.isInteger(R)&&R>=1&&R<=100)){err('Le nombre de nids artificiels doit être un entier de 1 à 100.');return;}
+  var g=lireGraine("graineSim",err);if(g===null)return;
+  var V=Males.creerValidation(r.J.map(function(j){return j.genos;}),r.f.genos,{N:r.N,seuil:r.seuil,kmax:r.kmax,kmaxSim:K,R:R,graine:g,ref:r.ref});
+  V.refLabel=REF?REF.label:null;V.n=r.J.length;SIM=V;ARRETSIM=false;$("resSim").innerHTML='';$("goSim").disabled=true;$("stopSim").disabled=false;
+  (function lot(){Males.avancerValidation(V,1000);var c=V.cour;statusSim('Nid artificiel '+(V.i+1)+' sur '+V.file.length+(c?' ('+c.k+' mâle'+(c.k>1?'s':'')+') : hypothèse de '+c.S.k+' mâle'+(c.S.k>1?'s':'')+'…':'…'));
+    if(!V.fini&&!ARRETSIM){setTimeout(lot,0);return;}
+    $("goSim").disabled=false;$("stopSim").disabled=true;afficherSim();
+    statusSim((V.fini?'Simulateur terminé':'Arrêté après '+V.nids.length+' nid'+(V.nids.length>1?'s':''))+' (graine '+V.opts.graine+').');})();}
+function afficherSim(){var V=SIM,o=V.opts,par={};V.nids.forEach(function(x){(par[x.k]=par[x.k]||[]).push(x.texte);});
+  var h='<p style="margin:12px 0 8px">Graine : <span class="graine">'+o.graine+'</span> ; '+V.n+' juvéniles par nid artificiel ; fréquences : '+(V.refLabel?'fichiers de référence':'juvéniles du nid')+' ; '+o.N+' simulations par hypothèse ; seuil '+nf(o.seuil,3).replace(/0+$/,'')+' ; au plus '+o.kmax+' mâles examinés.</p>';
+  h+='<div class="scroll"><table class="res" style="width:auto;min-width:50%"><thead><tr><th class="num">Nombre réel de mâles</th><th>Intervalle des estimations</th></tr></thead><tbody>'+
+    Object.keys(par).map(function(k){return '<tr><td class="num">'+k+'</td><td>'+par[k].map(esc).join(' ; ')+'</td></tr>';}).join('')+'</tbody></table></div>';
+  $("resSim").innerHTML=h;}
 
 (function init(){
   $("ajoutJ").addEventListener('click',function(){$("upJ").click();});
@@ -205,6 +246,8 @@ function afficher(){
   $("exemple").addEventListener('click',function(){LISTE=[];afficherListe();REF=null;$("refInfo").textContent='';nidExemple();femExemple();status('Exemple rétabli.');});
   $("go").addEventListener('click',lancer);
   $("stop").addEventListener('click',function(){ARRET=true;});
+  $("goSim").addEventListener('click',lancerSim);
+  $("stopSim").addEventListener('click',function(){ARRETSIM=true;});
   afficherListe();nidExemple();femExemple();
 })();
 </script>

@@ -45,4 +45,7 @@ Vérification (`validation/`) :
 
 Construction : `python3 construire.py` produit `index.html` (styles et lecture des fichiers repris de
 `../combinaisons/gabarit.html`) et `validation/exemple.json` (nid 2021-05 de l'exemple Maple Grise ; femelle Grise
-reconstituée par la page « Reconstitution d'une femelle »).
+reconstituée par la page « Reconstitution d'une femelle »). La référence de l'exemple
+(`validation/reference-exemple.json`, demande de P. Duchesne) donne les fréquences alléliques des 23 nids de
+N. Tessier (293 juvéniles) sous forme de comptes d'allèles seulement : aucun génotype individuel n'est publié. La page
+les change en génotypes fictifs aux mêmes comptes, ce qui donne exactement les mêmes calculs.

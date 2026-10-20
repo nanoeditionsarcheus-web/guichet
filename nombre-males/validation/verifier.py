@@ -129,6 +129,20 @@ if __name__ == "__main__":
     # Fréquences de référence pour l'essai : les fichiers Blanche, Rose et Turquoise de P. Duchesne (autres nids)
     R = D.parent.parent / "reconstitution-femelle/validation/jeux"
     ref = [g for n in ["Blanche", "Rose", "Turquoise"] for g in lire(R / n / (n + "-FLOCK.csv"))]
+    # Référence de l'exemple : comptes d'allèles des 23 nids ; génotypes fictifs formés ici autrement que dans la page
+    # (chaque allèle apparié avec lui-même, puis les restes impairs entre eux) : seuls les comptes importent.
+    def genos_de_comptes(comptes):
+        cols = []
+        for c in comptes:
+            g, restes = [], []
+            for a, m in sorted(c.items(), key=lambda t: -int(t[0])):
+                g += [[int(a), int(a)]] * (m // 2)
+                if m % 2: restes.append(int(a))
+            g += [sorted(restes[i:i + 2]) for i in range(0, len(restes), 2)]
+            cols.append(g)
+        n = max(len(c) for c in cols)
+        return [[c[i] if i < len(c) else None for c in cols] for i in range(n)]
+    ref_nids = genos_de_comptes(ex["reference"]["comptes"])
     # Cas d'essai synthétique : femelle homozygote, hétérozygote, inconnue ; juvéniles manquants, incompatibles ;
     # égalité de fréquence entre les deux allèles de la femelle.
     juv2 = [[[1, 2], [5, 6], [9, 9]], [[1, 1], [5, 6], [9, 10]], [[2, 3], None, [9, 11]], [[3, 4], [6, 7], None],
@@ -137,6 +151,8 @@ if __name__ == "__main__":
     attendu = {"partitions": {f"{n},{k}": p(n, k) for n in range(1, 41) for k in range(1, n + 1)},
                "cas": [dict(nom="exemple", graine=g, N=N, seuil=0.05, kmax=kx, **analyse(juv, fem, N, 0.05, kx, g))
                        for g, N, kx in [(12345, 2000, 10), (2718281828, 500, 3)]] +
+                      [dict(nom="exemple-nids", graine=12345, N=2000, seuil=0.05, kmax=10,
+                            **analyse(juv, fem, 2000, 0.05, 10, 12345, ref=ref_nids))] +
                       [dict(nom="exemple-reference", reference=["Blanche", "Rose", "Turquoise"], graine=99, N=1000, seuil=0.05, kmax=10,
                             **analyse(juv, fem, 1000, 0.05, 10, 99, ref=ref))] +
                       [dict(nom="synthetique", juv=juv2, femelle=fem2, graine=7, N=3000, seuil=0.05, kmax=7,

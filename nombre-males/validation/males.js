@@ -114,6 +114,12 @@ function avancerValidation(V,lot){var o=V.opts;
       hyp:S.hyp.map(function(h){return {k:h.k,ge:h.ge,le:h.le};})});V.cour=null;V.i++;if(V.i>=V.file.length)V.fini=true;}}
   return V;}
 
-var api={alleleMale:alleleMale,observer:observer,tablePartitions:tablePartitions,tirerPartition:tirerPartition,simulerUne:simulerUne,creerAnalyse:creerAnalyse,avancerAnalyse:avancerAnalyse,intervalle:intervalle,nidArtificiel:nidArtificiel,creerValidation:creerValidation,avancerValidation:avancerValidation};
+// Fréquences de référence données par leurs seuls comptes d'allèles (comptes[l] = {allèle: nombre}) : génotypes fictifs
+// qui ont exactement ces comptes (allèles triés, pris deux à deux), pour servir de référence. Seuls les comptes importent.
+function genotypesDeComptes(comptes){var cols=comptes.map(function(c){var t=[];Object.keys(c).map(Number).sort(function(a,b){return a-b;}).forEach(function(a){for(var i=0;i<c[a];i++)t.push(a);});
+    var g=[];for(var i=0;i+1<t.length;i+=2)g.push([t[i],t[i+1]]);return g;}),n=Math.max.apply(null,cols.map(function(c){return c.length;})),out=[];
+  for(var i=0;i<n;i++)out.push(cols.map(function(c){return c[i]||null;}));return out;}
+
+var api={genotypesDeComptes:genotypesDeComptes,alleleMale:alleleMale,observer:observer,tablePartitions:tablePartitions,tirerPartition:tirerPartition,simulerUne:simulerUne,creerAnalyse:creerAnalyse,avancerAnalyse:avancerAnalyse,intervalle:intervalle,nidArtificiel:nidArtificiel,creerValidation:creerValidation,avancerValidation:avancerValidation};
 if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.Males=api;
 })(this);

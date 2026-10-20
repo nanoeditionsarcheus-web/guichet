@@ -1,5 +1,5 @@
 // Test de la page (Chromium/Playwright). XLSX_JS : chemin de xlsx.full.min.js 0.18.5 (la page le charge en ligne).
-// 1) exemple, graine 12345, 2000 simulations : distributions et décision identiques au calcul Python (attendu.json) ;
+// 1) exemple (référence : comptes d'allèles des 23 nids), graine 12345 : identique au calcul Python (attendu.json) ;
 // 2) fichiers de référence (Blanche, Rose, Turquoise), graine 99 : identique à Python ;
 // 3) femelle lue dans un fichier à allèles collés de deux femelles (choix dans la liste) ; locus inconnu exclu ;
 // 4) juvéniles téléversés (.xls) ; valeurs invalides refusées ; bouton « Arrêter » ; aucune erreur JS.
@@ -16,7 +16,8 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  const comparer=async c=>{const r=await pg.evaluate(()=>({total:RES.O.total,basse:RES.basse,haute:RES.haute,ouvert:RES.ouvert,hyp:RES.hyp.map(h=>{const d={};h.dist.forEach((v,t)=>{if(v)d[t]=v;});return {k:h.k,dist:d,ge:h.ge,le:h.le};})}));
    return r.total===c.total&&r.basse===c.basse&&r.haute===c.haute&&r.ouvert===c.ouvert&&JSON.stringify(r.hyp)===JSON.stringify(c.hyp.map(h=>({k:h.k,dist:h.dist,ge:h.ge,le:h.le})));};
  // 1
- let c=A.cas[0];await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'exemple, graine '+c.graine+' : identique au calcul Python — '+(await pg.textContent('.verdict')));
+ const ri=await pg.textContent('#listeR');ok(/23 nids/.test(ri),'référence de l\'exemple : '+ri);
+ let c=A.cas.find(x=>x.nom==='exemple-nids');await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'exemple (référence des 23 nids), graine '+c.graine+' : identique au calcul Python — '+(await pg.textContent('.verdict')));
  const rows=await pg.$$eval('#res table',t=>t[0].querySelectorAll('tbody tr').length);const svg=await pg.$$eval('.histo svg',s=>s.length);
  const av=await pg.evaluate(()=>{const c=document.getElementById('ajoutR').closest('.card'),a=c.querySelector('.avert');return !!a&&!!(a.compareDocumentPosition(document.getElementById('ajoutR'))&Node.DOCUMENT_POSITION_FOLLOWING);});
  ok(av,'avertissement sur les fréquences placé avant le choix des fichiers de référence');
@@ -26,7 +27,7 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  c=A.cas.find(x=>x.nom==='exemple-reference');await pg.setInputFiles('#upR',c.reference.map(n=>path.join(J,n,n+'-FLOCK.csv')));await pg.waitForFunction(()=>REF);
  await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'fichiers de référence, graine '+c.graine+' : identique au calcul Python — '+(await pg.textContent('.verdict')));
  ok(/fichiers de référence/.test(await pg.textContent('#foot')),'le pied de page indique la source des fréquences');
- await pg.click('#viderR');
+ await pg.click('#viderR');await pg.waitForFunction(()=>REF&&/23 nids/.test(REF.label));ok(true,'liste vidée : retour à la référence de l\'exemple');
  // 3 femelle à allèles collés, deux femelles ; la seconde est la bonne, avec un locus inconnu
  const col=g=>g?String(g[0]).padStart(3,'0')+String(g[1]).padStart(3,'0'):'0';const f2=ex.femelle.map((g,l)=>l===3?null:g);
  const wb=X.utils.book_new();X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet([['Femelle'].concat(ex.loci),['autre'].concat(ex.femelle.map(g=>col([g[0],g[0]]))),['bonne'].concat(f2.map(col))]),'F');X.writeFile(wb,path.join(T,'femelles.xls'),{bookType:'biff8'});
@@ -37,8 +38,9 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  // 4 juvéniles téléversés (.xls FLOCK) ; un juvénile très incomplet écarté
  const jr=[['SPEC ID'].concat(...ex.loci.map(l=>[l,'']))];ex.juveniles.forEach((g,i)=>jr.push([ex.ids[i]].concat(...g.map(x=>x||[0,0]))));jr.push(['incomplet'].concat(...ex.loci.map((l,k)=>k<4?[268,268]:[0,0])));
  const wj=X.utils.book_new();X.utils.book_append_sheet(wj,X.utils.aoa_to_sheet(jr),'FLOCK');X.writeFile(wj,path.join(T,'nid.xls'),{bookType:'biff8'});
+ await pg.click('#exemple');await pg.waitForFunction(()=>NID.label===EXAMPLE.label&&FEM.label==='exemple');
  await pg.setInputFiles('#upJ',path.join(T,'nid.xls'));await pg.waitForFunction(()=>NID&&NID.label.indexOf('nid.xls')>=0);const ji=await pg.textContent('#juvInfo');ok(/incomplet/.test(ji)&&/21 juvéniles retenus/.test(ji),'juvéniles téléversés : '+ji);
- await pg.click('#exemple');await pg.waitForFunction(()=>NID.label===EXAMPLE.label);c=A.cas[1];await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'retour à l\'exemple, graine '+c.graine+' : identique au calcul Python (aucune hypothèse retenue jusqu\'à '+c.kmax+')');
+ await pg.waitForFunction(()=>REF===null);c=A.cas[1];await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'mêmes juvéniles téléversés, sans référence (fréquences du nid), graine '+c.graine+' : identique au calcul Python (aucune hypothèse retenue jusqu\'à '+c.kmax+')');
  // simulateur de validation, mêmes nids artificiels et intervalles que Python
  {const v=A.validation.find(x=>x.nom==='exemple');await pg.fill('#nsim',String(v.N));await pg.fill('#seuil','0,05');await pg.fill('#kmax',String(v.kmax));await pg.fill('#kmaxSim',String(v.kmaxSim));await pg.fill('#repSim',String(v.R));await pg.fill('#graineSim',String(v.graine));
   await pg.click('#goSim');await pg.waitForFunction(()=>SIM&&SIM.fini&&!document.getElementById('goSim').disabled);

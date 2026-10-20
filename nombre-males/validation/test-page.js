@@ -13,11 +13,13 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  await pg.goto('file://'+path.join(V,'..','index.html'));await pg.waitForFunction(()=>NID&&FEM);
  const fini=()=>pg.waitForFunction(()=>RES&&!document.getElementById('go').disabled);
  const lancer=async(g,N,k)=>{await pg.fill('#graine',String(g));await pg.fill('#nsim',String(N));await pg.fill('#kmax',String(k));await pg.click('#go');await fini();};
- const comparer=async c=>{const r=await pg.evaluate(()=>({total:RES.O.total,retenue:RES.retenue,hyp:RES.hyp.map(h=>{const d={};h.dist.forEach((v,t)=>{if(v)d[t]=v;});return {k:h.k,dist:d,ge:h.ge};})}));
-   return r.total===c.total&&r.retenue===c.retenue&&JSON.stringify(r.hyp)===JSON.stringify(c.hyp.map(h=>({k:h.k,dist:h.dist,ge:h.ge})));};
+ const comparer=async c=>{const r=await pg.evaluate(()=>({total:RES.O.total,basse:RES.basse,haute:RES.haute,ouvert:RES.ouvert,hyp:RES.hyp.map(h=>{const d={};h.dist.forEach((v,t)=>{if(v)d[t]=v;});return {k:h.k,dist:d,ge:h.ge,le:h.le};})}));
+   return r.total===c.total&&r.basse===c.basse&&r.haute===c.haute&&r.ouvert===c.ouvert&&JSON.stringify(r.hyp)===JSON.stringify(c.hyp.map(h=>({k:h.k,dist:h.dist,ge:h.ge,le:h.le})));};
  // 1
  let c=A.cas[0];await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'exemple, graine '+c.graine+' : identique au calcul Python — '+(await pg.textContent('.verdict')));
  const rows=await pg.$$eval('#res table',t=>t[0].querySelectorAll('tbody tr').length);const svg=await pg.$$eval('.histo svg',s=>s.length);
+ const av=await pg.evaluate(()=>{const c=document.getElementById('ajoutR').closest('.card'),a=c.querySelector('.avert');return !!a&&!!(a.compareDocumentPosition(document.getElementById('ajoutR'))&Node.DOCUMENT_POSITION_FOLLOWING);});
+ ok(av,'avertissement sur les fréquences placé avant le choix des fichiers de référence');
  ok(rows===c.hyp.length&&svg===c.hyp.length,'tableau des hypothèses ('+rows+' lignes) et histogrammes ('+svg+')');
  if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
  // 2
@@ -37,6 +39,12 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  const wj=X.utils.book_new();X.utils.book_append_sheet(wj,X.utils.aoa_to_sheet(jr),'FLOCK');X.writeFile(wj,path.join(T,'nid.xls'),{bookType:'biff8'});
  await pg.setInputFiles('#upJ',path.join(T,'nid.xls'));await pg.waitForFunction(()=>NID&&NID.label.indexOf('nid.xls')>=0);const ji=await pg.textContent('#juvInfo');ok(/incomplet/.test(ji)&&/21 juvéniles retenus/.test(ji),'juvéniles téléversés : '+ji);
  await pg.click('#exemple');await pg.waitForFunction(()=>NID.label===EXAMPLE.label);c=A.cas[1];await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'retour à l\'exemple, graine '+c.graine+' : identique au calcul Python (aucune hypothèse retenue jusqu\'à '+c.kmax+')');
+ // simulateur de validation, mêmes nids artificiels et intervalles que Python
+ {const v=A.validation.find(x=>x.nom==='exemple');await pg.fill('#nsim',String(v.N));await pg.fill('#seuil','0,05');await pg.fill('#kmax',String(v.kmax));await pg.fill('#kmaxSim',String(v.kmaxSim));await pg.fill('#repSim',String(v.R));await pg.fill('#graineSim',String(v.graine));
+  await pg.click('#goSim');await pg.waitForFunction(()=>SIM&&SIM.fini&&!document.getElementById('goSim').disabled);
+  const js=await pg.evaluate(()=>SIM.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,hyp:x.hyp})));
+  const t=await pg.$$eval('#resSim tbody tr',r=>r.map(x=>[...x.cells].map(c=>c.textContent).join(' : ')));
+  ok(JSON.stringify(js)===JSON.stringify(v.nids)&&t.length===v.kmaxSim,'simulateur de la page = calcul Python ; tableau : '+t.join(' | '));}
  ok(/plus de 3/.test(await pg.textContent('.verdict')),'verdict « plus de 3 » : '+await pg.textContent('.verdict'));
  for(const [id,v] of [['#graine','abc'],['#nsim','50'],['#seuil','1,5'],['#kmax','0']]){await pg.evaluate(()=>{RES=null;});const avant={graine:'',nsim:'1000',seuil:'0,05',kmax:'5'};
    for(const [k,w] of Object.entries(avant))await pg.fill('#'+k,w);await pg.fill(id,v);await pg.click('#go');

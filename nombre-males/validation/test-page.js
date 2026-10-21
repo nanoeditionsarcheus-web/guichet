@@ -22,7 +22,18 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  const av=await pg.evaluate(()=>{const c=document.getElementById('ajoutR').closest('.card'),a=c.querySelector('.avert');return !!a&&!!(a.compareDocumentPosition(document.getElementById('ajoutR'))&Node.DOCUMENT_POSITION_FOLLOWING);});
  ok(av,'avertissement sur les fréquences placé avant le choix des fichiers de référence');
  ok(rows===c.hyp.length&&svg===c.hyp.length,'tableau des hypothèses ('+rows+' lignes) et histogrammes ('+svg+')');
- if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
+ ok(/Intervalle d'estimation du nombre de mâles géniteurs : 2 à 4/.test(await pg.textContent('#res'))&&/confiance d'environ 90 %/.test(await pg.textContent('#res')),'intitulé et niveau de confiance : '+await pg.textContent('.verdict'));
+ // GERUD dans l'estimation
+ await pg.check('#gerud');await lancer(c.graine,c.N,c.kmax);const vg=await pg.$$eval('.verdict',v=>v.map(x=>x.textContent));
+ ok(vg.length===2&&vg[1]==='Nombre minimal estimé de mâles par GERUD : '+A.gerud[0].min,'case GERUD cochée : '+vg.join(' / '));await pg.uncheck('#gerud');
+ // simulateur avec erreurs de génotypage et GERUD (référence de l'exemple) : identique à Python
+ {const v=A.validation.find(x=>x.nom==='erreurs-gerud');await pg.fill('#nsim',String(v.N));await pg.fill('#kmax',String(v.kmax));await pg.fill('#kmaxSim',String(v.kmaxSim));await pg.fill('#repSim',String(v.R));await pg.fill('#graineSim',String(v.graine));await pg.fill('#erreurSim','2');await pg.check('#gerudSim');
+  await pg.click('#goSim');await pg.waitForFunction(()=>SIM&&SIM.fini&&!document.getElementById('goSim').disabled);
+  const js=await pg.evaluate(()=>SIM.nids.map(x=>({k:x.k,graine:x.graine,basse:x.basse,haute:x.haute,dans:x.dans,gerud:x.gerud.min})));
+  const t=await pg.$$eval('#resSim tbody tr',r=>r.map(x=>[...x.cells].map(c=>c.textContent).join(' : ')));const th=await pg.$$eval('#resSim thead th',r=>r.length);
+  ok(JSON.stringify(js)===JSON.stringify(v.nids.map(x=>({k:x.k,graine:x.graine,basse:x.basse,haute:x.haute,dans:x.dans,gerud:x.gerud})))&&th===5,'simulateur, erreurs 2 % et GERUD = calcul Python ; tableau : '+t.join(' | '));
+  if(process.argv[2])await pg.screenshot({path:process.argv[2],fullPage:true});
+  await pg.fill('#erreurSim','0');await pg.uncheck('#gerudSim');}
  // 2
  c=A.cas.find(x=>x.nom==='exemple-reference');await pg.setInputFiles('#upR',c.reference.map(n=>path.join(J,n,n+'-FLOCK.csv')));await pg.waitForFunction(()=>REF);
  await lancer(c.graine,c.N,c.kmax);ok(await comparer(c),'fichiers de référence, graine '+c.graine+' : identique au calcul Python — '+(await pg.textContent('.verdict')));
@@ -44,10 +55,11 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  // simulateur de validation, mêmes nids artificiels et intervalles que Python
  {const v=A.validation.find(x=>x.nom==='exemple');await pg.fill('#nsim',String(v.N));await pg.fill('#seuil','0,05');await pg.fill('#kmax',String(v.kmax));await pg.fill('#kmaxSim',String(v.kmaxSim));await pg.fill('#repSim',String(v.R));await pg.fill('#graineSim',String(v.graine));
   await pg.click('#goSim');await pg.waitForFunction(()=>SIM&&SIM.fini&&!document.getElementById('goSim').disabled);
-  const js=await pg.evaluate(()=>SIM.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,hyp:x.hyp})));
+  const js=await pg.evaluate(()=>SIM.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,dans:x.dans,gerud:x.gerud,hyp:x.hyp})));
   const t=await pg.$$eval('#resSim tbody tr',r=>r.map(x=>[...x.cells].map(c=>c.textContent).join(' : ')));
   ok(JSON.stringify(js)===JSON.stringify(v.nids)&&t.length===v.kmaxSim,'simulateur de la page = calcul Python ; tableau : '+t.join(' | '));}
  ok(/plus de 3/.test(await pg.textContent('.verdict')),'verdict « plus de 3 » : '+await pg.textContent('.verdict'));
+ await pg.fill('#erreurSim','abc');await pg.click('#goSim');ok(/erreurs de génotypage/.test(await pg.textContent('#simStatus')),'refusé (taux d\'erreurs « abc ») : '+await pg.textContent('#simStatus'));await pg.fill('#erreurSim','0');
  for(const [id,v] of [['#graine','abc'],['#nsim','50'],['#seuil','1,5'],['#kmax','0']]){await pg.evaluate(()=>{RES=null;});const avant={graine:'',nsim:'1000',seuil:'0,05',kmax:'5'};
    for(const [k,w] of Object.entries(avant))await pg.fill('#'+k,w);await pg.fill(id,v);await pg.click('#go');
    const e=await pg.evaluate(()=>RES===null&&document.getElementById('upStatus').classList.contains('err'));ok(e,'refusé ('+id+' = « '+v+' ») : '+await pg.textContent('#upStatus'));}

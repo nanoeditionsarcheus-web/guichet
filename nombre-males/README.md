@@ -16,9 +16,20 @@ et des génotypes des juvéniles.
   est la première hypothèse dont la p-valeur à droite (proportion de MD simulées ≥ observée) atteint le seuil (0,05).
   On continue tant que la p-valeur à gauche (≤ observée) reste supérieure au seuil, et la borne supérieure est la
   dernière hypothèse dans ce cas. Si le nombre maximal examiné est atteint avant, l'intervalle est noté « ou plus ».
+- **Niveau de confiance** : chaque borne étant un test au seuil s, l'intervalle est présenté comme un intervalle de
+  confiance d'environ 1 − 2s (90 % pour s = 0,05).
+- **GERUD** (case à cocher, sections 4 et 5) : nombre minimal de pères, la mère étant connue (la quantité que calcule
+  GERUD, Jones 2001, 2005). La page fait elle-même la recherche exhaustive (le logiciel GERUD n'est pas appelé) :
+  allèles paternels possibles d'après la femelle (les deux quand le juvénile a son génotype hétérozygote), puis plus
+  petit nombre de pères à deux allèles par locus au plus entre lesquels répartir les juvéniles. Les cases manquantes
+  ou incompatibles n'imposent aucune contrainte. Au-delà d'un million d'essais pour un nombre de pères, la recherche
+  s'arrête et la page indique « ≥ k ».
+- **Erreurs de génotypage** (simulateur, proposition de P. Duchesne) : chaque allèle transmis est remplacé par son
+  voisin de gauche (probabilité taux/2) ou de droite (taux/2) dans la suite triée des allèles connus au locus.
 - **Simulateur** (section 5) : avec la même femelle, les mêmes fréquences et le même nombre de juvéniles (mêmes
   données manquantes), R nids artificiels de 1, 2, … mâles sont analysés par la méthode. Le résultat est un tableau
-  « nombre réel de mâles / intervalle des estimations ».
+  « nombre réel de mâles / intervalle des estimations / vraie valeur dans l'intervalle » (avec GERUD : nombres minimaux
+  et nombre de fois où ils égalent la vraie valeur).
 - **Fréquences alléliques** : sur des fichiers de référence (nombreux nids de la population) si l'usager en
   fournit, sinon sur les juvéniles du nid (description de la méthode). La page avertit, avant le choix des fichiers,
   qu'il vaut mieux fournir une référence. Voir la calibration ci-dessous.
@@ -30,7 +41,10 @@ Vérification (`validation/`) :
   séries de nids artificiels. Les cas couvrent l'exemple, des fichiers de référence et un
   cas synthétique avec femelle homozygote, locus inconnu, juvéniles manquants et incompatibles, et égalité de
   fréquences.
-- `test-lib.js` : distributions, p-valeurs (droite et gauche), intervalles et nids artificiels identiques à Python ; p(n,k) identique à Python et à l'OEIS ; tirage
+- `test-lib.js` : distributions, p-valeurs (droite et gauche), intervalles et nids artificiels (avec erreurs et
+  GERUD) identiques à Python. Le nombre minimal de pères est identique à une recherche Python différente, et à une
+  énumération de toutes les répartitions sur 40 petits nids. Les erreurs de génotypage ont les fréquences attendues
+  (un million de tirages) ; p(n,k) identique à Python et à l'OEIS ; tirage
   uniforme des partitions (khi-deux) ; calcul par lots identique.
 - `test-page.js` : page (mêmes résultats que Python, y compris le simulateur ; avertissement placé avant le choix
   des fichiers de référence ; référence, femelle à allèles collés choisie dans une liste,

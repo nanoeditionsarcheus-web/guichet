@@ -2,7 +2,8 @@
 
 Page proposée par Pierre Duchesne (19 et 20 octobre 2026) : estimer le nombre de mâles qui ont contribué aux juvéniles
 d'un nid, ou d'une collection de nids d'une même femelle, à partir du génotype de la femelle (génotypé ou reconstitué)
-et des génotypes des juvéniles.
+et des génotypes des juvéniles, par la méthode NAD (nombre d'allèles distincts) et, au choix, par le nombre minimal
+de mâles comme le logiciel GERUD.
 
 - **Allèle mâle** : à chaque locus, l'allèle du juvénile qui ne vient pas de la femelle ; si le juvénile a le
   génotype de la femelle hétérozygote, le plus fréquent des deux (égalité : le plus petit) ; « aucun » si le
@@ -17,19 +18,24 @@ et des génotypes des juvéniles.
   On continue tant que la p-valeur à gauche (≤ observée) reste supérieure au seuil, et la borne supérieure est la
   dernière hypothèse dans ce cas. Si le nombre maximal examiné est atteint avant, l'intervalle est noté « ou plus ».
 - **Niveau de confiance** : chaque borne étant un test au seuil s, l'intervalle est présenté comme un intervalle de
-  confiance d'environ 1 − 2s (90 % pour s = 0,05).
+  confiance d'environ 1 − (2 × s) (90 % pour s = 0,05).
 - **GERUD** (case à cocher, sections 4 et 5) : nombre minimal de pères, la mère étant connue (la quantité que calcule
   GERUD, Jones 2001, 2005). La page fait elle-même la recherche exhaustive (le logiciel GERUD n'est pas appelé) :
   allèles paternels possibles d'après la femelle (les deux quand le juvénile a son génotype hétérozygote), puis plus
   petit nombre de pères à deux allèles par locus au plus entre lesquels répartir les juvéniles. Les cases manquantes
-  ou incompatibles n'imposent aucune contrainte. Au-delà d'un million d'essais pour un nombre de pères, la recherche
-  s'arrête et la page indique « ≥ k ».
+  ou incompatibles n'imposent aucune contrainte. La recherche place d'abord le juvénile qui a le moins de pères
+  possibles, et abandonne une branche dès qu'un locus compte plus d'allèles paternels certains que les pères ne peuvent
+  en porter. Dans l'estimation du nid, elle tourne en arrière-plan (travailleur Web), sans limite, et « Arrêter »
+  l'interrompt. Dans le simulateur, elle s'arrête après 200 000 pas pour un même nombre de pères (`BUDGET_SIMULATEUR`).
+  Dans les deux cas, un arrêt donne « ≥ k ».
 - **Erreurs de génotypage** (simulateur, proposition de P. Duchesne) : chaque allèle transmis est remplacé par son
-  voisin de gauche (probabilité taux/2) ou de droite (taux/2) dans la suite triée des allèles connus au locus.
+  voisin de gauche (probabilité taux/2) ou de droite (taux/2) dans la suite triée des allèles connus au locus. Le taux
+  par défaut est de 0,5 %, une valeur atteignable mais exigeante. La page rappelle la nécessité d'un génotypage de
+  haute qualité.
 - **Simulateur** (section 5) : avec la même femelle, les mêmes fréquences et le même nombre de juvéniles (mêmes
   données manquantes), R nids artificiels de 1, 2, … mâles sont analysés par la méthode. Le résultat est un tableau
   « nombre réel de mâles / intervalle des estimations / vraie valeur dans l'intervalle » (avec GERUD : nombres minimaux
-  et nombre de fois où ils égalent la vraie valeur).
+  et nombre de fois où ils égalent le « vrai minimum », le même calcul sur le même nid sans erreurs de génotypage).
 - **Fréquences alléliques** : sur des fichiers de référence (nombreux nids de la population) si l'usager en
   fournit, sinon sur les juvéniles du nid (description de la méthode). La page avertit, avant le choix des fichiers,
   qu'il vaut mieux fournir une référence. Voir la calibration ci-dessous.

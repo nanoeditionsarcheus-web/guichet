@@ -35,7 +35,8 @@ de mâles comme le logiciel GERUD.
 - **Simulateur** (section 5) : avec la même femelle, les mêmes fréquences et le même nombre de juvéniles (mêmes
   données manquantes), R nids artificiels de 1, 2, … mâles sont analysés par la méthode. Le résultat est un tableau
   « nombre réel de mâles / intervalle des estimations / vraie valeur dans l'intervalle » (avec GERUD : nombres minimaux
-  et nombre de fois où ils égalent le « vrai minimum », le même calcul sur le même nid sans erreurs de génotypage).
+  et nombre de fois où ils égalent le « minimum sans erreur de génotypage », calculé par GERUD sur le même nid sans
+  simulation d'erreurs).
 - **Fréquences alléliques** : sur des fichiers de référence (nombreux nids de la population) si l'usager en
   fournit, sinon sur les juvéniles du nid (description de la méthode). La page avertit, avant le choix des fichiers,
   qu'il vaut mieux fournir une référence. Voir la calibration ci-dessous.

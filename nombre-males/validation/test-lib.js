@@ -29,9 +29,9 @@ for(const c of A.cas){const juv=c.juv||ex.juveniles,fem=c.femelle||ex.femelle,re
 for(const v of A.validation){const juv=v.nom==='synthetique'?A.cas.find(c=>c.nom==='synthetique').juv:ex.juveniles,fem=v.nom==='synthetique'?A.cas.find(c=>c.nom==='synthetique').femelle:ex.femelle;
   const ref=v.reference==='exemple'?refNids:v.reference?[].concat(...v.reference.map(n=>lire(path.join(R,n,n+'-FLOCK.csv')))):undefined,gerud=v.nids[0].gerud!==null;
   const W=M.creerValidation(juv,fem,{N:v.N,seuil:v.seuil,kmax:v.kmax,kmaxSim:v.kmaxSim,R:v.R,graine:v.graine,ref:ref,erreur:v.erreur||0,gerud:gerud});while(!W.fini)M.avancerValidation(W,250);
-  const js=W.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,dans:x.dans,gerud:x.gerud?(x.gerud.exact?x.gerud.min:'≥'+x.gerud.min):null,hyp:x.hyp}));
-  const py=v.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,dans:x.dans,gerud:x.gerud,hyp:x.hyp}));
-  ok(JSON.stringify(js)===JSON.stringify(py),'simulateur de validation, '+v.nom+(v.erreur?' (erreurs '+100*v.erreur+' %)':'')+' : '+v.nids.length+' nids artificiels, intervalles'+(gerud?' et nombres minimaux de pères':'')+' identiques — '+W.nids.map(x=>x.k+' → '+x.texte+(gerud?' / '+x.gerud.min:'')).join(' ; '));}
+  const js=W.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,dans:x.dans,gerud:x.gerud?(x.gerud.exact?x.gerud.min:'≥'+x.gerud.min):null,gerudVrai:x.gerudVrai?(x.gerudVrai.exact?x.gerudVrai.min:'≥'+x.gerudVrai.min):null,hyp:x.hyp}));
+  const py=v.nids.map(x=>({k:x.k,r:x.r,graine:x.graine,basse:x.basse,haute:x.haute,ouvert:x.ouvert,dans:x.dans,gerud:x.gerud,gerudVrai:x.gerudVrai,hyp:x.hyp}));
+  ok(JSON.stringify(js)===JSON.stringify(py),'simulateur de validation, '+v.nom+(v.erreur?' (erreurs '+100*v.erreur+' %)':'')+' : '+v.nids.length+' nids artificiels, intervalles'+(gerud?' et nombres minimaux de pères':'')+' identiques — '+W.nids.map(x=>x.k+' → '+x.texte+(gerud?' / '+x.gerud.min+(v.erreur?' (sans erreur '+x.gerudVrai.min+')':''):'')).join(' ; '));}
 // 3 ter) Nombre minimal de pères : exemple et 40 petits nids (contrôlés en Python par force brute)
 {let d=0;A.gerud.forEach(c=>{const r=M.minPeres(c.juv,c.femelle);if(!r.exact||r.min!==c.min)d++;});
  ok(d===0,'nombre minimal de pères : '+A.gerud.length+' nids, identique à Python (recherche différente ; force brute pour les petits nids) ; exemple : '+A.gerud[0].min);}

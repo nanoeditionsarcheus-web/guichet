@@ -148,7 +148,7 @@ def min_peres_brut(juv, fem):
             for i in range(len(p)): yield p[:i] + [[premier] + p[i]] + p[i + 1:]
     return min((len(p) for p in partitions(C) if all(faisable(g) for g in p)), default=0)
 
-def nid_artificiel(juv_nat, fem, freqs, k, u, e=0):
+def nid_artificiel(juv_nat, fem, freqs, k, u, e=0, sans_erreur=None):
     n, L = len(juv_nat), len(fem)
     males = [[(tirer(freqs[l], u()), tirer(freqs[l], u())) if fem[l] else None for l in range(L)] for _ in range(k)]
     parts = partition(n, k, u)
@@ -160,25 +160,26 @@ def nid_artificiel(juv_nat, fem, freqs, k, u, e=0):
     for pos, i in enumerate(perm): pere_de[i] = pere[pos]
     nid = []
     for i in range(n):
-        g = []
+        g, g0 = [], []
         for l in range(L):
-            if not juv_nat[i][l] or not fem[l]: g.append(None); continue
-            a = fem[l][0] if u() < 0.5 else fem[l][1]; a = erreur(a, freqs[l][0], e, u)
-            mg = males[pere_de[i]][l]; b = mg[0] if u() < 0.5 else mg[1]; b = erreur(b, freqs[l][0], e, u)
-            g.append(sorted([a, b]))
+            if not juv_nat[i][l] or not fem[l]: g.append(None); g0.append(None); continue
+            a0 = fem[l][0] if u() < 0.5 else fem[l][1]; a = erreur(a0, freqs[l][0], e, u)
+            mg = males[pere_de[i]][l]; b0 = mg[0] if u() < 0.5 else mg[1]; b = erreur(b0, freqs[l][0], e, u)
+            g.append(sorted([a, b])); g0.append(sorted([a0, b0]))
         nid.append(g)
+        if sans_erreur is not None: sans_erreur.append(g0)
     return nid
 
 def validation(juv_nat, fem, N, seuil, kmax, kmax_sim, R, graine, ref=None, e=0, gerud=False):
     u = uniforme(graine); freqs = frequences(ref if ref is not None else juv_nat, len(fem)); nids = []
     for k in range(1, min(kmax_sim, len(juv_nat)) + 1):
         for r in range(R):
-            J = nid_artificiel(juv_nat, fem, freqs, k, u, e); g = int(u() * 4294967296)
+            J0 = []; J = nid_artificiel(juv_nat, fem, freqs, k, u, e, J0); g = int(u() * 4294967296)
             a = analyse(J, fem, N, seuil, kmax, g, ref)
             b, h = a["basse"], a["haute"]
             dans = b is not None and h is not None and k >= b and (k <= h or a["ouvert"])
             nids.append(dict(k=k, r=r, graine=g, basse=a["basse"], haute=a["haute"], ouvert=a["ouvert"], dans=dans,
-                             gerud=min_peres(J, fem) if gerud else None,
+                             gerud=min_peres(J, fem) if gerud else None, gerudVrai=min_peres(J0, fem) if gerud else None,
                              hyp=[dict(k=h["k"], ge=h["ge"], le=h["le"]) for h in a["hyp"]]))
     return nids
 

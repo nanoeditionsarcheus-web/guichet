@@ -61,6 +61,7 @@ select.champ{width:auto;font-family:var(--sans)}
 <div class="card">
   <p class="tag">4. Estimation</p>
   <div class="controls" style="margin-bottom:10px"><label><input type="checkbox" id="gerud"> GERUD : estimer aussi le nombre minimal de mâles, comme le logiciel GERUD (voir la section Méthode)</label></div>
+  <div class="reading avert" id="avertGerud" style="display:none;margin:0 0 12px"><b>Le calcul de GERUD peut être long, et même très long</b>, surtout quand le nombre de mâles est élevé (explosion combinatoire). Dans le cas où GERUD atteint la limite de la patience de l'usager, le bouton « Arrêter » permet d'interrompre le calcul sans perdre le résultat déjà acquis. Ce résultat s'exprime sous la forme « ≥ k », où k est un minimum déjà établi.</div>
   <div class="controls">
     <label>Simulations par hypothèse : <input autocomplete="off" class="champ" type="number" id="nsim" min="100" max="1000000" step="1" value="10000"></label>
     <label>Seuil (de chaque côté) : <input autocomplete="off" class="champ" style="width:80px" type="text" id="seuil" value="0,05"></label>
@@ -78,6 +79,7 @@ select.champ{width:auto;font-family:var(--sans)}
   <p class="note" style="margin:-2px 0 12px">Avec la même femelle, les mêmes fréquences alléliques (fichiers de référence, sinon juvéniles du nid) et le même nombre de juvéniles que le nid (avec les mêmes données manquantes), la page produit des nids artificiels de 1, 2, 3… mâles, puis estime le nombre de mâles de chacun par la méthode NAD (et, si la case est cochée, par GERUD), avec les réglages de la section 4 (simulations par hypothèse, seuil, nombre maximal de mâles examinés).</p>
   <div class="reading avert" style="margin:0 0 12px"><b>Qualité du génotypage.</b> Un génotypage sans aucune erreur est rare. Or, même peu fréquentes, les erreurs créent de faux allèles paternels : si elles sont fréquentes, les estimations de NAD comme de GERUD seront probablement erronées de façon significative, le plus souvent par excès. Il est donc nécessaire de maintenir un haut standard de qualité de génotypage. Le taux proposé par défaut, 0,5 %, est atteignable mais exigeant ; le simulateur permet de voir l'effet d'autres taux sur ce nid.</div>
   <div class="controls" style="margin-bottom:10px"><label><input type="checkbox" id="gerudSim"> GERUD : pour chaque nid artificiel, estimer aussi le nombre minimal de mâles, comme le logiciel GERUD</label></div>
+  <div class="reading avert" id="avertGerudSim" style="display:none;margin:0 0 12px"><b>Le calcul de GERUD peut être long, et même très long</b>, surtout quand le nombre de mâles est élevé (explosion combinatoire). Dans le simulateur, pour chaque nid artificiel, la recherche s'arrête d'elle-même après 200 000 pas pour un même nombre de mâles ; le résultat déjà acquis s'exprime alors sous la forme « ≥ k », où k est un minimum déjà établi. Le bouton « Arrêter » interrompt le simulateur ; les nids déjà terminés restent affichés.</div>
   <div class="controls">
     <label>Erreurs de génotypage (%) : <input autocomplete="off" class="champ" style="width:70px" type="text" id="erreurSim" value="0,5"></label>
     <label>Nombre maximal de mâles simulés : <input autocomplete="off" class="champ" style="width:70px" type="number" id="kmaxSim" min="1" max="50" step="1" value="5"></label>
@@ -265,6 +267,8 @@ function afficherSim(){var V=SIM,o=V.opts,par={};V.nids.forEach(function(x){(par
     readFile(f).then(function(rows){var p=parseJuv(rows);if(!p.juveniles.length)throw new Error('aucun génotype lu.');poserFem({label:'« '+f.name+' »',loci:p.loci,liste:p.juveniles});})
       .catch(function(e){$("femInfo").textContent='Erreur dans « '+f.name+' » : '+(e&&e.message?e.message:e);$("femInfo").className='note err';});$("upF").value='';});
   $("choixF").addEventListener('change',majFem);
+  // Avertissement sur la durée de GERUD, affiché dès que la case est cochée (demande de P. Duchesne)
+  [["gerud","avertGerud"],["gerudSim","avertGerudSim"]].forEach(function(x){var maj=function(){$(x[1]).style.display=$(x[0]).checked?'':'none';};$(x[0]).addEventListener('change',maj);maj();});
   $("maxManq").addEventListener('change',function(){effacer();majJuv();});
   $("ajoutR").addEventListener('click',function(){$("upR").click();});
   $("upR").addEventListener('change',function(){[].slice.call($("upR").files).forEach(function(f){if(!LISTE.some(function(g){return g.name===f.name&&g.size===f.size;}))LISTE.push(f);});$("upR").value='';afficherListe();chargerRef();});

@@ -25,10 +25,11 @@ const J=path.join(V,'../../reconstitution-femelle/validation/jeux');
  ok(rows===c.hyp.length&&svg===c.hyp.length,'tableau des hypothèses ('+rows+' lignes) et histogrammes ('+svg+')');
  ok(/Intervalle d'estimation du nombre de mâles géniteurs par NAD : 2 à 4/.test(await pg.textContent('#res'))&&/confiance d'environ 90 %/.test(await pg.textContent('#res')),'intitulé et niveau de confiance : '+await pg.textContent('.verdict'));
  // GERUD dans l'estimation
- await pg.check('#gerud');await lancer(c.graine,c.N,c.kmax);await pg.waitForFunction(()=>RES&&RES.gerud&&!document.getElementById('go').disabled);const vg=await pg.$$eval('.verdict',v=>v.map(x=>x.textContent));
+ ok(!(await pg.isVisible('#avertGerud')),'avertissement GERUD caché tant que la case n\'est pas cochée');
+ await pg.check('#gerud');ok(await pg.isVisible('#avertGerud')&&/≥ k/.test(await pg.textContent('#avertGerud')),'avertissement GERUD affiché dès que la case est cochée');await lancer(c.graine,c.N,c.kmax);await pg.waitForFunction(()=>RES&&RES.gerud&&!document.getElementById('go').disabled);const vg=await pg.$$eval('.verdict',v=>v.map(x=>x.textContent));
  ok(vg.length===2&&vg[1]==='Nombre minimal estimé de mâles par GERUD : '+A.gerud[0].min,'case GERUD cochée : '+vg.join(' / '));await pg.uncheck('#gerud');
  // simulateur avec erreurs de génotypage et GERUD (référence de l'exemple) : identique à Python
- {const v=A.validation.find(x=>x.nom==='erreurs-gerud');await pg.fill('#nsim',String(v.N));await pg.fill('#kmax',String(v.kmax));await pg.fill('#kmaxSim',String(v.kmaxSim));await pg.fill('#repSim',String(v.R));await pg.fill('#graineSim',String(v.graine));await pg.fill('#erreurSim','2');await pg.check('#gerudSim');
+ {const v=A.validation.find(x=>x.nom==='erreurs-gerud');await pg.fill('#nsim',String(v.N));await pg.fill('#kmax',String(v.kmax));await pg.fill('#kmaxSim',String(v.kmaxSim));await pg.fill('#repSim',String(v.R));await pg.fill('#graineSim',String(v.graine));await pg.fill('#erreurSim','2');await pg.check('#gerudSim');ok(await pg.isVisible('#avertGerudSim'),'avertissement GERUD du simulateur affiché');
   await pg.click('#goSim');await pg.waitForFunction(()=>SIM&&SIM.fini&&!document.getElementById('goSim').disabled);
   const js=await pg.evaluate(()=>SIM.nids.map(x=>({k:x.k,graine:x.graine,basse:x.basse,haute:x.haute,dans:x.dans,gerud:x.gerud.min,gerudVrai:x.gerudVrai.min})));
   const t=await pg.$$eval('#resSim tbody tr',r=>r.map(x=>[...x.cells].map(c=>c.textContent).join(' : ')));const th=await pg.$$eval('#resSim thead th',r=>r.length);
